@@ -30,7 +30,7 @@ class BrowserAgent:
 
     @staticmethod
     def _setup_llm():
-        if Config.AZURE_OPENAI_API_BASE:
+        if Config.AZURE_OPENAI_API_KEY:
             return AzureChatOpenAI(
                 azure_endpoint=Config.AZURE_OPENAI_API_BASE,
                 azure_deployment=Config.AZURE_OPENAI_DEPLOYMENT,

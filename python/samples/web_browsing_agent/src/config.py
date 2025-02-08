@@ -18,8 +18,9 @@ class Config:
     APP_PASSWORD = os.environ.get("BOT_PASSWORD", "")
 
     # LLM Configuration
-    AZURE_OPENAI_API_BASE = os.environ.get("AZURE_OPENAI_API_BASE", None)
-    AZURE_OPENAI_DEPLOYMENT = os.environ.get("AZURE_OPENAI_DEPLOYMENT", None)
+    AZURE_OPENAI_API_BASE = os.environ.get("AZURE_OPENAI_ENDPOINT", None)
+    AZURE_OPENAI_API_KEY = os.environ.get("AZURE_OPENAI_API_KEY", None)
+    AZURE_OPENAI_DEPLOYMENT = os.environ.get("AZURE_OPENAI_MODEL_DEPLOYMENT_NAME", None)
     AZURE_OPENAI_API_VERSION = os.environ.get("AZURE_OPENAI_API_VERSION", None)
     OPENAI_MODEL_NAME = os.environ.get("OPENAI_MODEL_NAME", None)
     OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", None)
