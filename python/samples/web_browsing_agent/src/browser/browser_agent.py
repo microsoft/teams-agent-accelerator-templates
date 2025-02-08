@@ -4,13 +4,15 @@ import os
 
 from botbuilder.core import TurnContext
 from botbuilder.schema import Activity, Attachment, AttachmentLayoutTypes
-from browser.session import Session, SessionStepState
 from browser_use import Agent, Browser, BrowserConfig
 from browser_use.agent.views import AgentHistoryList, AgentOutput
 from browser_use.browser.context import BrowserContext
 from browser_use.browser.views import BrowserState
 from langchain_openai import AzureChatOpenAI, ChatOpenAI
 from teams.state import TurnState
+
+from browser.session import Session, SessionStepState
+from config import Config
 
 
 class BrowserAgent:
@@ -20,7 +22,7 @@ class BrowserAgent:
         self.activity_id = activity_id
         self.browser = Browser(
             config=BrowserConfig(
-                headless=True if os.environ.get("IS_DOCKER_ENV") else None,
+                headless=True if os.environ.get("IS_DOCKER_ENV", None) else False,
             )
         )
         self.browser_context = BrowserContext(browser=self.browser)
@@ -28,16 +30,17 @@ class BrowserAgent:
 
     @staticmethod
     def _setup_llm():
-        if azure_endpoint := os.environ.get("AZURE_OPENAI_API_BASE", None):
+        if Config.AZURE_OPENAI_API_BASE:
             return AzureChatOpenAI(
-                azure_endpoint=azure_endpoint,
-                azure_deployment=os.environ["AZURE_OPENAI_DEPLOYMENT"],
-                openai_api_version=os.environ["AZURE_OPENAI_API_VERSION"],
-                model_name=os.environ[
-                    "AZURE_OPENAI_DEPLOYMENT"
-                ],  # BrowserUse has a bug where this model_name is required
+                azure_endpoint=Config.AZURE_OPENAI_API_BASE,
+                azure_deployment=Config.AZURE_OPENAI_DEPLOYMENT,
+                openai_api_version=Config.AZURE_OPENAI_API_VERSION,
+                model_name=Config.AZURE_OPENAI_DEPLOYMENT,  # BrowserUse has a bug where this model_name is required
             )
-        return ChatOpenAI(model=os.environ["OPENAI_MODEL_NAME"])
+        return ChatOpenAI(
+            model=Config.OPENAI_MODEL_NAME,
+            api_key=Config.OPENAI_API_KEY,
+        )
 
     def _create_progress_card(
         self,
@@ -198,11 +201,11 @@ class BrowserAgent:
     def step_callback(
         self, state: BrowserState, output: AgentOutput, step_number: int
     ) -> None:
-        if self.state.session:
+        if session := self.state.get("session"):
             # Handle screenshot and update card in one go
             asyncio.create_task(
                 self._handle_screenshot_and_emit(
-                    self.state.session,
+                    session,
                     output,
                 )
             )
@@ -210,12 +213,10 @@ class BrowserAgent:
             logging.warning("Session not available to store step state")
 
     async def _send_final_activity(self, message: str) -> None:
-        if self.state.session:
+        if session := self.state.get("session"):
             # Get the last screenshot if available
             last_screenshot = (
-                self.state.session.session_state[-1].screenshot
-                if self.state.session.session_state
-                else None
+                session.session_state[-1].screenshot if session.session_state else None
             )
 
             step = SessionStepState(action=message, screenshot=last_screenshot)

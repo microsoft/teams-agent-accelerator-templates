@@ -5,9 +5,10 @@ import sys
 import traceback
 
 from botbuilder.core import MemoryStorage, TurnContext
-from browser.session import Session
 from teams import Application, ApplicationOptions, TeamsAdapter
 from teams.state import TurnState as BaseTurnState
+
+from browser.session import Session
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -40,8 +41,8 @@ async def on_members_added(context: TurnContext, state: TurnState):
 
 
 async def reset_session(context: TurnContext, state: TurnState):
-    if state.session:
-        state.session.session_state = []
+    if session := state.get("session"):
+        session.session_state = []
 
 
 async def run_agent(
@@ -55,8 +56,9 @@ async def run_agent(
 @bot_app.message(re.compile("web: .*"))
 async def on_web_browse(context: TurnContext, state: TurnState):
     query = context.activity.text.split("web: ")[1]
-    if not state.session:
-        state.session = Session.create()
+    if not state.get("session"):
+        state.set("session", Session.create())
+
     await reset_session(context, state)
 
     conversation_ref = TurnContext.get_conversation_reference(context.activity)
