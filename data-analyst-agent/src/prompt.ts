@@ -116,7 +116,7 @@ export function dataAnalystPrompt(memory: Memory, send: any) {
         required: ['data', 'type']
     }, async (params: CreateAdaptiveCard) => {
         try {
-            const cardPrompt = adaptiveCardPrompt(memory, send);
+            const cardPrompt = adaptiveCardPrompt(send);
             const prompt = `Create an Adaptive Card to visualize this data as a ${params.type}:\n${params.data}. And render it as well.`;
             
             const response = await cardPrompt.chat(prompt);
@@ -153,7 +153,7 @@ export function dataAnalystPrompt(memory: Memory, send: any) {
     return chatPrompt;
 }
 
-export function adaptiveCardPrompt(memory: Memory, send: any) {
+export function adaptiveCardPrompt(send: any) {
     const cardSchema = fs.readFileSync(path.join(__dirname, 'ac-schema.json'), 'utf-8');
     
     const chatPrompt = new ChatPrompt({
@@ -182,7 +182,6 @@ export function adaptiveCardPrompt(memory: Memory, send: any) {
             stream: false,
             logger: new ConsoleLogger("adaptive-card-prompt", { level: "debug" })
         }),
-        messages: memory
     });
 
     // Add render_card function
