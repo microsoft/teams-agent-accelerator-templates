@@ -53,7 +53,7 @@ async def run_agent(
     return result
 
 
-@bot_app.message(re.compile("web: .*"))
+@bot_app.message(re.compile(".*web: .*"))
 async def on_web_browse(context: TurnContext, state: TurnState):
     query = context.activity.text.split("web: ")[1]
     if not state.get("session"):
