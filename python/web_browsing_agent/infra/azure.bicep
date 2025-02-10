@@ -17,7 +17,15 @@ param azureOpenaiModelDeploymentName string
 param azureOpenaiEndpoint string
 
 param webAppSKU string
-param linuxFxVersion string
+
+@description('Container registry name')
+param containerRegistryName string = '${resourceBaseName}registry'
+
+@description('Container registry SKU')
+param containerRegistrySku string = 'Basic'
+
+@description('Container image name and tag')
+param containerImageName string = 'web-browsing-agent:latest'
 
 @maxLength(42)
 param botDisplayName string
@@ -25,11 +33,22 @@ param botDisplayName string
 param serverfarmsName string = resourceBaseName
 param webAppName string = resourceBaseName
 param location string = resourceGroup().location
-param pythonVersion string = linuxFxVersion
+
+// Container Registry to store the Docker image
+resource containerRegistry 'Microsoft.ContainerRegistry/registries@2021-06-01-preview' = {
+  name: containerRegistryName
+  location: location
+  sku: {
+    name: containerRegistrySku
+  }
+  properties: {
+    adminUserEnabled: true
+  }
+}
 
 // Compute resources for your Web App
 resource serverfarm 'Microsoft.Web/serverfarms@2021-02-01' = {
-  kind: 'app,linux'
+  kind: 'linux'
   location: location
   name: serverfarmsName
   sku: {
@@ -42,23 +61,34 @@ resource serverfarm 'Microsoft.Web/serverfarms@2021-02-01' = {
 
 // Web App that hosts your bot
 resource webApp 'Microsoft.Web/sites@2021-02-01' = {
-  kind: 'app,linux'
+  kind: 'app,linux,container'
   location: location
   name: webAppName
   properties: {
     serverFarmId: serverfarm.id
     siteConfig: {
       alwaysOn: true
-      appCommandLine: 'gunicorn --bind 0.0.0.0 --worker-class aiohttp.worker.GunicornWebWorker --timeout 600 app:app'
-      linuxFxVersion: pythonVersion
+      linuxFxVersion: 'DOCKER|${containerRegistry.properties.loginServer}/${containerImageName}'
       appSettings: [
         {
-          name: 'WEBSITES_CONTAINER_START_TIME_LIMIT'
-          value: '600'
+          name: 'WEBSITES_ENABLE_APP_SERVICE_STORAGE'
+          value: 'false'
         }
         {
-          name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
-          value: 'true'
+          name: 'DOCKER_REGISTRY_SERVER_URL'
+          value: 'https://${containerRegistry.properties.loginServer}'
+        }
+        {
+          name: 'DOCKER_REGISTRY_SERVER_USERNAME'
+          value: containerRegistry.listCredentials().username
+        }
+        {
+          name: 'DOCKER_REGISTRY_SERVER_PASSWORD'
+          value: containerRegistry.listCredentials().passwords[0].value
+        }
+        {
+          name: 'WEBSITES_PORT'
+          value: '3978'
         }
         {
           name: 'BOT_ID'
@@ -80,6 +110,10 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
           name: 'AZURE_OPENAI_ENDPOINT'
           value: azureOpenaiEndpoint
         }
+        {
+          name: 'AZURE_OPENAI_API_VERSION'
+          value: azureOpenaiApiVersion
+        }
       ]
       ftpsState: 'FtpsOnly'
     }
@@ -100,3 +134,5 @@ module azureBotRegistration './botRegistration/azurebot.bicep' = {
 // The output will be persisted in .env.{envName}. Visit https://aka.ms/teamsfx-actions/arm-deploy for more details.
 output BOT_AZURE_APP_SERVICE_RESOURCE_ID string = webApp.id
 output BOT_DOMAIN string = webApp.properties.defaultHostName
+output CONTAINER_REGISTRY_NAME string = containerRegistry.name
+output CONTAINER_REGISTRY_LOGIN_SERVER string = containerRegistry.properties.loginServer

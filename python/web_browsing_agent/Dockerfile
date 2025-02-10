@@ -1,5 +1,5 @@
 # The builder image, used to build the virtual environment
-FROM mcr.microsoft.com/playwright/python:v1.49.1
+FROM --platform=linux/amd64 mcr.microsoft.com/playwright/python:v1.49.1
 
 WORKDIR /app
 
@@ -11,6 +11,7 @@ ENV PATH="/root/.local/bin:$PATH"
 COPY pyproject.toml uv.lock ./
 
 RUN uv sync --locked --no-dev
+RUN uv add gunicorn
 
 ENV VIRTUAL_ENV=/app/.venv \
     PATH="/app/.venv/bin:$PATH"
@@ -23,4 +24,5 @@ ENV VIRTUAL_ENV=/app/.venv
 ENV PATH="/app/.venv/bin:$PATH"
 ENV IS_DOCKER_ENV=true
 
-ENTRYPOINT ["python", "app.py"]
+# Use Gunicorn as the web server because azure app service needs it
+CMD ["gunicorn", "--bind", "0.0.0.0:3978", "--worker-class", "aiohttp.worker.GunicornWebWorker", "--timeout", "600", "app:app"]

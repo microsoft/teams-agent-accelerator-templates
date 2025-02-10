@@ -20,14 +20,17 @@
     "azureOpenaiEndpoint": {
       "value": "${{AZURE_OPENAI_ENDPOINT}}"
     },
+    "azureOpenaiApiVersion": {
+      "value": "${{AZURE_OPENAI_API_VERSION}}"
+    },
     "webAppSKU": {
       "value": "B1"
     },
     "botDisplayName": {
       "value": "web-browsing-agent"
     },
-    "linuxFxVersion": {
-      "value": "PYTHON|3.11"
+    "containerRegistrySku": {
+      "value": "Basic"
     }
   }
 }
