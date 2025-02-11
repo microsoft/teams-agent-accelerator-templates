@@ -7,10 +7,9 @@ from browser_use import Agent, Browser, BrowserConfig
 from browser_use.agent.views import AgentOutput
 from browser_use.browser.context import BrowserContext
 from browser_use.browser.views import BrowserState
-from langchain_openai import AzureChatOpenAI, ChatOpenAI
-
 from cards import create_final_card, create_progress_card
 from config import Config
+from langchain_openai import AzureChatOpenAI, ChatOpenAI
 from storage.session import Session, SessionState, SessionStepState
 
 
@@ -68,15 +67,17 @@ class BrowserAgent:
         if self.agent_history and self.agent_history.history:
             thoughts = self.agent_history.model_thoughts()
             actions = self.agent_history.model_actions()
-            
+
             history_facts = []
             for thought, action in zip(thoughts, actions):
                 action_name = list(action.keys())[0] if action else "No action"
-                history_facts.append({
-                    "thought": thought.evaluation_previous_goal,
-                    "goal": thought.next_goal,
-                    "action": action_name
-                })
+                history_facts.append(
+                    {
+                        "thought": thought.evaluation_previous_goal,
+                        "goal": thought.next_goal,
+                        "action": action_name,
+                    }
+                )
 
         # Update the Teams message with card
         activity = Activity(
@@ -90,7 +91,7 @@ class BrowserAgent:
                         screenshot=step.screenshot,
                         next_goal=step.next_goal,
                         action=step.action,
-                        history_facts=history_facts
+                        history_facts=history_facts,
                     ),
                 )
             ],
@@ -104,7 +105,9 @@ class BrowserAgent:
             self.agent.stop()
             asyncio.create_task(
                 self._send_final_activity(
-                    "Session stopped by user", include_screenshot=False, override_title="🛑 Stopped"
+                    "Session stopped by user",
+                    include_screenshot=False,
+                    override_title="🛑 Stopped",
                 )
             )
             return
@@ -131,15 +134,17 @@ class BrowserAgent:
         if self.agent_history and self.agent_history.history:
             thoughts = self.agent_history.model_thoughts()
             actions = self.agent_history.model_actions()
-            
+
             history_facts = []
             for thought, action in zip(thoughts, actions):
                 action_name = list(action.keys())[0] if action else "No action"
-                history_facts.append({
-                    "thought": thought.evaluation_previous_goal,
-                    "goal": thought.next_goal,
-                    "action": action_name
-                })
+                history_facts.append(
+                    {
+                        "thought": thought.evaluation_previous_goal,
+                        "goal": thought.next_goal,
+                        "action": action_name,
+                    }
+                )
 
         # First update the progress card
         step = SessionStepState(action=message, screenshot=last_screenshot)
@@ -152,8 +157,8 @@ class BrowserAgent:
                     content_type="application/vnd.microsoft.card.adaptive",
                     content=create_progress_card(
                         screenshot=last_screenshot,
-                        action=message,
-                        history_facts=history_facts
+                        action="The session concluded",
+                        history_facts=history_facts,
                     ),
                 )
             ],
@@ -167,7 +172,9 @@ class BrowserAgent:
                 attachments=[
                     Attachment(
                         content_type="application/vnd.microsoft.card.adaptive",
-                        content=create_final_card(message, last_screenshot, override_title),
+                        content=create_final_card(
+                            message, last_screenshot, override_title
+                        ),
                     )
                 ],
             )
@@ -209,5 +216,7 @@ class BrowserAgent:
         except Exception as e:
             self.session.state = SessionState.ERROR
             error_message = f"Error during browser agent execution: {str(e)}"
-            await self._send_final_activity(error_message, include_screenshot=False, override_title="🚨 Error")
+            await self._send_final_activity(
+                error_message, include_screenshot=False, override_title="🚨 Error"
+            )
             return error_message
