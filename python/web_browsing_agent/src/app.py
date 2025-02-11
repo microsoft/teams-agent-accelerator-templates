@@ -6,13 +6,12 @@ Licensed under the MIT License.
 from http import HTTPStatus
 
 from aiohttp import web
-from bot import bot_app
 from botbuilder.core.integration import aiohttp_error_middleware
+
+from bot import bot_app
 from config import Config
-from storage.in_memory_session_storage import InMemorySessionStorage
 
 routes = web.RouteTableDef()
-session_storage = InMemorySessionStorage()
 
 
 @routes.post("/api/messages")

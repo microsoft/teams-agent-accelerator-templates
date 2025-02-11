@@ -1,24 +1,21 @@
 import asyncio
-import logging
 import os
 
 from botbuilder.core import TurnContext
-from botbuilder.schema import Activity, Attachment, AttachmentLayoutTypes
+from botbuilder.schema import Activity, ActivityTypes, Attachment, AttachmentLayoutTypes
+from browser.session import Session, SessionState, SessionStepState
 from browser_use import Agent, Browser, BrowserConfig
 from browser_use.agent.views import AgentHistoryList, AgentOutput
 from browser_use.browser.context import BrowserContext
 from browser_use.browser.views import BrowserState
-from langchain_openai import AzureChatOpenAI, ChatOpenAI
-from teams.state import TurnState
-
-from browser.session import Session, SessionStepState
 from config import Config
+from langchain_openai import AzureChatOpenAI, ChatOpenAI
 
 
 class BrowserAgent:
-    def __init__(self, context: TurnContext, state: TurnState, activity_id: str):
+    def __init__(self, context: TurnContext, session: Session, activity_id: str):
         self.context = context
-        self.state = state
+        self.session = session
         self.activity_id = activity_id
         self.browser = Browser(
             config=BrowserConfig(
@@ -27,6 +24,7 @@ class BrowserAgent:
         )
         self.browser_context = BrowserContext(browser=self.browser)
         self.llm = self._setup_llm()
+        self.agent = None
 
     @staticmethod
     def _setup_llm():
@@ -161,7 +159,6 @@ class BrowserAgent:
 
     async def _handle_screenshot_and_emit(
         self,
-        session: Session,
         output: AgentOutput,
     ) -> None:
         screenshot_new = await self.browser_context.take_screenshot()
@@ -179,7 +176,7 @@ class BrowserAgent:
             actions=actions,
         )
 
-        session.session_state.append(step)
+        self.session.session_state.append(step)
 
         # Update the Teams message with card
         activity = Activity(
@@ -201,44 +198,109 @@ class BrowserAgent:
     def step_callback(
         self, state: BrowserState, output: AgentOutput, step_number: int
     ) -> None:
-        if session := self.state.get("session"):
-            # Handle screenshot and update card in one go
+        if self.session.state == SessionState.CANCELLATION_REQUESTED and self.agent:
+            self.agent.stop()
             asyncio.create_task(
-                self._handle_screenshot_and_emit(
-                    session,
-                    output,
+                self._send_final_activity(
+                    "Session stopped by user", include_screenshot=False
                 )
             )
-        else:
-            logging.warning("Session not available to store step state")
+            return
 
-    async def _send_final_activity(self, message: str) -> None:
-        if session := self.state.get("session"):
-            # Get the last screenshot if available
-            last_screenshot = (
-                session.session_state[-1].screenshot if session.session_state else None
+        # Handle screenshot and update card in one go
+        asyncio.create_task(
+            self._handle_screenshot_and_emit(
+                output,
+            )
+        )
+
+    async def _send_final_activity(
+        self, message: str, include_screenshot: bool = True
+    ) -> None:
+        # Get the last screenshot if available and if requested
+        last_screenshot = (
+            self.session.session_state[-1].screenshot
+            if self.session.session_state and include_screenshot
+            else None
+        )
+
+        # First update the progress card
+        step = SessionStepState(action=message, screenshot=last_screenshot)
+        activity = Activity(
+            id=self.activity_id,
+            type="message",
+            attachment_layout=AttachmentLayoutTypes.list,
+            attachments=[
+                Attachment(
+                    content_type="application/vnd.microsoft.card.adaptive",
+                    content=self._create_progress_card(
+                        step=step, agent_history=self.agent_history
+                    ),
+                )
+            ],
+        )
+        await self.context.update_activity(activity=activity)
+
+        # Then send a final results card
+        final_card = {
+            "type": "AdaptiveCard",
+            "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+            "version": "1.5",
+            "body": [
+                {
+                    "type": "Container",
+                    "style": "emphasis",
+                    "items": [
+                        {
+                            "type": "TextBlock",
+                            "text": "✨ Task Complete",
+                            "weight": "Bolder",
+                            "size": "Large",
+                            "wrap": True,
+                        }
+                    ],
+                },
+                {
+                    "type": "Container",
+                    "items": [
+                        {
+                            "type": "TextBlock",
+                            "text": message,
+                            "wrap": True,
+                        }
+                    ],
+                },
+            ],
+        }
+
+        # Add screenshot to final card if available
+        if last_screenshot:
+            final_card["body"].insert(
+                1,
+                {
+                    "type": "Image",
+                    "url": f"data:image/png;base64,{last_screenshot}",
+                    "msTeams": {
+                        "allowExpand": True,
+                    },
+                },
             )
 
-            step = SessionStepState(action=message, screenshot=last_screenshot)
-
-            activity = Activity(
-                id=self.activity_id,
-                type="message",
-                attachment_layout=AttachmentLayoutTypes.list,
+        await self.context.send_activity(
+            Activity(
+                type=ActivityTypes.message,
                 attachments=[
                     Attachment(
                         content_type="application/vnd.microsoft.card.adaptive",
-                        content=self._create_progress_card(
-                            step=step, agent_history=self.agent_history
-                        ),
+                        content=final_card,
                     )
                 ],
             )
-            await self.context.update_activity(activity=activity)
-        else:
-            logging.warning("Session not available to store final state")
+        )
 
     def done_callback(self, result) -> None:
+        self.session.state = SessionState.DONE
+
         action_results = result.action_results()
         if action_results and (last_result := action_results[-1]):
             final_result = last_result.extracted_content
@@ -255,6 +317,7 @@ class BrowserAgent:
             browser_context=self.browser_context,
             generate_gif=False,
         )
+        self.agent = agent
         self.agent_history = agent.history
 
         try:
@@ -269,6 +332,7 @@ class BrowserAgent:
             )
 
         except Exception as e:
+            self.session.state = SessionState.ERROR
             error_message = f"Error during browser agent execution: {str(e)}"
             await self._send_final_activity(error_message)
             return error_message

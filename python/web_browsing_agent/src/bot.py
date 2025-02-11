@@ -1,65 +1,115 @@
 import asyncio
-import os
 import re
 import sys
 import traceback
 
-from botbuilder.core import MemoryStorage, TurnContext
-from teams import Application, ApplicationOptions, TeamsAdapter
-from teams.state import TurnState as BaseTurnState
-
-from browser.session import Session
-
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+from botbuilder.core import TurnContext
+from botbuilder.schema import Activity, ActivityTypes, Attachment
 from browser.browser_agent import BrowserAgent
+from browser.session import Session, SessionState
 from config import Config
+from middleware.session_middleware import SessionMiddleware
+from storage.session_storage import SessionStorage
+from teams import Application, ApplicationOptions, TeamsAdapter
+from teams.state import TurnState
 
 config = Config()
 
-
-class TurnState(BaseTurnState):
-    def __init__(self):
-        super().__init__()
-        self.session: Session = None
-
-
-# Define storage and application
-storage = MemoryStorage()
-bot_app = Application[TurnState](
+# Initialize application with session management
+session_storage = SessionStorage()
+bot_app = Application(
     ApplicationOptions(
         bot_app_id=config.APP_ID,
-        storage=storage,
         adapter=TeamsAdapter(config),
     )
 )
+bot_app._adapter.use(SessionMiddleware(session_storage))
 
 
 @bot_app.conversation_update("membersAdded")
-async def on_members_added(context: TurnContext, state: TurnState):
+async def on_members_added(context: TurnContext):
     await context.send_activity("How can I help you today?")
 
 
-async def reset_session(context: TurnContext, state: TurnState):
-    if session := state.get("session"):
-        session.session_state = []
+def create_in_progress_card(session_id: str) -> dict:
+    """Create an adaptive card that asks the user if they want to stop the current session."""
+    return {
+        "type": "AdaptiveCard",
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "version": "1.5",
+        "body": [
+            {
+                "type": "TextBlock",
+                "text": "A browsing session is still in progress. Do you want to stop it?",
+                "wrap": True,
+            }
+        ],
+        "actions": [
+            {
+                "type": "Action.Submit",
+                "title": "Yes",
+                "verb": "stop_browsing",
+                "data": {"verb": "stop_browsing", "session_id": session_id},
+            },
+        ],
+    }
+
+
+@bot_app.adaptive_cards.action_submit("stop_browsing")
+async def on_stop_browsing(context: TurnContext, _state: TurnState, data: dict):
+    """Handle the user's request to stop a browsing session."""
+    session_id = data.get("session_id")
+    if not session_id:
+        await context.send_activity("Could not find session ID to stop.")
+        return
+
+    session = context.has("session") and context.get("session")
+    if session and session.id == session_id:
+        session.state = SessionState.CANCELLATION_REQUESTED
+    else:
+        await context.send_activity("This session is not active.")
+    await context.send_activity("Attempting to stop the current browsing session...")
 
 
 async def run_agent(
-    context: TurnContext, state: TurnState, query: str, activity_id: str
-):
-    browser_agent = BrowserAgent(context, state, activity_id)
+    context: TurnContext, session: Session, query: str, activity_id: str
+) -> str:
+    """Run the browser agent with the given query."""
+    browser_agent = BrowserAgent(context, session, activity_id)
     result = await browser_agent.run(query)
     return result
 
 
-@bot_app.message(re.compile(".*web: .*"))
-async def on_web_browse(context: TurnContext, state: TurnState):
-    query = context.activity.text.split("web: ")[1]
-    if not state.get("session"):
-        state.set("session", Session.create())
+@bot_app.message(re.compile(".*"))
+async def on_web_browse(context: TurnContext, turn_state: TurnState):
+    """Handle web browsing requests from the user."""
+    query = context.activity.text
+    if not query:
+        return
 
-    await reset_session(context, state)
+    session = context.has("session") and context.get("session")
+
+    # Check if there's an active session
+    if session and session.state == SessionState.STARTED:
+        # Send card asking if user wants to stop current session
+        card = create_in_progress_card(session.id)
+        await context.send_activity(
+            Activity(
+                type=ActivityTypes.message,
+                attachments=[
+                    Attachment(
+                        content_type="application/vnd.microsoft.card.adaptive",
+                        content=card,
+                    )
+                ],
+            )
+        )
+        return
+
+    # Create new session if none exists or previous one is complete
+    session = Session.create()
+    session_setter = context.get("session_setter")
+    await session_setter(session)
 
     conversation_ref = TurnContext.get_conversation_reference(context.activity)
 
@@ -70,10 +120,11 @@ async def on_web_browse(context: TurnContext, state: TurnState):
     activity_id = initial_response.id
 
     async def background_task():
-        result = await run_agent(context, state, query, activity_id)
+        """Run the browser agent in the background and handle any errors."""
+        result = await run_agent(context, session, query, activity_id)
 
         if isinstance(result, Exception):
-            # If there was an error, send a new message instead of updating
+
             async def send_error(context: TurnContext):
                 await context.send_activity(f"Error: {str(result)}")
 
