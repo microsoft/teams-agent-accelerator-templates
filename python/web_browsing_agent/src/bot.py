@@ -9,10 +9,10 @@ from teams import Application, ApplicationOptions, TeamsAdapter
 from teams.state import TurnState
 
 from browser.browser_agent import BrowserAgent
-from browser.session import Session, SessionState
 from cards import create_in_progress_card
 from config import Config
 from middleware.session_middleware import SessionMiddleware
+from storage.session import Session, SessionState
 from storage.session_storage import SessionStorage
 
 config = Config()

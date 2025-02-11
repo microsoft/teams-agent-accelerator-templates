@@ -9,9 +9,9 @@ from browser_use.browser.context import BrowserContext
 from browser_use.browser.views import BrowserState
 from langchain_openai import AzureChatOpenAI, ChatOpenAI
 
-from browser.session import Session, SessionState, SessionStepState
 from cards import create_final_card, create_progress_card
 from config import Config
+from storage.session import Session, SessionState, SessionStepState
 
 
 class BrowserAgent:

@@ -1,4 +1,4 @@
-from browser.session import Session
+from storage.session import Session
 
 
 class SessionStorage:

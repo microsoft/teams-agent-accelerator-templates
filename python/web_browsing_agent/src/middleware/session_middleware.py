@@ -1,7 +1,8 @@
 from typing import Awaitable, Callable
 
 from botbuilder.core import Middleware, TurnContext
-from browser.session import Session
+
+from storage.session import Session
 from storage.session_storage import SessionStorage
 
 
