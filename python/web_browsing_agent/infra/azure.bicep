@@ -15,6 +15,7 @@ param botAadAppClientSecret string
 param azureOpenaiKey string
 param azureOpenaiModelDeploymentName string
 param azureOpenaiEndpoint string
+param azureOpenaiApiVersion string
 
 param webAppSKU string
 
