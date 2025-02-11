@@ -19,7 +19,7 @@
     "@teams.sdk/ai": "latest",
     "@teams.sdk/api": "latest",
     "@teams.sdk/apps": "latest",
-    "@teams.sdk/cards": "^0.1.24",
+    "@teams.sdk/cards": "latest",
     "@teams.sdk/common": "latest",
     "@teams.sdk/dev": "latest",
     "@teams.sdk/devtools": "latest",

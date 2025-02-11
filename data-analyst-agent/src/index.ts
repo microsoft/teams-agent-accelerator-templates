@@ -1,17 +1,13 @@
 import { App, HttpPlugin } from '@teams.sdk/apps';
 import { DevtoolsPlugin } from '@teams.sdk/dev';
-import { LocalMemory, Message } from '@teams.sdk/ai';
+import { Message } from '@teams.sdk/ai';
 import { LocalStorage } from '@teams.sdk/common/storage';
 import { ConsoleLogger } from '@teams.sdk/common';
-import { dataAnalystPrompt } from './prompt';
+import { DataAnalyst } from './data-analyst';
 
 const storage = new LocalStorage<{
   messages: Message[];
 }>();
-
-const memory = new LocalMemory({
-  max: 20
-});
 
 const app = new App({
   plugins: [new DevtoolsPlugin(), new HttpPlugin()],
@@ -42,15 +38,13 @@ app.on('message', async ({ send, activity }) => {
   
   await send({ type: 'typing' });
   
-  const prompt = dataAnalystPrompt(memory, send);
-  // const prompt = adaptiveCardPrompt(memory, send);
+  const dataAnalyst = DataAnalyst({send});
+  await dataAnalyst.chat(activity.text);
 
-  const response = await prompt.chat(activity.text);
-
-  await send({
-    type: 'message',
-    text: response,
-  });
+  // await send({
+  //   type: 'message',
+  //   text: response,
+  // });
 
   // // Use streaming to send chunks of the response as they arrive
   // await prompt.chat(activity.text, async (chunk: string) => {
