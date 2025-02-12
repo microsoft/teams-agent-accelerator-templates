@@ -2,178 +2,178 @@
     {
         "task": "Count of Products by Category",
         "user_query": "How many products are in each category?",
-        "sql_query": "SELECT CategoryName, COUNT(*) as ProductCount FROM ProductCategory pc JOIN ProductSubcategory ps ON pc.ProductCategoryKey = ps.ProductCategoryKey GROUP BY CategoryName ORDER BY ProductCount DESC;",
+        "sql_query": "SELECT pc.CategoryName, COUNT(p.ProductKey) AS ProductCount FROM ProductCategory pc LEFT JOIN ProductSubcategory psc ON pc.ProductCategoryKey = psc.ProductCategoryKey LEFT JOIN Product p ON psc.ProductSubcategoryKey = p.ProductSubcategoryKey GROUP BY pc.CategoryName;",
         "result": [
             {
-                "CategoryName": "Components",
-                "ProductCount": 14
-            },
-            {
                 "CategoryName": "Accessories",
-                "ProductCount": 12
-            },
-            {
-                "CategoryName": "Clothing",
-                "ProductCount": 8
+                "ProductCount": 29
             },
             {
                 "CategoryName": "Bikes",
-                "ProductCount": 3
+                "ProductCount": 97
+            },
+            {
+                "CategoryName": "Clothing",
+                "ProductCount": 35
+            },
+            {
+                "CategoryName": "Components",
+                "ProductCount": 132
             }
         ]
     },
     {
         "task": "Average Product Price by Subcategory",
-        "user_query": "What is the average price of products in each subcategory?",
-        "sql_query": "SELECT SubcategoryName, ROUND(AVG(ProductPrice), 2) as AvgPrice FROM ProductSubcategory ps JOIN Product p ON ps.ProductSubcategoryKey = p.ProductSubcategoryKey GROUP BY SubcategoryName ORDER BY AvgPrice DESC;",
+        "user_query": "What is the average price of products in each subcategory? Sort your answers by descending price and round to 2 decimal places.",
+        "sql_query": "SELECT SubcategoryName, ROUND(AVG(ProductPrice), 2) as AveragePrice FROM ProductSubcategory ps JOIN Product p ON ps.ProductSubcategoryKey = p.ProductSubcategoryKey GROUP BY SubcategoryName ORDER BY AveragePrice DESC;",
         "result": [
             {
                 "SubcategoryName": "Mountain Bikes",
-                "AvgPrice": 1637.01
+                "AveragePrice": 1637.01
             },
             {
                 "SubcategoryName": "Road Bikes",
-                "AvgPrice": 1529.64
+                "AveragePrice": 1529.64
             },
             {
                 "SubcategoryName": "Touring Bikes",
-                "AvgPrice": 1425.25
+                "AveragePrice": 1425.25
             },
             {
                 "SubcategoryName": "Road Frames",
-                "AvgPrice": 671.8
+                "AveragePrice": 671.8
             },
             {
                 "SubcategoryName": "Mountain Frames",
-                "AvgPrice": 644.12
+                "AveragePrice": 644.12
             },
             {
                 "SubcategoryName": "Touring Frames",
-                "AvgPrice": 631.42
+                "AveragePrice": 631.42
             },
             {
                 "SubcategoryName": "Cranksets",
-                "AvgPrice": 278.99
+                "AveragePrice": 278.99
             },
             {
                 "SubcategoryName": "Wheels",
-                "AvgPrice": 220.93
+                "AveragePrice": 220.93
             },
             {
                 "SubcategoryName": "Forks",
-                "AvgPrice": 184.4
+                "AveragePrice": 184.4
             },
             {
                 "SubcategoryName": "Bike Stands",
-                "AvgPrice": 159
+                "AveragePrice": 159
             },
             {
                 "SubcategoryName": "Panniers",
-                "AvgPrice": 125
+                "AveragePrice": 125
             },
             {
                 "SubcategoryName": "Bike Racks",
-                "AvgPrice": 120
+                "AveragePrice": 120
             },
             {
                 "SubcategoryName": "Brakes",
-                "AvgPrice": 106.5
+                "AveragePrice": 106.5
             },
             {
                 "SubcategoryName": "Derailleurs",
-                "AvgPrice": 106.48
+                "AveragePrice": 106.48
             },
             {
                 "SubcategoryName": "Bottom Brackets",
-                "AvgPrice": 92.24
+                "AveragePrice": 92.24
             },
             {
                 "SubcategoryName": "Bib-Shorts",
-                "AvgPrice": 89.99
+                "AveragePrice": 89.99
             },
             {
                 "SubcategoryName": "Headsets",
-                "AvgPrice": 87.07
+                "AveragePrice": 87.07
             },
             {
                 "SubcategoryName": "Tights",
-                "AvgPrice": 74.99
+                "AveragePrice": 74.99
             },
             {
                 "SubcategoryName": "Handlebars",
-                "AvgPrice": 68.74
+                "AveragePrice": 68.74
             },
             {
                 "SubcategoryName": "Shorts",
-                "AvgPrice": 64.28
+                "AveragePrice": 64.28
             },
             {
                 "SubcategoryName": "Pedals",
-                "AvgPrice": 64.02
+                "AveragePrice": 64.02
             },
             {
                 "SubcategoryName": "Vests",
-                "AvgPrice": 63.5
+                "AveragePrice": 63.5
             },
             {
                 "SubcategoryName": "Hydration Packs",
-                "AvgPrice": 54.99
+                "AveragePrice": 54.99
             },
             {
                 "SubcategoryName": "Jerseys",
-                "AvgPrice": 51.03
+                "AveragePrice": 51.03
             },
             {
                 "SubcategoryName": "Saddles",
-                "AvgPrice": 39.63
+                "AveragePrice": 39.63
             },
             {
                 "SubcategoryName": "Helmets",
-                "AvgPrice": 34.09
+                "AveragePrice": 34.09
             },
             {
                 "SubcategoryName": "Lights",
-                "AvgPrice": 31.32
+                "AveragePrice": 31.32
             },
             {
                 "SubcategoryName": "Gloves",
-                "AvgPrice": 30.77
+                "AveragePrice": 30.77
             },
             {
                 "SubcategoryName": "Locks",
-                "AvgPrice": 25
+                "AveragePrice": 25
             },
             {
                 "SubcategoryName": "Pumps",
-                "AvgPrice": 22.49
+                "AveragePrice": 22.49
             },
             {
                 "SubcategoryName": "Fenders",
-                "AvgPrice": 21.98
+                "AveragePrice": 21.98
             },
             {
                 "SubcategoryName": "Chains",
-                "AvgPrice": 20.24
+                "AveragePrice": 20.24
             },
             {
                 "SubcategoryName": "Tires and Tubes",
-                "AvgPrice": 19.48
+                "AveragePrice": 19.48
             },
             {
                 "SubcategoryName": "Socks",
-                "AvgPrice": 9.25
+                "AveragePrice": 9.25
             },
             {
                 "SubcategoryName": "Caps",
-                "AvgPrice": 8.64
+                "AveragePrice": 8.64
             },
             {
                 "SubcategoryName": "Bottles and Cages",
-                "AvgPrice": 7.99
+                "AveragePrice": 7.99
             },
             {
                 "SubcategoryName": "Cleaners",
-                "AvgPrice": 7.95
+                "AveragePrice": 7.95
             }
         ]
     },

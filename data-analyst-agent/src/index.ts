@@ -1,65 +1,37 @@
 import { App, HttpPlugin } from '@teams.sdk/apps';
 import { DevtoolsPlugin } from '@teams.sdk/dev';
-import { Message } from '@teams.sdk/ai';
-import { LocalStorage } from '@teams.sdk/common/storage';
 import { ConsoleLogger } from '@teams.sdk/common';
-import { DataAnalyst } from './data-analyst';
-
-const storage = new LocalStorage<{
-  messages: Message[];
-}>();
+import { DataAnalyst, DataAnalystResponse } from './data-analyst';
 
 const app = new App({
-  plugins: [new DevtoolsPlugin(), new HttpPlugin()],
-  clientId: process.env.BOT_ID,
-  clientSecret: process.env.BOT_PASSWORD,
-  logger: new ConsoleLogger("data-analyst-agent", { level: "debug" }),
+    plugins: [new DevtoolsPlugin(), new HttpPlugin()],
+    clientId: process.env.BOT_ID,
+    clientSecret: process.env.BOT_PASSWORD,
+    logger: new ConsoleLogger('data-analyst-agent', { level: 'debug' }),
 });
 
+const dataAnalyst = DataAnalyst();
+
 app.on('message', async ({ send, activity }) => {
-  let state = storage.get(activity.from.id);
+    await send({ type: 'typing' });
 
-  if (!state) {
-    state = {
-      messages: [],
-    };
+    const response: DataAnalystResponse = await dataAnalyst.chat(activity.text);
 
-    storage.set(activity.from.id, state);
-  }
+    // Send each content item individually.
+    for (const item of response) {
+        if (item.text) {
+            await send({
+                type: 'message',
+                text: item.text,
+            });
+        }
 
-  if (activity.text === '/history') {
-    await send({
-      type: 'message',
-      text: state.messages.map((m) => `- ${m.role}: ${JSON.stringify(m.content)}`).join('\n'),
-    });
-
-    return;
-  }
-  
-  await send({ type: 'typing' });
-  
-  const dataAnalyst = DataAnalyst({send});
-  await dataAnalyst.chat(activity.text);
-
-  // await send({
-  //   type: 'message',
-  //   text: response,
-  // });
-
-  // // Use streaming to send chunks of the response as they arrive
-  // await prompt.chat(activity.text, async (chunk: string) => {
-  //   // console.log(chunk);
-  //   // // await stream.emit({
-  //   // //   type: 'message',
-  //   // //   text: chunk,
-  //   // //   channelData: {
-  //   // //     feedbackLoopEnabled: true,
-  //   // //   },
-  //   // // });
-
-  // });
+        if (item.card) {
+            await send(item.card);
+        }
+    }
 });
 
 (async () => {
-  await app.start(3978);
+    await app.start(3978);
 })();

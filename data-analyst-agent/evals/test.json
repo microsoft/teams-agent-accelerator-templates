@@ -1,0 +1,150 @@
+[
+  {
+    "SubcategoryName": "Mountain Bikes",
+    "AveragePrice": 1637.01
+  },
+  {
+    "SubcategoryName": "Road Bikes",
+    "AveragePrice": 1529.64
+  },
+  {
+    "SubcategoryName": "Touring Bikes",
+    "AveragePrice": 1425.25
+  },
+  {
+    "SubcategoryName": "Road Frames",
+    "AveragePrice": 671.8
+  },
+  {
+    "SubcategoryName": "Mountain Frames",
+    "AveragePrice": 644.12
+  },
+  {
+    "SubcategoryName": "Touring Frames",
+    "AveragePrice": 631.42
+  },
+  {
+    "SubcategoryName": "Cranksets",
+    "AveragePrice": 278.99
+  },
+  {
+    "SubcategoryName": "Wheels",
+    "AveragePrice": 220.93
+  },
+  {
+    "SubcategoryName": "Forks",
+    "AveragePrice": 184.4
+  },
+  {
+    "SubcategoryName": "Bike Stands",
+    "AveragePrice": 159
+  },
+  {
+    "SubcategoryName": "Panniers",
+    "AveragePrice": 125
+  },
+  {
+    "SubcategoryName": "Bike Racks",
+    "AveragePrice": 120
+  },
+  {
+    "SubcategoryName": "Brakes",
+    "AveragePrice": 106.5
+  },
+  {
+    "SubcategoryName": "Derailleurs",
+    "AveragePrice": 106.47
+  },
+  {
+    "SubcategoryName": "Bottom Brackets",
+    "AveragePrice": 92.24
+  },
+  {
+    "SubcategoryName": "Bib-Shorts",
+    "AveragePrice": 89.99
+  },
+  {
+    "SubcategoryName": "Headsets",
+    "AveragePrice": 87.07
+  },
+  {
+    "SubcategoryName": "Tights",
+    "AveragePrice": 74.99
+  },
+  {
+    "SubcategoryName": "Handlebars",
+    "AveragePrice": 68.74
+  },
+  {
+    "SubcategoryName": "Shorts",
+    "AveragePrice": 64.28
+  },
+  {
+    "SubcategoryName": "Pedals",
+    "AveragePrice": 64.02
+  },
+  {
+    "SubcategoryName": "Vests",
+    "AveragePrice": 63.5
+  },
+  {
+    "SubcategoryName": "Hydration Packs",
+    "AveragePrice": 54.99
+  },
+  {
+    "SubcategoryName": "Jerseys",
+    "AveragePrice": 51.03
+  },
+  {
+    "SubcategoryName": "Saddles",
+    "AveragePrice": 39.63
+  },
+  {
+    "SubcategoryName": "Helmets",
+    "AveragePrice": 34.09
+  },
+  {
+    "SubcategoryName": "Lights",
+    "AveragePrice": 31.32
+  },
+  {
+    "SubcategoryName": "Gloves",
+    "AveragePrice": 30.77
+  },
+  {
+    "SubcategoryName": "Locks",
+    "AveragePrice": 25
+  },
+  {
+    "SubcategoryName": "Pumps",
+    "AveragePrice": 22.49
+  },
+  {
+    "SubcategoryName": "Fenders",
+    "AveragePrice": 21.98
+  },
+  {
+    "SubcategoryName": "Chains",
+    "AveragePrice": 20.24
+  },
+  {
+    "SubcategoryName": "Tires and Tubes",
+    "AveragePrice": 19.48
+  },
+  {
+    "SubcategoryName": "Socks",
+    "AveragePrice": 9.25
+  },
+  {
+    "SubcategoryName": "Caps",
+    "AveragePrice": 8.64
+  },
+  {
+    "SubcategoryName": "Bottles and Cages",
+    "AveragePrice": 7.99
+  },
+  {
+    "SubcategoryName": "Cleaners",
+    "AveragePrice": 7.95
+  }
+]

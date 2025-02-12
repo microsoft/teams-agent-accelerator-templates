@@ -1,0 +1,95 @@
+{
+    "type": "object",
+    "properties": {
+        "type": {
+            "const": "AdaptiveCard"
+        },
+        "id": {
+            "type": "string"
+        },
+        "requires": {
+            "default": {},
+            "$ref": "full-ac-schema#/definitions/HostCapabilities"
+        },
+        "lang": {
+            "type": "string"
+        },
+        "isVisible": {
+            "default": true,
+            "type": "boolean"
+        },
+        "selectAction": {
+            "$ref": "full-ac-schema#/definitions/9.selectAction"
+        },
+        "style": {
+            "$ref": "full-ac-schema#/definitions/10.style"
+        },
+        "layouts": {
+            "type": "array",
+            "items": {
+                "$ref": "full-ac-schema#/definitions/15.layouts"
+            }
+        },
+        "minHeight": {
+            "$ref": "full-ac-schema#/definitions/13.minItemWidth"
+        },
+        "backgroundImage": {
+            "$ref": "full-ac-schema#/definitions/17.backgroundImage"
+        },
+        "verticalContentAlignment": {
+            "$ref": "full-ac-schema#/definitions/11.verticalItemsAlignment"
+        },
+        "rtl": {
+            "type": "boolean"
+        },
+        "$schema": {
+            "type": "string"
+        },
+        "version": {
+            "default": "1.0",
+            "$ref": "full-ac-schema#/definitions/62.version"
+        },
+        "fallbackText": {
+            "x-contentType": "text",
+            "type": "string"
+        },
+        "speak": {
+            "x-contentType": "text",
+            "type": "string"
+        },
+        "refresh": {
+            "$ref": "full-ac-schema#/definitions/RefreshDefinition"
+        },
+        "authentication": {
+            "$ref": "full-ac-schema#/definitions/Authentication"
+        },
+        "msTeams": {
+            "$ref": "full-ac-schema#/definitions/TeamsCardProperties"
+        },
+        "metadata": {
+            "$ref": "full-ac-schema#/definitions/CardMetadata"
+        },
+        "grid.area": {
+            "type": "string"
+        },
+        "fallback": {
+            "$ref": "full-ac-schema#/definitions/53.FallbackElementArray"
+        },
+        "body": {
+            "type": "array",
+            "items": {
+                "$ref": "full-ac-schema#/definitions/54.CardElementArray"
+            }
+        },
+        "actions": {
+            "type": "array",
+            "items": {
+                "$ref": "full-ac-schema#/definitions/58.ActionArray"
+            }
+        }
+    },
+    "required": [
+        "type"
+    ],
+    "additionalProperties": true
+}

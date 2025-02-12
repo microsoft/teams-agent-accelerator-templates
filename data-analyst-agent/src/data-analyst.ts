@@ -5,8 +5,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { sqlExpert } from './prompts/sql-expert';
 import { adaptiveCardExpert } from './prompts/ac-expert';
-import { ActivityParams, Resource } from '@teams.sdk/api';
-import { responseExpert } from './prompts/response-expert';
+import { Card } from '@teams.sdk/cards';
 
 const chatSchema: ObjectSchema = {
     type: 'object',
@@ -19,16 +18,51 @@ const chatSchema: ObjectSchema = {
     required: ['text'],
 };
 
-export const DataAnalyst = ({send}: { send: (activity: ActivityParams | string) => Promise<Resource> }) => {
+// TODO: This is a temporary type to make it work. Otherwise it should be ObjectSchema.
+const responseSchema: Record<string, unknown> = {
+    type: 'object',
+    properties: {
+        content: {
+            type: 'array',
+            items: {
+                type: 'object',
+                properties: {
+                    text: {
+                        type: 'string',
+                        description: 'Text message to format for the user',
+                    },
+                    card: {
+                        type: 'object',
+                        description: 'Adaptive card to format',
+                        properties: {
+                            type: { type: 'string', enum: ['AdaptiveCard'] },
+                            version: { type: 'string', enum: ['1.5'] },
+                            body: { type: 'array', items: { type: 'object' } },
+                        },
+                        required: ['type', 'version', 'body'],
+                    },
+                },
+            },
+            description: 'Array of content to format',
+        },
+    },
+    required: ['content'],
+};
+
+export type DataAnalystResponse = {
+    text?: string;
+    card?: Card;
+}[];
+
+export const DataAnalyst = () => {
     const schemaPath = path.join(__dirname, '..', 'data', 'schema.sql');
     const dbSchema = fs.readFileSync(schemaPath, 'utf-8');
-    const log = new ConsoleLogger("data-analyst", { level: "debug" });
+    const log = new ConsoleLogger('data-analyst', { level: 'debug' });
 
-    const sql = sqlExpert({ log: log.child("sql-expert") });
-    const card = adaptiveCardExpert({ log: log.child("ac-expert") });
-    const response = responseExpert({ send, log: log.child("response-expert") });
+    const sql = sqlExpert({ log: log.child('sql-expert') });
+    const card = adaptiveCardExpert({ log: log.child('ac-expert') });
 
-    return new ChatPrompt({
+    const dataAnalyst = new ChatPrompt({
         instructions: [
             'You are an expert data analyst that helps users understand data from the AdventureWorks database.',
             'You work with three specialized experts to create clear, visual responses:',
@@ -44,7 +78,7 @@ export const DataAnalyst = ({send}: { send: (activity: ActivityParams | string) 
             '4. Package everything together and send to Response Expert for delivery',
             '',
             'Important guidelines:',
-            '- Focus on answering the user\'s question directly and simply',
+            "- Focus on answering the user's question directly and simply",
             '- Visualize data whenever possible using Adaptive Cards',
             '- Keep explanations brief and clear',
             '- Let the visualizations do most of the talking',
@@ -53,7 +87,7 @@ export const DataAnalyst = ({send}: { send: (activity: ActivityParams | string) 
             'Database Schema:',
             '```sql',
             dbSchema,
-            '```'
+            '```',
         ].join('\n'),
         role: 'system',
         model: new OpenAIChatModel({
@@ -61,30 +95,42 @@ export const DataAnalyst = ({send}: { send: (activity: ActivityParams | string) 
             apiKey: process.env.OPENAI_API_KEY,
             stream: false,
             logger: log,
+            requestOptions: {
+                response_format: {
+                    type: 'json_schema',
+                    json_schema: {
+                        name: 'response',
+                        schema: responseSchema,
+                    },
+                },
+            },
         }),
     })
-    .function(
-        'sql-expert',
-        'Ask the SQL expert to help you query and analyze the database',
-        chatSchema,
-        async ({ text }: { text: string }) => {
-            return sql.chat(text);
-        }
-    )
-    .function(
-        'ac-expert',
-        'Ask the adaptive card expert to create visualizations of data.',
-        chatSchema,
-        async ({ text }: { text: string }) => {
-            return card.chat(text);
-        }
-    )
-    .function(
-        'response-expert',
-        'Ask the response expert to format and send responses to the user. This should include text and visualizations.',
-        chatSchema,
-        async ({ text }: { text: string }) => {
-            return response.chat(text);
-        }
-    );
-}
+        .function(
+            'sql-expert',
+            'Ask the SQL expert to help you query and analyze the database',
+            chatSchema,
+            async ({ text }: { text: string }) => {
+                return sql.chat(text);
+            },
+        )
+        .function(
+            'ac-expert',
+            'Ask the adaptive card expert to create visualizations of data.',
+            chatSchema,
+            async ({ text }: { text: string }) => {
+                return card.chat(text);
+            },
+        );
+
+    return {
+        chat: async (text: string) => {
+            log.info(`User Message: ${text}`);
+            const response = await dataAnalyst.chat(text);
+            log.info(`Data Analyst Response: ${JSON.stringify(response, null, 2)}`);
+            const content: DataAnalystResponse = JSON.parse(response).content;
+
+            return content;
+        },
+    };
+};

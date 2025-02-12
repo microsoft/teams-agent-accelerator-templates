@@ -9,7 +9,18 @@ interface ExecuteSQLQuery {
     query: string;
 }
 
-export const sqlExpert = ({ log }: { log: ConsoleLogger }) => {
+interface sqlExpertOptions {
+    log: ConsoleLogger;
+    responseFormat?: {
+        type: 'json_schema';
+        json_schema: {
+            name: 'response';
+            schema: Record<string, unknown>;
+        };
+    };
+}
+
+export const sqlExpert = ({ log, responseFormat }: sqlExpertOptions) => {
     // Load schema from file
     const schemaPath = path.join(__dirname, '..', '..', 'data', 'schema.sql');
     const dbSchema = fs.readFileSync(schemaPath, 'utf-8');
@@ -28,80 +39,89 @@ export const sqlExpert = ({ log }: { log: ConsoleLogger }) => {
             'Database Schema:',
             '```sql',
             dbSchema,
-            '```'
+            '```',
         ].join('\n'),
         role: 'system',
         model: new OpenAIChatModel({
             model: 'gpt-4o-mini',
             apiKey: process.env.OPENAI_API_KEY,
             stream: false,
-            logger: log
+            logger: log,
+            requestOptions: responseFormat
+                ? {
+                      response_format: responseFormat,
+                  }
+                : undefined,
         }),
     });
 
-    chatPrompt.function('execute_sql', 'Execute a SQL query and return results', {
-        type: 'object',
-        properties: {
-            query: {
-                type: 'string',
-                description: 'The SQL query to execute (must be SELECT only)'
-            }
+    chatPrompt.function(
+        'execute_sql',
+        'Execute a SQL query and return results',
+        {
+            type: 'object',
+            properties: {
+                query: {
+                    type: 'string',
+                    description: 'The SQL query to execute (must be SELECT only)',
+                },
+            },
+            required: ['query'],
         },
-        required: ['query']
-    }, async (params: ExecuteSQLQuery) => {
-        // Query validation
-        if (!params.query.trim().toLowerCase().startsWith('select')) {
-            return 'Error: Only SELECT queries are allowed';
-        }
+        async (params: ExecuteSQLQuery) => {
+            // Query validation
+            if (!params.query.trim().toLowerCase().startsWith('select')) {
+                return 'Error: Only SELECT queries are allowed';
+            }
 
-        // Dangerous keywords check
-        const dangerousKeywords = ['insert', 'update', 'delete', 'drop', 'alter', 'create'];
-        if (dangerousKeywords.some(keyword => params.query.toLowerCase().includes(keyword))) {
-            return 'Error: Query contains forbidden operations';
-        }
+            // Dangerous keywords check
+            const dangerousKeywords = ['insert', 'update', 'delete', 'drop', 'alter', 'create'];
+            if (dangerousKeywords.some(keyword => params.query.toLowerCase().includes(keyword))) {
+                return 'Error: Query contains forbidden operations';
+            }
 
-        let db: sqlite3.Database | null = null;
-        try {
-            // Initialize SQLite connection
-            db = initializeDatabase();
-            
-            const result = await new Promise<string>((resolve) => 
-            {
-                db!.serialize(() => {
-                    db!.all(params.query, [], (err, rows) => {
-                        if (err) {
-                            resolve(`Error executing query: ${err.message}`);
-                            return;
-                        }
+            let db: sqlite3.Database | null = null;
+            try {
+                // Initialize SQLite connection
+                db = initializeDatabase();
 
-                        resolve(JSON.stringify(rows));
+                const result = await new Promise<string>(resolve => {
+                    db!.serialize(() => {
+                        db!.all(params.query, [], (err, rows) => {
+                            if (err) {
+                                resolve(`Error executing query: ${err.message}`);
+                                return;
+                            }
+
+                            resolve(JSON.stringify(rows));
+                        });
                     });
                 });
-            });
-            db.close();
-            
-            return result;
-        } catch (error) {
-            if (db) {
                 db.close();
+
+                return result;
+            } catch (error) {
+                if (db) {
+                    db.close();
+                }
+                return `Error executing query: ${error instanceof Error ? error.message : 'Unknown error'}`;
             }
-            return `Error executing query: ${error instanceof Error ? error.message : 'Unknown error'}`;
-        }
-    });
+        },
+    );
 
     function initializeDatabase() {
         try {
             const dbPath = path.join(__dirname, '..', '..', 'data', 'adventureworks.db');
             // Enable verbose mode for debugging
             const sqlite = sqlite3.verbose();
-            
+
             // Open database in read-only mode
-            const db = new sqlite.Database(dbPath, sqlite3.OPEN_READONLY, (err) => {
+            const db = new sqlite.Database(dbPath, sqlite3.OPEN_READONLY, err => {
                 if (err) {
                     console.error('Failed to open database:', err);
                     return;
                 }
-                
+
                 // Enable foreign keys after connection
                 db.run('PRAGMA foreign_keys = ON');
             });
@@ -113,4 +133,4 @@ export const sqlExpert = ({ log }: { log: ConsoleLogger }) => {
     }
 
     return chatPrompt;
-}
+};
