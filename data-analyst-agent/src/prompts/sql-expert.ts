@@ -9,7 +9,7 @@ interface ExecuteSQLQuery {
     query: string;
 }
 
-interface sqlExpertOptions {
+interface SQLExpertOptions {
     log: ConsoleLogger;
     responseFormat?: {
         type: 'json_schema';
@@ -20,7 +20,7 @@ interface sqlExpertOptions {
     };
 }
 
-export const sqlExpert = ({ log, responseFormat }: sqlExpertOptions) => {
+export const SQLExpert = ({ log, responseFormat }: SQLExpertOptions) => {
     // Load schema from file
     const schemaPath = path.join(__dirname, '..', '..', 'data', 'schema.sql');
     const dbSchema = fs.readFileSync(schemaPath, 'utf-8');

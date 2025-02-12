@@ -3,8 +3,8 @@ import { OpenAIChatModel } from '@teams.sdk/openai';
 import { ConsoleLogger } from '@teams.sdk/common';
 import * as fs from 'fs';
 import * as path from 'path';
-import { sqlExpert } from './prompts/sql-expert';
-import { adaptiveCardExpert } from './prompts/ac-expert';
+import { SQLExpert } from './prompts/sql-expert';
+import { AdaptiveCardExpert } from './prompts/ac-expert';
 import { Card } from '@teams.sdk/cards';
 
 const chatSchema: ObjectSchema = {
@@ -59,8 +59,8 @@ export const DataAnalyst = () => {
     const dbSchema = fs.readFileSync(schemaPath, 'utf-8');
     const log = new ConsoleLogger('data-analyst', { level: 'debug' });
 
-    const sql = sqlExpert({ log: log.child('sql-expert') });
-    const card = adaptiveCardExpert({ log: log.child('ac-expert') });
+    const sql = SQLExpert({ log: log.child('sql-expert') });
+    const card = AdaptiveCardExpert({ log: log.child('ac-expert') });
 
     const dataAnalyst = new ChatPrompt({
         instructions: [

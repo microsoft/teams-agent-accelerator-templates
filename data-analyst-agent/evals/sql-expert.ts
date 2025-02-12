@@ -1,5 +1,5 @@
 import { ConsoleLogger } from '@teams.sdk/common';
-import { sqlExpert } from '../src/prompts/sql-expert';
+import { SQLExpert } from '../src/prompts/sql-expert';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -40,7 +40,7 @@ async function evaluateSqlExpert() {
     
     try {
       // Get response from SQL expert
-      const expert = sqlExpert({ log: log.child('sql-expert'), responseFormat: {
+      const expert = SQLExpert({ log: log.child('sql-expert'), responseFormat: {
         type: 'json_schema',
         json_schema: {
           name: 'response',

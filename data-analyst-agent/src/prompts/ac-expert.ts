@@ -23,7 +23,11 @@ const responseSchema = {
     required: ['card'],
 };
 
-export const adaptiveCardExpert = ({ log }: { log: ConsoleLogger }) => {
+export type AdaptiveCardExpertOptions = {
+    log: ConsoleLogger;
+};
+
+export const AdaptiveCardExpert = ({ log }: AdaptiveCardExpertOptions) => {
     const fullAcSchema = fs.readFileSync(path.join(__dirname, '..', 'schemas', 'full-ac-schema.json'), 'utf-8');
     const acSchema = fs.readFileSync(path.join(__dirname, '..', 'schemas', 'ac-schema.json'), 'utf-8');
     const ajv = new Ajv({ strictSchema: false });
