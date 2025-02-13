@@ -1,28 +1,32 @@
 import { ConsoleLogger } from '@teams.sdk/common';
 import { SQLExpert } from '../src/prompts/sql-expert';
+import { SQLJudge } from './judge/sql';
 import * as fs from 'fs';
 import * as path from 'path';
 
 interface EvalCase {
   task: string;
   user_query: string;
-  sql_query: string;
-  result: unknown[];
+  sql_query: string;  // The expert/ideal SQL query
 }
 
 interface EvalResult {
   task: string;
   user_query: string;
-  sql_query: string;
-  expected_result: unknown[];
-  actual_sql_query?: string;
-  actual_result: unknown[] | null;
+  expected_sql: string;
+  actual_sql?: string;
   success: boolean;
+  judge_result: {
+    choice: 'Correct' | 'Incorrect';
+    score: number;
+    reason?: string;
+  };
   error?: string;
 }
 
 async function evaluateSqlExpert() {
-  const log = new ConsoleLogger('sql-expert-eval', { level: 'debug' });
+  const log = new ConsoleLogger('sql-expert-eval', { level: 'info' });
+  const judge = SQLJudge();
 
   // Load test cases
   const evalFilePath = path.join(__dirname, 'sql-eval.jsonl');
@@ -47,48 +51,53 @@ async function evaluateSqlExpert() {
           schema: {
             type: 'object',
             properties: {
-              result: {
-                type: 'array',
-                items: {
-                  type: 'object',
-                  additionalProperties: true
-                }
-              },
               query: {
                 type: 'string',
-                description: 'The SQL query that was executed',
+                description: 'The SQL query to execute',
               }
             },
-            required: ['result', 'query']
+            required: ['query']
           }
         },
       } });
-      const response = await expert.chat(`${testCase.user_query}`);
-      
-      // Parse the response directly as an array
-      let parsedResponse = JSON.parse(response);
+      const response = await expert.chat(
+        `Here's the user query: ${testCase.user_query}. 
+        Can you simply generate the SQL query to answer the question? Please don't execute it. 
+        Just return the SQL query.`
+      );
+      const parsedResponse = JSON.parse(response);
 
-      // Compare results
-      const success = compareResults(testCase.result, parsedResponse.result);
+      // Get judgment from SQL judge
+      const judgeResult = await judge.evaluate({
+        input: testCase.user_query,
+        ideal: testCase.sql_query,
+        completion: parsedResponse.query
+      });
 
       results.push({
         task: testCase.task,
         user_query: testCase.user_query,
-        sql_query: testCase.sql_query,
-        expected_result: testCase.result,
-        actual_result: parsedResponse.result,
-        actual_sql_query: parsedResponse.query,
-        success
+        expected_sql: testCase.sql_query,
+        actual_sql: parsedResponse.query,
+        success: judgeResult.choice === 'Correct',
+        judge_result: {
+          choice: judgeResult.choice,
+          score: judgeResult.score,
+          reason: judgeResult.reason
+        }
       });
 
     } catch (error) {
       results.push({
         task: testCase.task,
         user_query: testCase.user_query,
-        sql_query: testCase.sql_query,
-        expected_result: testCase.result,
-        actual_result: null,
+        expected_sql: testCase.sql_query,
         success: false,
+        judge_result: {
+          choice: 'Incorrect',
+          score: 0,
+          reason: error instanceof Error ? error.message : 'Unknown error'
+        },
         error: error instanceof Error ? error.message : 'Unknown error',
       });
     }
@@ -96,14 +105,6 @@ async function evaluateSqlExpert() {
 
   // Output results
   outputResults(results);
-}
-
-function compareResults(expected: unknown[], actual: unknown[] | null): boolean {
-  if (!actual) return false;
-  
-  // Simple equality check for now
-  // Could be enhanced with more sophisticated comparison logic
-  return JSON.stringify(expected) === JSON.stringify(actual);
 }
 
 function outputResults(results: EvalResult[]) {
@@ -122,17 +123,15 @@ function outputResults(results: EvalResult[]) {
     console.log(`\n--- Test Case ${index + 1}: ${result.task} ---`);
     console.log(`Success: ${result.success ? '✅' : '❌'}`);
     console.log(`User Query: ${result.user_query}`);
-    console.log(`Expected SQL: ${result.sql_query}`);
-    console.log(`Actual SQL: ${result.actual_sql_query || 'N/A'}`);
+    console.log(`Expected SQL: ${result.expected_sql}`);
+    console.log(`Actual SQL: ${result.actual_sql || 'N/A'}`);
+    console.log(`Judge Result: ${result.judge_result.choice} (Score: ${result.judge_result.score})`);
+    if (result.judge_result.reason) {
+      console.log(`Judge Reasoning: ${result.judge_result.reason}`);
+    }
     
-    if (!result.success) {
-      if (result.error) {
-        console.log('\nError:', result.error);
-      } else {
-        console.log('\nResults Comparison:');
-        console.log('Expected:', JSON.stringify(result.expected_result, null, 2));
-        console.log('Actual:', JSON.stringify(result.actual_result, null, 2));
-      }
+    if (!result.success && result.error) {
+      console.log('\nError:', result.error);
     }
   });
 }

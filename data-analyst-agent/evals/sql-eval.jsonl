@@ -24,8 +24,8 @@
     },
     {
         "task": "Average Product Price by Subcategory",
-        "user_query": "What is the average price of products in each subcategory? Sort your answers by descending price and round to 2 decimal places.",
-        "sql_query": "SELECT SubcategoryName, ROUND(AVG(ProductPrice), 2) as AveragePrice FROM ProductSubcategory ps JOIN Product p ON ps.ProductSubcategoryKey = p.ProductSubcategoryKey GROUP BY SubcategoryName ORDER BY AveragePrice DESC;",
+        "user_query": "What is the average price of products in each subcategory?",
+        "sql_query": "SELECT SubcategoryName, AVG(ProductPrice) as AveragePrice FROM ProductSubcategory ps JOIN Product p ON ps.ProductSubcategoryKey = p.ProductSubcategoryKey GROUP BY SubcategoryName ORDER BY AveragePrice DESC;",
         "result": [
             {
                 "SubcategoryName": "Mountain Bikes",
@@ -180,7 +180,7 @@
     {
         "task": "Customer Count by Country",
         "user_query": "How many customers are there in each country?",
-        "sql_query": "SELECT t.Country, COUNT(DISTINCT s.CustomerKey) as CustomerCount FROM Territory t JOIN Sales s ON t.TerritoryKey = s.TerritoryKey GROUP BY t.Country ORDER BY CustomerCount DESC;",
+        "sql_query": "SELECT t.Country, COUNT(s.CustomerKey) as CustomerCount FROM Territory t JOIN Sales s ON t.TerritoryKey = s.TerritoryKey GROUP BY t.Country ORDER BY CustomerCount DESC;",
         "result": [
             {
                 "Country": "United States",
@@ -284,7 +284,7 @@
     },
     {
         "task": "Monthly Sales Count for 2021",
-        "user_query": "How many sales were there each month in 2021?",
+        "user_query": "How many sale transactions were there each month in 2021? ",
         "sql_query": "SELECT strftime('%Y-%m', OrderDate) as Month, COUNT(*) as SalesCount FROM Sales WHERE OrderDate LIKE '2021%' GROUP BY Month ORDER BY Month;",
         "result": [
             {
@@ -340,54 +340,54 @@
     {
         "task": "Products with Most Returns",
         "user_query": "Which products get returned the most?",
-        "sql_query": "SELECT p.ProductName, COUNT(*) as ReturnCount FROM Returns r JOIN Product p ON r.ProductKey = p.ProductKey GROUP BY p.ProductName ORDER BY ReturnCount DESC LIMIT 10;",
+        "sql_query": "SELECT p.ProductName, SUM(r.ReturnQuantity) AS TotalReturned FROM Returns r JOIN Product p ON r.ProductKey = p.ProductKey GROUP BY p.ProductName ORDER BY TotalReturned DESC LIMIT 10;",
         "result": [
             {
                 "ProductName": "Water Bottle - 30 oz.",
-                "ReturnCount": 149
+                "TotalReturned": 155
             },
             {
                 "ProductName": "Patch Kit/8 Patches",
-                "ReturnCount": 92
+                "TotalReturned": 95
             },
             {
                 "ProductName": "Mountain Tire Tube",
-                "ReturnCount": 91
+                "TotalReturned": 93
             },
             {
                 "ProductName": "Mountain Bottle Cage",
-                "ReturnCount": 74
+                "TotalReturned": 77
             },
             {
                 "ProductName": "Sport-100 Helmet, Red",
-                "ReturnCount": 70
+                "TotalReturned": 70
             },
             {
                 "ProductName": "Road Tire Tube",
-                "ReturnCount": 67
+                "TotalReturned": 67
             },
             {
                 "ProductName": "Sport-100 Helmet, Blue",
-                "ReturnCount": 66
+                "TotalReturned": 66
             },
             {
                 "ProductName": "Road Bottle Cage",
-                "ReturnCount": 55
+                "TotalReturned": 56
             },
             {
                 "ProductName": "Fender Set - Mountain",
-                "ReturnCount": 54
+                "TotalReturned": 54
             },
             {
                 "ProductName": "Sport-100 Helmet, Black",
-                "ReturnCount": 52
+                "TotalReturned": 52
             }
         ]
     },
     {
-        "task": "Orders by Territory",
-        "user_query": "How many orders are there in each territory?",
-        "sql_query": "SELECT t.Region, COUNT(*) as OrderCount FROM Sales s JOIN Territory t ON s.TerritoryKey = t.TerritoryKey GROUP BY t.Region ORDER BY OrderCount DESC;",
+        "task": "Orders by Region",
+        "user_query": "How many orders are there in each region?",
+        "sql_query": "SELECT t.Region, COUNT(s.OrderNumber) as TotalOrders FROM Sales s JOIN Territory t ON s.TerritoryKey = t.TerritoryKey GROUP BY t.Region ORDER BY TotalOrders DESC;",
         "result": [
             {
                 "Region": "Australia",
@@ -433,7 +433,7 @@
     },
     {
         "task": "Customer Count by Income Range",
-        "user_query": "How many customers are in each income range?",
+        "user_query": "How many customers are in each income range? Here are the income ranges: $30k-$50k, $50k-$70k, Over $70k, Under $30k",
         "sql_query": "SELECT CASE WHEN AnnualIncome < 30000 THEN 'Under $30k' WHEN AnnualIncome < 50000 THEN '$30k-$50k' WHEN AnnualIncome < 70000 THEN '$50k-$70k' ELSE 'Over $70k' END as IncomeRange, COUNT(*) as CustomerCount FROM Customer GROUP BY IncomeRange ORDER BY IncomeRange;",
         "result": [
             {
