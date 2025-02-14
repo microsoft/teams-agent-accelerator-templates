@@ -69,6 +69,8 @@ export const SQLExpert = ({ log, responseFormat }: SQLExpertOptions) => {
             required: ['query'],
         },
         async (params: ExecuteSQLQuery) => {
+            log.info(`Attempting to execute SQL query: ${params.query}`);
+
             // Query validation
             if (!params.query.trim().toLowerCase().startsWith('select')) {
                 return 'Error: Only SELECT queries are allowed';
@@ -92,8 +94,9 @@ export const SQLExpert = ({ log, responseFormat }: SQLExpertOptions) => {
                                 resolve(`Error executing query: ${err.message}`);
                                 return;
                             }
-
-                            resolve(JSON.stringify(rows));
+                            const result = JSON.stringify(rows);
+                            log.info(`SQL Query Result: ${result}`);
+                            resolve(result);
                         });
                     });
                 });

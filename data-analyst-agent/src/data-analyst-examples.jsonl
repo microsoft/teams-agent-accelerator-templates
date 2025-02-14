@@ -1,0 +1,179 @@
+[
+    {
+        "user_message": "Create a pie chart showing the count of sub categories in each product category.",
+        "data_analyst_response": {
+            "content": [
+                {
+                    "text": "Here is a pie chart illustrating the distribution of subcategories in each product category, showcasing how they are divided among the main categories: Accessories, Bikes, Clothing, and Components.",
+                    "card": {
+                        "type": "AdaptiveCard",
+                        "version": "1.5",
+                        "body": [
+                            {
+                                "type": "TextBlock",
+                                "text": "Subcategory Distribution in Product Categories",
+                                "size": "Large",
+                                "weight": "Bolder",
+                                "horizontalAlignment": "Center"
+                            },
+                            {
+                                "type": "Chart.Pie",
+                                "data": [
+                                    {
+                                        "legend": "Accessories",
+                                        "value": 12,
+                                        "color": "#FF0000"
+                                    },
+                                    {
+                                        "legend": "Bikes",
+                                        "value": 3,
+                                        "color": "#00FF00"
+                                    },
+                                    {
+                                        "legend": "Clothing",
+                                        "value": 8,
+                                        "color": "#0000FF"
+                                    },
+                                    {
+                                        "legend": "Components",
+                                        "value": 14,
+                                        "color": "#FFFF00"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    {
+        "user_message": "Can you list the sub categories in the Bikes category?",
+        "data_analyst_response": {
+            "content": [
+                {
+                    "text": "Here are the subcategories under the \"Bikes\" category:",
+                    "card": {
+                        "type": "AdaptiveCard",
+                        "version": "1.5",
+                        "body": [
+                            {
+                                "type": "TextBlock",
+                                "text": "Bike Subcategories",
+                                "size": "Large",
+                                "weight": "Bolder",
+                                "horizontalAlignment": "Center"
+                            },
+                            {
+                                "type": "FactSet",
+                                "facts": [
+                                    {
+                                        "title": "1. Mountain Bikes",
+                                        "value": ""
+                                    },
+                                    {
+                                        "title": "2. Road Bikes",
+                                        "value": ""
+                                    },
+                                    {
+                                        "title": "3. Touring Bikes",
+                                        "value": ""
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    {
+        "user_message": "What were the annual sales from 2020-2022?",
+        "data_analyst_response": {
+            "content": [
+                {
+                    "text": "Here is a bar graph showing the annual sales for the years 2020, 2021, and 2022, highlighting the sales performance each year.",
+                    "card": {
+                        "type": "AdaptiveCard",
+                        "version": "1.5",
+                        "body": [
+                            {
+                                "type": "TextBlock",
+                                "text": "Annual Sales from 2020 to 2022",
+                                "size": "Large",
+                                "weight": "Bolder",
+                                "horizontalAlignment": "Center"
+                            },
+                            {
+                                "type": "Chart.VerticalBar",
+                                "title": "Annual Sales from 2020 to 2022",
+                                "xAxisTitle": "Year",
+                                "yAxisTitle": "Sales Amount",
+                                "data": [
+                                    {
+                                        "x": "2020",
+                                        "y": 6404933.5803,
+                                        "color": "#FF0000"
+                                    },
+                                    {
+                                        "x": "2021",
+                                        "y": 9324203.7917,
+                                        "color": "#00FF00"
+                                    },
+                                    {
+                                        "x": "2022",
+                                        "y": 9185449.4473,
+                                        "color": "#0000FF"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    {
+        "user_message": "What are the different product categories?",
+        "data_analyst_response": {
+            "content": [
+                {
+                    "text": "Here are the different product categories available in the AdventureWorks database: Bikes, Components, Clothing, and Accessories.",
+                    "card": {
+                        "type": "AdaptiveCard",
+                        "version": "1.5",
+                        "body": [
+                            {
+                                "type": "TextBlock",
+                                "text": "Product Categories",
+                                "weight": "Bolder",
+                                "size": "Medium"
+                            },
+                            {
+                                "type": "FactSet",
+                                "facts": [
+                                    {
+                                        "title": "1.",
+                                        "value": "Bikes"
+                                    },
+                                    {
+                                        "title": "2.",
+                                        "value": "Components"
+                                    },
+                                    {
+                                        "title": "3.",
+                                        "value": "Clothing"
+                                    },
+                                    {
+                                        "title": "4.",
+                                        "value": "Accessories"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    }
+]

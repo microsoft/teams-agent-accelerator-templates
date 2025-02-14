@@ -1,27 +1,10 @@
 import { ChatPrompt } from '@teams.sdk/ai';
 import { OpenAIChatModel } from '@teams.sdk/openai';
 import { ConsoleLogger } from '@teams.sdk/common';
+import { responseSchema } from './ac-expert-schema';
 import * as fs from 'fs';
 import * as path from 'path';
 import Ajv from 'ajv';
-
-// Schema for the response format
-const responseSchema = {
-    type: 'object',
-    properties: {
-        card: {
-            type: 'object',
-            description: 'The Adaptive Card JSON to create',
-            properties: {
-                type: { type: 'string', enum: ['AdaptiveCard'] },
-                version: { type: 'string', enum: ['1.6'] },
-                body: { type: 'array', items: { type: 'object' } },
-            },
-            required: ['type', 'version', 'body'],
-        },
-    },
-    required: ['card'],
-};
 
 export type AdaptiveCardExpertOptions = {
     log: ConsoleLogger;
@@ -29,14 +12,17 @@ export type AdaptiveCardExpertOptions = {
 
 export const AdaptiveCardExpert = ({ log }: AdaptiveCardExpertOptions) => {
     const fullAcSchema = fs.readFileSync(path.join(__dirname, '..', 'schemas', 'full-ac-schema.json'), 'utf-8');
-    const acSchema = fs.readFileSync(path.join(__dirname, '..', 'schemas', 'ac-schema.json'), 'utf-8');
+    // const acSchema = fs.readFileSync(path.join(__dirname, '..', 'schemas', 'ac-schema.json'), 'utf-8');
     const ajv = new Ajv({ strictSchema: false });
     ajv.addSchema(JSON.parse(fullAcSchema), 'full-ac-schema');
-    const validateAdaptiveCard = ajv.compile(JSON.parse(acSchema));
+    // const validateAdaptiveCard = ajv.compile(JSON.parse(acSchema));
+
+    const examplesPath = path.join(__dirname, 'ac-expert-examples.json');
+    const examples = JSON.parse(fs.readFileSync(examplesPath, 'utf-8'));
 
     const chatPrompt = new ChatPrompt({
         instructions: [
-            'You are an expert at creating Adaptive Cards for data visualization.',
+           'You are an expert at creating Adaptive Cards for data visualization.',
             'Your job is to analyze the data structure and create the most appropriate Adaptive Card representation.',
             '',
             'Guidelines:',
@@ -45,13 +31,42 @@ export const AdaptiveCardExpert = ({ log }: AdaptiveCardExpertOptions) => {
             '- For tabular data, use Table components',
             '- For key-value pairs, use FactSet',
             '- For lists, use Container with TextBlocks',
+            '- For charts, use the following types:',
+            '  * Horizontal bar chart -> type: Chart.HorizontalBar',
+            '  * Vertical bar chart -> type: Chart.VerticalBar', 
+            '  * Pie chart -> type: Chart.Pie',
+            '  * Line chart -> type: Chart.Line',
+            '',
+            'Color Guidelines:',
+            '- For categorical charts (horizontal bar, vertical bar, pie), use these colors:',
+            '  * CATEGORICALRED, CATEGORICALPURPLE, CATEGORICALLAVENDER',
+            '  * CATEGORICALBLUE, CATEGORICALLIGHTBLUE, CATEGORICALTEAL',
+            '  * CATEGORICALGREEN, CATEGORICALLIME, CATEGORICALMARIGOLD',
+            '',
+            '- For line charts and trend data, use sequential colors:',
+            '  * SEQUENTIAL1 through SEQUENTIAL8',
+            '',
+            '- For showing contrasting or opposing data, use diverging colors:',
+            '  * DIVERGINGBLUE, DIVERGINGLIGHTBLUE, DIVERGINGCYAN',
+            '  * DIVERGINGTEAL, DIVERGINGYELLOW, DIVERGINGPEACH',
+            '  * DIVERGINGLIGHTRED, DIVERGINGRED, DIVERGINGMAROON',
+            '  * DIVERGINGGRAY',
+            '',
             '- Ensure proper formatting and readability',
             '- Support data of any size efficiently',
             '- After creating the Adaptive Card, respond with the card in JSON format',
-            'Adaptive Card Schema:',
-            '```json',
-            fullAcSchema,
-            '```',
+            // 'Adaptive Card Schema:',
+            // '```json',
+            // fullAcSchema,
+            // '```',
+            'Examples:',
+            ...examples.map((example: any) => [
+                '---',
+                `User: ${example.user_message}`,
+                `Response: ${JSON.stringify(example.adaptive_card_expert_response, null, 2)}`,
+            ].join('\n')),
+            '',
+            'Always return a complete, valid Adaptive Card JSON object.',
         ].join('\n'),
         role: 'system',
         model: new OpenAIChatModel({
@@ -63,7 +78,7 @@ export const AdaptiveCardExpert = ({ log }: AdaptiveCardExpertOptions) => {
                 response_format: {
                     type: 'json_schema',
                     json_schema: {
-                        name: 'adaptive_card',
+                        name: 'response',
                         schema: responseSchema,
                     },
                 },
@@ -73,31 +88,10 @@ export const AdaptiveCardExpert = ({ log }: AdaptiveCardExpertOptions) => {
 
     return {
         chat: async (text: string) => {
-            try {
-                const max_loop = 3;
-                let loop_count = 0;
-
-                let message = text;
-                while (loop_count < max_loop) {
-                    log.debug(`AC Expert Loop ${loop_count + 1} of ${max_loop}`);
-                    // Get response from the model
-                    const response = await chatPrompt.chat(message);
-                    const { card } = JSON.parse(response);
-
-                    // Validate the card against the schema using ajv
-                    const valid = validateAdaptiveCard(card);
-                    if (!valid) {
-                        message = `The Adaptive Card is invalid. Please fix the errors and return the updated card in JSON format. Error: ${JSON.stringify(validateAdaptiveCard.errors)}`;
-                        log.debug(`Invalid card. Error message: ${message}`);
-                        loop_count++;
-                        continue;
-                    }
-
-                    return `Here's the adaptive card: ${response}`;
-                }
-            } catch (error) {
-                throw Error(`Something went wrong while creating/validating the Adaptive Card. Error: ${error}`);
-            }
+            log.info(`User Message: ${text}`);
+            const response = await chatPrompt.chat(text);
+            log.info(`AC Expert Response: ${response}`);
+            return response;
         },
     };
 };

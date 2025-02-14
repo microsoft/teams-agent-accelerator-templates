@@ -16,8 +16,8 @@
         "termsOfUseUrl": "https://www.microsoft.com/legal/terms-of-use"
     },
     "description": {
-        "short": "Agent that queries your data and answers questions",
-        "full": "Agent that queries your data and answers questions"
+        "short": "Expert data analyst for AdventureWorks database",
+        "full": "Expert data analyst for AdventureWorks database"
     },
     "icons": {
         "outline": "outline.png",
