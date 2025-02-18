@@ -1,5 +1,7 @@
+import { JsonSchema } from "../core/base-agent";
+
 // Schema for the response format
-export const responseSchema = {
+export const responseSchema: JsonSchema = {
     type: 'object',
     properties: {
         card: {

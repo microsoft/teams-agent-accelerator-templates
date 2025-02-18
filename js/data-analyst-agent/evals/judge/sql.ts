@@ -1,6 +1,5 @@
-import { ChatPrompt } from '@teams.sdk/ai';
-import { OpenAIChatModel } from '@teams.sdk/openai';
-import { ConsoleLogger } from '@teams.sdk/common';
+import { BaseAgent } from '../../src/core/base-agent';
+import { createLogger } from '../../src/core/logging';
 
 interface SQLJudgeInput {
     input: string;    // The question
@@ -15,10 +14,11 @@ interface SQLJudgeResult {
 }
 
 export const SQLJudge = () => {
-    const log = new ConsoleLogger('sql-judge', { level: 'debug' });
+    const log = createLogger('sql-judge');
 
-    const judge = new ChatPrompt({
-        instructions: [
+    const agent = new BaseAgent({
+        model: 'gpt-4o-mini',
+        systemMessage: [
             'You are comparing a submitted answer to an expert answer on a given SQL coding question.',
             'Compare the content and correctness of the submitted SQL with the expert answer.',
             'Ignore any differences in whitespace, style, or output column names.',
@@ -34,36 +34,22 @@ export const SQLJudge = () => {
             '- "Correct": The submitted SQL and expert answer are semantically the same (yield same results)',
             '- "Incorrect": The submitted SQL and expert answer are semantically different or will error',
         ].join('\n'),
-        role: 'system',
-        model: new OpenAIChatModel({
-            model: 'gpt-4o-mini',
-            apiKey: process.env.OPENAI_API_KEY,
-            stream: false,
-            logger: log,
-            requestOptions: {
-                response_format: {
-                    type: 'json_schema',
-                    json_schema: {
-                        name: 'response',
-                        schema: {
-                            type: 'object',
-                            properties: {
-                                choice: {
-                                    type: 'string',
-                                    enum: ['Correct', 'Incorrect'],
-                                    description: 'The judgment of the SQL comparison',
-                                },
-                                reason: {
-                                    type: 'string',
-                                    description: 'Explanation of why the submission was judged correct or incorrect',
-                                },
-                            },
-                            required: ['choice', 'reason'],
-                        },
-                    },
+        responseSchema: {
+            type: 'object',
+            properties: {
+                choice: {
+                    type: 'string',
+                    enum: ['Correct', 'Incorrect'],
+                    description: 'The judgment of the SQL comparison',
+                },
+                reason: {
+                    type: 'string',
+                    description: 'Explanation of why the submission was judged correct or incorrect',
                 },
             },
-        }),
+            required: ['choice', 'reason'],
+        },
+        logger: log
     });
 
     return {
@@ -80,8 +66,7 @@ export const SQLJudge = () => {
                 '[END DATA]',
             ].join('\n');
 
-            const response = await judge.chat(prompt);
-            const result = JSON.parse(response);
+            const result = await agent.chat(prompt);
             
             return {
                 choice: result.choice,

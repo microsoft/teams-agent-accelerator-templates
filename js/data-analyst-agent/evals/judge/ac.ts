@@ -1,6 +1,5 @@
-import { ChatPrompt } from '@teams.sdk/ai';
-import { OpenAIChatModel } from '@teams.sdk/openai';
-import { ConsoleLogger } from '@teams.sdk/common';
+import { BaseAgent } from '../../src/core/base-agent';
+import { createLogger } from '../../src/core/logging';
 
 interface ACJudgeInput {
     input: string;    // The data to visualize
@@ -15,62 +14,51 @@ interface ACJudgeResult {
 }
 
 export const ACJudge = () => {
-    const log = new ConsoleLogger('ac-judge', { level: 'debug' });
+    const log = createLogger('ac-judge');
 
-    const judge = new ChatPrompt({
-        instructions: [
+    const agent = new BaseAgent({
+        model: 'gpt-4o-mini',
+        systemMessage: [
             'You are comparing a submitted Adaptive Card to an expert answer for data visualization.',
             'Compare the content and correctness of the submitted card with the expert answer.',
-            'Focus on these aspects:',
-            '1. Correct visualization type for the data',
-            '2. Proper structure and required properties',
-            '3. Appropriate data mapping and formatting',
-            '4. Presence of essential elements (title, labels, etc.)',
-            '5. Semantic equivalence of the visualizations',
+            'Focus primarily on these critical aspects:',
+            '1. Correct visualization type for the data (e.g. vertical bar, horizontal bar, pie chart)',
+            '2. Data is properly mapped and visualized',
             '',
-            'Ignore minor differences in:',
+            'Be very lenient with differences in:',
+            '- Titles, labels and text content',
             '- Exact color values (if semantically similar)',
             '- Spacing or formatting',
             '- Property ordering',
             '- Additional optional properties',
+            '- Axis titles or legends',
+            '',
+            'As long as the correct chart type is used and the data is properly visualized,',
+            'consider the submission correct even if titles and labels differ from the expert answer.',
             '',
             'The submitted answer may either be correct or incorrect. Determine which case applies.',
             'You must respond with exactly one of these two choices:',
-            '- "Correct": The cards are semantically equivalent and will display the same visualization',
-            '- "Incorrect": The cards are semantically different or the submission has critical issues',
+            '- "Correct": The chart type matches and data is properly visualized',
+            '- "Incorrect": Wrong chart type or data visualization issues',
             '',
             'Always provide a brief reason for your judgment.',
         ].join('\n'),
-        role: 'system',
-        model: new OpenAIChatModel({
-            model: 'gpt-4o-mini',
-            apiKey: process.env.OPENAI_API_KEY,
-            stream: false,
-            logger: log,
-            requestOptions: {
-                response_format: {
-                    type: 'json_schema',
-                    json_schema: {
-                        name: 'response',
-                        schema: {
-                            type: 'object',
-                            properties: {
-                                choice: {
-                                    type: 'string',
-                                    enum: ['Correct', 'Incorrect'],
-                                    description: 'The judgment of the Adaptive Card comparison',
-                                },
-                                reason: {
-                                    type: 'string',
-                                    description: 'Brief explanation for the judgment',
-                                }
-                            },
-                            required: ['choice', 'reason'],
-                        },
-                    },
+        responseSchema: {
+            type: 'object',
+            properties: {
+                choice: {
+                    type: 'string',
+                    enum: ['Correct', 'Incorrect'],
+                    description: 'The judgment of the Adaptive Card comparison',
                 },
+                reason: {
+                    type: 'string',
+                    description: 'Brief explanation for the judgment',
+                }
             },
-        }),
+            required: ['choice', 'reason'],
+        },
+        logger: log
     });
 
     return {
@@ -87,8 +75,7 @@ export const ACJudge = () => {
                 '[END DATA]',
             ].join('\n');
 
-            const response = await judge.chat(prompt);
-            const result = JSON.parse(response);
+            const result = await agent.chat(prompt);
             
             return {
                 choice: result.choice,

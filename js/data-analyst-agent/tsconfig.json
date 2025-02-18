@@ -17,9 +17,9 @@
     "noUnusedParameters": true,
     "pretty": true,
     "outDir": "dist",
-    "rootDir": "src",
+    "rootDir": ".",
     "types": ["node"]
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["evals/**/*.ts"]
+  "include": ["src/**/*.ts", "src/evals/**/*.ts"],
+  "exclude": ["node_modules", "dist"]
 }

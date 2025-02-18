@@ -1,5 +1,5 @@
 import { ConsoleLogger } from '@teams.sdk/common';
-import { SQLExpert } from '../src/prompts/sql-expert';
+import { SQLExpert } from '../src/agents/sql-expert';
 import { SQLJudge } from './judge/sql';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -44,22 +44,17 @@ async function evaluateSqlExpert() {
     
     try {
       // Get response from SQL expert
-      const expert = SQLExpert({ log: log.child('sql-expert'), responseFormat: {
-        type: 'json_schema',
-        json_schema: {
-          name: 'response',
-          schema: {
-            type: 'object',
-            properties: {
-              query: {
-                type: 'string',
-                description: 'The SQL query to execute',
-              }
-            },
-            required: ['query']
+      const expert = SQLExpert({ responseFormat: {
+        type: 'object',
+        properties: {
+          query: {
+            type: 'string',
+            description: 'The SQL query to execute',
           }
         },
-      } });
+        required: ['query'],
+        additionalProperties: false
+      }});
       const response = await expert.chat(
         `Here's the user query: ${testCase.user_query}. 
         Can you simply generate the SQL query to answer the question? Please don't execute it. 

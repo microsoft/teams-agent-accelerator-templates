@@ -1,5 +1,5 @@
 import { ConsoleLogger } from '@teams.sdk/common';
-import { AdaptiveCardExpert } from '../src/prompts/ac-expert';
+import { AdaptiveCardExpert } from '../src/agents/ac-expert';
 import { ACJudge } from './judge/ac';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -45,9 +45,9 @@ async function evaluateACExpert() {
         log.info(`Evaluating: ${testCase.task}`);
         
         try {
-            const expert = AdaptiveCardExpert({ log: log.child('ac-expert') });
+            const expert = AdaptiveCardExpert();
             const response = await expert.chat(
-                `Create a ${testCase.visualization_type} visualization for this data: ${testCase.input_data}`
+                `Create a ${testCase.visualization_type} visualization for this data: ${JSON.stringify(testCase.input_data)}`
             );
             const parsedResponse = JSON.parse(response);
 
@@ -55,7 +55,7 @@ async function evaluateACExpert() {
             const judgeResult = await judge.evaluate({
                 input: JSON.stringify(testCase.input_data),
                 ideal: JSON.stringify(testCase.expected_card),
-                completion: JSON.stringify(parsedResponse.card)
+                completion: JSON.stringify(parsedResponse)
             });
 
             results.push({
@@ -63,7 +63,7 @@ async function evaluateACExpert() {
                 input_data: JSON.stringify(testCase.input_data, null, 2),
                 visualization_type: testCase.visualization_type,
                 expected_card: JSON.stringify(testCase.expected_card, null, 2),
-                actual_card: JSON.stringify(parsedResponse.card, null, 2),
+                actual_card: JSON.stringify(parsedResponse, null, 2),
                 success: judgeResult.choice === 'Correct',
                 judge_result: {
                     choice: judgeResult.choice,
