@@ -17,6 +17,7 @@ export const SQLExpert = ({ responseFormat }: SQLExpertOptions = {}) => {
 
     const agent = new BaseAgent({
         model: 'gpt-4o-mini',
+        maxLoops: 20,
         systemMessage: [
             'You are a SQL expert that helps query the AdventureWorks database.',
             'You can only execute SELECT queries - no mutations allowed.',
@@ -102,8 +103,8 @@ export const SQLExpert = ({ responseFormat }: SQLExpertOptions = {}) => {
         chat: async (text: string) => {
             log.info(`SQL Expert Query: ${text}`);
             const response = await agent.chat(text);
-            log.info(`SQL Expert Response: ${JSON.stringify(response, null, 2)}`);
-            return JSON.stringify(response);
+            log.info(`SQL Expert Response: ${response}`);
+            return response;
         },
     };
 };

@@ -183,7 +183,7 @@ export const DataAnalyst = () => {
         ].join('\n'),
         responseSchema: responseSchema,
         logger: log,
-        maxLoops: 10,
+        maxLoops: 20,
     }).function(
         'sql-expert',
         'Ask the SQL expert to help you query and analyze the database',

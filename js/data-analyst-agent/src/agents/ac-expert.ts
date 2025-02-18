@@ -13,6 +13,7 @@ export const AdaptiveCardExpert = () => {
 
     const agent = new BaseAgent({
         model: 'gpt-4o-mini',
+        maxLoops: 20,
         systemMessage: [
             'You are an expert at creating Adaptive Cards for data visualization.',
             'Your job is to analyze the data structure and create the most appropriate Adaptive Card representation.',

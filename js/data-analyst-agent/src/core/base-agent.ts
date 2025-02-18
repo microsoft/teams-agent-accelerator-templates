@@ -26,6 +26,7 @@ export class BaseAgent {
         parameters: JsonSchema;
         handler: (args: any) => Promise<string>;
     }> = [];
+    private messages: ChatCompletionMessageParam[] = [];
 
     constructor(options: BaseAgentOptions) {
         this.options = {
@@ -36,6 +37,12 @@ export class BaseAgent {
         this.openai = new OpenAI({
             apiKey: process.env.OPENAI_API_KEY,
         });
+
+        // Initialize messages with system message
+        this.messages = [{
+            role: 'system',
+            content: this.options.systemMessage
+        }];
     }
 
     function(
@@ -55,21 +62,15 @@ export class BaseAgent {
     private getCompletionOptions(messages: ChatCompletionMessageParam[]): ChatCompletionCreateParamsNonStreaming {
         return {
             model: this.options.model,
-            messages: [
-                {
-                    role: 'system',
-                    content: this.options.systemMessage
-                } as ChatCompletionMessageParam,
-                ...messages
-            ],
-            response_format: {
+            messages,
+            response_format: this.options.responseSchema ? {
                 type: "json_schema",
                 json_schema: {
                     name: "response",
                     schema: this.options.responseSchema,
                     strict: false
                 }
-            },
+            } : undefined,
             tools: this.functions.length > 0 ? this.functions.map(fn => ({
                 type: 'function' as const,
                 function: {
@@ -84,8 +85,8 @@ export class BaseAgent {
     async chat(message: string): Promise<any> {
         this.options.logger.info(`User Message: ${message}`);
         
-        const messages: ChatCompletionMessageParam[] = [];
-        messages.push({ role: "user", content: message });
+        // Add user message to conversation history
+        this.messages.push({ role: "user", content: message });
         
         let loopCount = 0;
         
@@ -98,7 +99,7 @@ export class BaseAgent {
             this.options.logger.trace(`Loop ${loopCount} of ${this.options.maxLoops}`);
             
             const completion = await this.openai.chat.completions.create(
-                this.getCompletionOptions(messages)
+                this.getCompletionOptions(this.messages)
             );
 
             const response = completion.choices[0].message;
@@ -126,8 +127,9 @@ export class BaseAgent {
                     })
                 );
 
-                messages.push(response);
-                messages.push(...toolResults.map(result => ({
+                // Add assistant response and tool results to conversation history
+                this.messages.push(response);
+                this.messages.push(...toolResults.map(result => ({
                     role: 'tool' as const,
                     tool_call_id: result.tool_call_id,
                     content: result.output
@@ -136,8 +138,14 @@ export class BaseAgent {
                 continue;
             }
 
-            messages.push(response);
-            return JSON.parse(response.content!);
+            // Add final assistant response to conversation history
+            this.messages.push(response);
+
+            if (this.options.responseSchema) {
+                return JSON.parse(response.content!);
+            }
+
+            return response.content;
         }
     }
 }
