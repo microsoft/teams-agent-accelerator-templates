@@ -13,7 +13,7 @@
     "clean": "npx rimraf ./dist",
     "build": "npx tsup",
     "start": "node .",
-    "dev": "npx nodemon -w \"./src-teams-ai/**\" -e ts --exec \"node -r ts-node/register -r dotenv/config ./src-teams-ai/index.ts\"",
+    "dev": "npx nodemon -w \"./src/**\" -e ts --exec \"node -r ts-node/register -r dotenv/config ./src/index.ts\"",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint \"src/**/*.ts\" --fix",
     "eval:sql": "ts-node -r dotenv/config evals/sql-expert.ts",

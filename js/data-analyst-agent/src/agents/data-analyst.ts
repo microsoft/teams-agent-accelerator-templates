@@ -115,7 +115,7 @@ export type DataAnalystResponse = {
 export const DataAnalyst = () => {
     const schemaPath = path.join(__dirname, '..', 'data', 'schema.sql');
     const dbSchema = fs.readFileSync(schemaPath, 'utf-8');
-    const examplesPath = path.join(__dirname, 'examples', 'data-analyst-examples.jsonl');
+    const examplesPath = path.join(__dirname, '..', 'examples', 'data-analyst-examples.jsonl');
     const examples = JSON.parse(fs.readFileSync(examplesPath, 'utf-8'));
 
     const log = createLogger('data-analyst', 'DEBUG');
