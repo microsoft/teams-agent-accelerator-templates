@@ -38,6 +38,27 @@
         {
             "botId": "${{BOT_ID}}",
             "scopes": ["personal", "team", "groupChat"],
+            "commandLists":[
+                {
+                "scopes":[
+                    "personal"
+                ],
+                "commands":[
+                    {
+                    "title":"Annual sales from 2020-2022?",
+                    "description":"View a chart showing sales trends over the past 3 years"
+                    },
+                    {
+                    "title":"What are the product categories?",
+                    "description":"List all product categories in the AdventureWorks database"
+                    },
+                    {
+                    "title":"Product category distribution",
+                    "description":"Visualize the distribution of products across categories"
+                    }
+                ]
+                }
+            ],
             "isNotificationOnly": false,
             "supportsCalling": false,
             "supportsVideo": false,

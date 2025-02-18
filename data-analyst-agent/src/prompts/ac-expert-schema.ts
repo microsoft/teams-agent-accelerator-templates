@@ -29,7 +29,8 @@ export const responseSchema = {
                 { "$ref": "#/$defs/TextBlock" },
                 { "$ref": "#/$defs/Chart.VerticalBar" },
                 { "$ref": "#/$defs/Chart.HorizontalBar" },
-                { "$ref": "#/$defs/Chart.Line" }
+                { "$ref": "#/$defs/Chart.Line" },
+                { "$ref": "#/$defs/Chart.Pie" }
             ],
         },
         TextBlock: {
@@ -319,6 +320,216 @@ export const responseSchema = {
             ],
             "additionalProperties": false
         },
+        "Table": {
+            "type": "object",
+            "properties": {
+                "type": { 
+                    "type": "string",
+                    "enum": ["Table"]
+                },
+                "isVisible": {
+                    "type": "boolean"
+                },
+                "separator": {
+                    "type": "boolean"
+                },
+                "height": {
+                    "$ref": "#/$defs/5.height"
+                },
+                "horizontalAlignment": {
+                    "$ref": "#/$defs/6.horizontalAlignment"
+                },
+                "spacing": {
+                    "$ref": "#/$defs/7.spacing"
+                },
+                "targetWidth": {
+                    "$ref": "#/$defs/8.targetWidth"
+                },
+                "style": {
+                    "$ref": "#/$defs/10.style"
+                },
+                "showBorder": {
+                    "type": "boolean"
+                },
+                "roundedCorners": {
+                    "type": "boolean"
+                },
+                "columns": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/ColumnDefinition"
+                    }
+                },
+                "firstRowAsHeaders": {
+                    "type": "boolean"
+                },
+                "showGridLines": {
+                    "type": "boolean"
+                },
+                "gridStyle": {
+                    "$ref": "#/$defs/10.style"
+                },
+                "horizontalCellContentAlignment": {
+                    "$ref": "#/$defs/6.horizontalAlignment"
+                },
+                "verticalCellContentAlignment": {
+                    "$ref": "#/$defs/11.verticalItemsAlignment"
+                },
+                "grid.area": {
+                    "type": "string"
+                },
+                "rows": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/TableRow"
+                    }
+                }
+            },
+            "required": [
+                "type", "columns", "rows"
+            ],
+            "additionalProperties": false
+        },
+        "TableRow": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": ["TableRow"]
+                },
+                "isVisible": {
+                    "type": "boolean"
+                },
+                "separator": {
+                    "type": "boolean"
+                },
+                "height": {
+                    "$ref": "#/$defs/5.height"
+                },
+                "horizontalAlignment": {
+                    "$ref": "#/$defs/6.horizontalAlignment"
+                },
+                "spacing": {
+                    "$ref": "#/$defs/7.spacing"
+                },
+                "targetWidth": {
+                    "$ref": "#/$defs/8.targetWidth"
+                },
+                "showBorder": {
+                    "type": "boolean"
+                },
+                "roundedCorners": {
+                    "type": "boolean"
+                },
+                "style": {
+                    "$ref": "#/$defs/10.style"
+                },
+                "horizontalCellContentAlignment": {
+                    "$ref": "#/$defs/6.horizontalAlignment"
+                },
+                "verticalCellContentAlignment": {
+                    "$ref": "#/$defs/11.verticalItemsAlignment"
+                },
+                "grid.area": {
+                    "type": "string"
+                },
+                "cells": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/TableCell"
+                    }
+                }
+            },
+            "required": [
+                "type", "cells"
+            ],
+            "additionalProperties": false
+        },
+        "TableCell": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "enum": ["TableCell"]
+                },
+                "isVisible": {
+                    "type": "boolean"
+                },
+                "separator": {
+                    "type": "boolean"
+                },
+                "height": {
+                    "$ref": "#/$defs/5.height"
+                },
+                "spacing": {
+                    "$ref": "#/$defs/7.spacing"
+                },
+                "targetWidth": {
+                    "$ref": "#/$defs/8.targetWidth"
+                },
+                // "selectAction": {
+                //     "$ref": "#/$defs/9.selectAction"
+                // },
+                "style": {
+                    "$ref": "#/$defs/10.style"
+                },
+                "layouts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/15.layouts"
+                    }
+                },
+                "bleed": {
+                    "type": "boolean"
+                },
+                "minHeight": {
+                    "$ref": "#/$defs/13.minItemWidth"
+                },
+                // "backgroundImage": {
+                //     "$ref": "#/$defs/17.backgroundImage"
+                // },
+                "verticalContentAlignment": {
+                    "$ref": "#/$defs/11.verticalItemsAlignment"
+                },
+                "rtl": {
+                    "type": "boolean"
+                },
+                "maxHeight": {
+                    "$ref": "#/$defs/13.minItemWidth"
+                },
+                "grid.area": {
+                    "type": "string"
+                },
+                "items": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/CardElementArray"
+                    }
+                }
+            },
+            "required": [
+                "type", "items"
+            ],
+            "additionalProperties": false
+        },
+        "ColumnDefinition": {
+            "type": "object",
+            "properties": {
+                "horizontalCellContentAlignment": {
+                    "$ref": "#/$defs/6.horizontalAlignment"
+                },
+                "verticalCellContentAlignment": {
+                    "$ref": "#/$defs/11.verticalItemsAlignment"
+                },
+                "width": {
+                    "$ref": "#/$defs/18.width"
+                }
+            },
+            "additionalProperties": true,
+            "required": [
+                "horizontalCellContentAlignment", "verticalCellContentAlignment", "width"
+            ]
+        },
         "5.height": {
             type: "string",
             enum: ["auto", "stretch"],
@@ -338,6 +549,28 @@ export const responseSchema = {
                   "ATLEAST:NARROW", "ATMOST:NARROW", 
                   "ATLEAST:STANDARD", "ATMOST:STANDARD",
                   "ATLEAST:WIDE", "ATMOST:WIDE"]
+        },
+        "10.style": {
+            "type": "string",
+            "enum": ["DEFAULT", "EMPHASIS", "ACCENT", "GOOD", "ATTENTION", "WARNING"]
+        },
+        "11.verticalItemsAlignment": {
+            "type": "string",
+            "enum": ["TOP", "CENTER", "BOTTOM"]
+        },
+        "13.minItemWidth": {
+            "type": "string",
+            "description": "A string representing a pixel value, e.g. '100px'"
+        },
+        "18.width": {
+            "oneOf": [
+                {
+                    "$ref": "#/$defs/13.minItemWidth"
+                },
+                {
+                    "type": "number"
+                }
+            ]
         },
         "19.size": {
             type: "string",

@@ -36,7 +36,12 @@ const acExpertSchema: ObjectSchema = {
         },
         xAxis: {
             type: 'string',
-            description: 'Label for the x-axis (for charts)',
+            description: 'Label for the x-axis (for charts).',
+        },
+        xAxisFormat: {
+            type: 'string',
+            description: 'Format for the x-axis (for charts). Whether it should be a number or a date.',
+            enum: ['number', 'date'],
         },
         yAxis: {
             type: 'string',
@@ -140,7 +145,8 @@ export const DataAnalyst = () => {
             '- Provide clear titles and axis labels for all charts',
             '- Choose visualizations that best represent the data:',
             '  * Bar charts: Category comparisons (e.g., sales by product)',
-            '  * Line charts: Time series data (e.g., monthly trends)',
+            '  * Line charts: Time series data (e.g., monthly trends). Dates should be in the format YYYY-MM-DD.',
+            '    * Please explicitly mention the date format to the adaptive card expert.',
             '  * Pie charts: Part-to-whole relationships (max 6-7 segments)',
             '  * Tables: Detailed numeric data or multiple metrics',
             '- Keep explanations brief and clear',
@@ -162,7 +168,7 @@ export const DataAnalyst = () => {
         ].join('\n'),
         role: 'system',
         model: new OpenAIChatModel({
-            model: 'gpt-4o',
+            model: 'gpt-4o-mini',
             apiKey: process.env.OPENAI_API_KEY,
             stream: false,
             logger: log,
@@ -192,14 +198,20 @@ export const DataAnalyst = () => {
             'ac-expert',
             'Ask the adaptive card expert to create visualizations of data.',
             acExpertSchema,
-            async ({ instructions, visualization, title, xAxis, yAxis }: { instructions: string; visualization: string; title?: string; xAxis?: string; yAxis?: string }) => {
+            async ({ instructions, visualization, title, xAxis, xAxisFormat, yAxis }: { instructions: string; visualization: string; title?: string; xAxis?: string; xAxisFormat?: string; yAxis?: string }) => {
                 let message = `Please create a ${visualization} visualization with the following instructions: ${instructions}.`;
                 if (title) {
                     message += ` Use "${title}" as the chart title.`;
                 }
                 if (xAxis) {
                     message += ` Label the x-axis as "${xAxis}".`;
+                
+                    if (xAxisFormat) {
+                        const dateFormat = xAxisFormat === 'date' ? 'YYYY-MM-DD' : 'number';
+                        message += ` The x-axis should be in the ${dateFormat} format.`;
+                    }
                 }
+                
                 if (yAxis) {
                     message += ` Label the y-axis as "${yAxis}".`;
                 }
