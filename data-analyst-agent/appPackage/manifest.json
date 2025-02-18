@@ -49,8 +49,8 @@
                     "description":"View a chart showing sales trends over the past 3 years"
                     },
                     {
-                    "title":"What are the product categories?",
-                    "description":"List all product categories in the AdventureWorks database"
+                    "title":"Show examples of charts.",
+                    "description":"Show examples of charts that can be created."
                     },
                     {
                     "title":"Product category distribution",
