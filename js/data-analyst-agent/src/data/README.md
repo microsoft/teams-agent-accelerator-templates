@@ -1,5 +1,7 @@
 # AdventureWorks
 
+![AdventureWorks](assets/adventureWorks-small.png)
+
 A SQLite Database for AdventureWorks, a fictional global manufacturing company that produces cycling equipment and accessories.
 
 This database was derived from [AdventureWorks sample](https://github.com/richhuwtaylor/adventure-works)
