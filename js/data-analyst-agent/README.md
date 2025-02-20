@@ -77,24 +77,27 @@ You can ask the agent questions like:
 - "Show me the top-selling products this year"
 - "What's the sales trend by territory?"
 
-See the [AdventureWorks README](data/README.md) for more details.
+See the [AdventureWorks README](src/data/README.md) for more details.
 
+
+<!-- TODO: Add detailed usage instructions covering:
 ## Usage
-- Basic Queries
-- Data Visualization
-- Common Patterns
-- Best Practices
+- Basic query examples and syntax
+- Data visualization capabilities and examples
+- Common usage patterns and workflows
+- Best practices and recommendations -->
 
 ## Architecture
-- **Core Components**
+![Data Analyst Agent Architecture](assets/architecture-diagram.png)
+
+**Core Components**
   - Data Analyst Agent: Main orchestrator that handles user requests
   - SQL Expert Agent: Handles database querying
   - AC Expert Agent: Creates data visualizations using Adaptive Cards
   - Base Agent: Handles LLM calls and orchestration. Other agents are built on top of this.
 
-![Data Analyst Agent Architecture](assets/architecture-diagram.png)
 
-## Evaluation System
+<!-- TODO: ## Evaluation System
 - Judges Overview
 - Evaluation Criteria
-- Scoring System
+- Scoring System -->
