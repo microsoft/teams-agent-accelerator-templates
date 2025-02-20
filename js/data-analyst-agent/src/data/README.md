@@ -1,6 +1,6 @@
 # AdventureWorks
 
-![AdventureWorks](assets/adventureWorks-small.png)
+![AdventureWorks](../../assets/adventureWorks-small.png)
 
 A SQLite Database for AdventureWorks, a fictional global manufacturing company that produces cycling equipment and accessories.
 
