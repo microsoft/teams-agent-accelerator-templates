@@ -1,6 +1,6 @@
 import { ConsoleLogger } from '@teams.sdk/common';
-import { AdaptiveCardExpert } from '../src/agents/ac-expert';
-import { ACJudge } from './judge/ac';
+import { AdaptiveCardExpert } from '../../src/agents/ac-expert';
+import { ACJudge } from '../judge/ac';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -31,7 +31,7 @@ async function evaluateACExpert() {
     const judge = ACJudge();
 
     // Load test cases
-    const evalFilePath = path.join(__dirname, 'ac-eval.jsonl');
+    const evalFilePath = path.join(__dirname, '..', 'ac-eval.jsonl');
     const evalContent = fs.readFileSync(evalFilePath, 'utf-8');
     const evalCases: EvalCase[] = JSON.parse(evalContent);
 

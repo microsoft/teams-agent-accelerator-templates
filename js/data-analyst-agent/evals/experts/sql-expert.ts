@@ -1,6 +1,6 @@
 import { ConsoleLogger } from '@teams.sdk/common';
-import { SQLExpert } from '../src/agents/sql-expert';
-import { SQLJudge } from './judge/sql';
+import { SQLExpert } from '../../src/agents/sql-expert';
+import { SQLJudge } from '../judge/sql';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -29,7 +29,7 @@ async function evaluateSqlExpert() {
   const judge = SQLJudge();
 
   // Load test cases
-  const evalFilePath = path.join(__dirname, 'sql-eval.jsonl');
+  const evalFilePath = path.join(__dirname, '..', 'sql-eval.jsonl');
   const evalContent = fs.readFileSync(evalFilePath, 'utf-8');
   const evalCases: EvalCase[] = JSON.parse(evalContent);
 
@@ -61,7 +61,6 @@ async function evaluateSqlExpert() {
         Just return the SQL query.`
       );
       const parsedResponse = JSON.parse(response);
-
       // Get judgment from SQL judge
       const judgeResult = await judge.evaluate({
         input: testCase.user_query,
@@ -83,6 +82,7 @@ async function evaluateSqlExpert() {
       });
 
     } catch (error) {
+      console.log(`Error while evaluating: ${error}`);
       results.push({
         task: testCase.task,
         user_query: testCase.user_query,

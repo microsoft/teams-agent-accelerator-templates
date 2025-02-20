@@ -102,8 +102,8 @@ export const SQLExpert = ({ responseFormat }: SQLExpertOptions = {}) => {
         chat: async (text: string) => {
             log.info(`SQL Expert Query: ${text}`);
             const response = await agent.chat(text);
-            log.info(`SQL Expert Response: ${response}`);
-            return response;
+            log.info(`SQL Expert Response: ${JSON.stringify(response, null, 2)}`);
+            return JSON.stringify(response);
         },
     };
 };

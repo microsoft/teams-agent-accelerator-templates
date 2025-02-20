@@ -16,8 +16,8 @@
     "dev": "npx nodemon -w \"./src/**\" -e ts --exec \"node -r ts-node/register -r dotenv/config ./src/index.ts\"",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint \"src/**/*.ts\" --fix",
-    "eval:sql": "ts-node -r dotenv/config evals/sql-expert.ts",
-    "eval:ac": "ts-node -r dotenv/config evals/ac-expert.ts"
+    "eval:sql": "ts-node -r dotenv/config evals/experts/sql-expert.ts",
+    "eval:ac": "ts-node -r dotenv/config evals/experts/ac-expert.ts"
   },
   "dependencies": {
     "@microsoft/teams-ai": "^1.7.3",
