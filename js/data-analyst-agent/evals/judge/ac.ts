@@ -17,7 +17,6 @@ export const ACJudge = () => {
     const log = createLogger('ac-judge');
 
     const agent = new BaseAgent({
-        model: 'gpt-4o-mini',
         systemMessage: [
             'You are comparing a submitted Adaptive Card to an expert answer for data visualization.',
             'Compare the content and correctness of the submitted card with the expert answer.',

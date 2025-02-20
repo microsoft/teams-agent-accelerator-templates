@@ -1,4 +1,4 @@
-import OpenAI from "openai";
+import OpenAI, { AzureOpenAI } from "openai";
 import { ChatCompletionCreateParamsNonStreaming, ChatCompletionMessageParam } from 'openai/resources/chat/completions';
 import { Logger } from './logging';
 
@@ -10,7 +10,7 @@ export interface JsonSchema extends Record<string, unknown> {
 }
 
 export interface BaseAgentOptions {
-    model: string;
+    model?: string;
     systemMessage: string;
     responseSchema?: JsonSchema;
     logger: Logger;
@@ -33,10 +33,8 @@ export class BaseAgent {
             maxLoops: 5,
             ...options
         };
-        
-        this.openai = new OpenAI({
-            apiKey: process.env.OPENAI_API_KEY,
-        });
+
+        this.openai = this.getOpenAIClient();
 
         // Initialize messages with system message
         this.messages = [{
@@ -61,7 +59,7 @@ export class BaseAgent {
 
     private getCompletionOptions(messages: ChatCompletionMessageParam[]): ChatCompletionCreateParamsNonStreaming {
         return {
-            model: this.options.model,
+            model: this.options.model || process.env.DEFAULT_LLM_MODEL || 'gpt-4o-mini',
             messages,
             response_format: this.options.responseSchema ? {
                 type: "json_schema",
@@ -147,5 +145,25 @@ export class BaseAgent {
 
             return response.content;
         }
+    }
+
+    private getOpenAIClient(): OpenAI {
+        if (process.env.OPENAI_API_KEY) {
+            return new OpenAI({
+                apiKey: process.env.OPENAI_API_KEY,
+            });
+        }
+
+        if (process.env.AZURE_OPENAI_API_KEY 
+            && process.env.AZURE_OPENAI_API_BASE
+            && process.env.AZURE_OPENAI_API_VERSION) {
+            return new AzureOpenAI({
+                apiKey: process.env.AZURE_OPENAI_API_KEY,
+                endpoint: process.env.AZURE_OPENAI_API_BASE,
+                apiVersion: process.env.AZURE_OPENAI_API_VERSION,
+            });
+        }
+
+        throw new Error('Incomplete OpenAI & Azure OpenAI configuration');
     }
 }

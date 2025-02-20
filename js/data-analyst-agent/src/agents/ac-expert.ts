@@ -12,7 +12,6 @@ export const AdaptiveCardExpert = () => {
     const log = createLogger('ac-expert', 'DEBUG');
 
     const agent = new BaseAgent({
-        model: 'gpt-4o-mini',
         maxLoops: 20,
         systemMessage: [
             'You are an expert at creating Adaptive Cards for data visualization.',

@@ -20,6 +20,7 @@
     "eval:ac": "ts-node -r dotenv/config evals/experts/ac-expert.ts"
   },
   "dependencies": {
+    "@azure/openai": "^2.0.0",
     "@microsoft/teams-ai": "^1.7.3",
     "@teams.sdk/ai": "^0.1.26",
     "@teams.sdk/api": "^0.1.26",

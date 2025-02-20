@@ -1,9 +1,5 @@
-// import { ChatPrompt, ObjectSchema } from '@teams.sdk/ai';
-// import { OpenAIChatModel } from '@teams.sdk/openai';
 import * as fs from 'fs';
 import * as path from 'path';
-// import { SQLExpert } from './prompts/sql-expert';
-// import { AdaptiveCardExpert } from './prompts/ac-expert';
 import { Card } from '@teams.sdk/cards';
 import { createLogger } from '../core/logging';
 import { BaseAgent, JsonSchema } from '../core/base-agent';
@@ -124,7 +120,6 @@ export const DataAnalyst = () => {
     const card = AdaptiveCardExpert();
 
     const agent = new BaseAgent({
-        model: 'gpt-4o-mini',
         systemMessage: [
             'You are an expert data analyst that helps users understand data from the AdventureWorks database.',
             'You work with three specialized experts to create clear, visual responses:',

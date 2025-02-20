@@ -17,7 +17,6 @@ export const SQLJudge = () => {
     const log = createLogger('sql-judge');
 
     const agent = new BaseAgent({
-        model: 'gpt-4o-mini',
         systemMessage: [
             'You are comparing a submitted answer to an expert answer on a given SQL coding question.',
             'Compare the content and correctness of the submitted SQL with the expert answer.',

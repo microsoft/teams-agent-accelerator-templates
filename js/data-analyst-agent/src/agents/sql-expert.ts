@@ -16,7 +16,6 @@ export const SQLExpert = ({ responseFormat }: SQLExpertOptions = {}) => {
     const log = createLogger('sql-expert', 'DEBUG');
 
     const agent = new BaseAgent({
-        model: 'gpt-4o-mini',
         maxLoops: 20,
         systemMessage: [
             'You are a SQL expert that helps query the AdventureWorks database.',
