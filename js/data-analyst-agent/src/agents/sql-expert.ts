@@ -3,12 +3,13 @@ import * as fs from 'fs';
 import * as path from 'path';
 import sqlite3 from 'sqlite3';
 import { createLogger } from '../core/logging';
+import { CommonAgentOptions } from './data-analyst';
 
-export type SQLExpertOptions = {
+export interface SQLExpertOptions extends CommonAgentOptions {
     responseFormat?: JsonSchema;
 };
 
-export const SQLExpert = ({ responseFormat }: SQLExpertOptions = {}) => {
+export const SQLExpert = ({ responseFormat, onProgress }: SQLExpertOptions = {}) => {
     // Load schema from file
     const schemaPath = path.join(__dirname, '..', 'data', 'schema.sql');
     const dbSchema = fs.readFileSync(schemaPath, 'utf-8');
@@ -49,6 +50,7 @@ export const SQLExpert = ({ responseFormat }: SQLExpertOptions = {}) => {
             required: ["query"]
         },
         async ({ query }) => {
+            onProgress?.('FETCHING_DATA');
             log.info(`Attempting to execute SQL query: ${query}`);
 
             // Query validation

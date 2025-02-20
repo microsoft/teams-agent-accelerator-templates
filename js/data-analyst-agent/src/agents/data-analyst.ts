@@ -5,6 +5,7 @@ import { createLogger } from '../core/logging';
 import { BaseAgent, JsonSchema } from '../core/base-agent';
 import { SQLExpert } from './sql-expert';
 import { AdaptiveCardExpert } from './ac-expert';
+import { ProcessingState } from '../app';
 
 const chatSchema: JsonSchema = {
     type: "object",
@@ -84,7 +85,7 @@ const responseSchema: JsonSchema = {
                                 type: "object",
                                 properties: {
                                     type: { const: "AdaptiveCard" },
-                                    version: { const: "1.5" },
+                                    version: { const: "1.6" },
                                     body: {
                                         type: "array",
                                         items: { type: "object" }
@@ -108,7 +109,11 @@ export type DataAnalystResponse = {
     card?: Card;
 }[];
 
-export const DataAnalyst = () => {
+export interface CommonAgentOptions {
+    onProgress?: (update: ProcessingState) => void;
+}
+
+export const DataAnalyst = ({ onProgress }: CommonAgentOptions) => {
     const schemaPath = path.join(__dirname, '..', 'data', 'schema.sql');
     const dbSchema = fs.readFileSync(schemaPath, 'utf-8');
     const examplesPath = path.join(__dirname, '..', 'examples', 'data-analyst-examples.jsonl');
@@ -116,7 +121,7 @@ export const DataAnalyst = () => {
 
     const log = createLogger('data-analyst', 'DEBUG');
 
-    const sql = SQLExpert();
+    const sql = SQLExpert({ onProgress });
     const card = AdaptiveCardExpert();
 
     const agent = new BaseAgent({
@@ -183,6 +188,7 @@ export const DataAnalyst = () => {
         'Ask the SQL expert to help you query and analyze the database',
         chatSchema,
         async ({ text }) => {
+            onProgress?.('PLANNING_QUERY');
             log.info(`Data Analyst -> SQL Expert`);
             const response = await sql.chat(text);
             log.info(`Data Analyst <- SQL Expert`);
@@ -193,6 +199,7 @@ export const DataAnalyst = () => {
         'Ask the adaptive card expert to create visualizations of data.',
         acExpertSchema,
         async ({ instructions, visualization, title, xAxis, xAxisFormat, yAxis }) => {
+            onProgress?.('GENERATING_VISUALIZATION');
             let message = `Please create a ${visualization} visualization with the following instructions: ${instructions}.`;
             if (title) {
                 message += ` Use "${title}" as the chart title.`;
@@ -217,6 +224,7 @@ export const DataAnalyst = () => {
 
     return {
         chat: async (text: string): Promise<DataAnalystResponse> => {
+            onProgress?.('PROCESSING_MESSAGE');
             const response = await agent.chat(text);
             return response.content;
         }
