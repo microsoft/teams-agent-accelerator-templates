@@ -12,6 +12,7 @@ import { ConfigurationServiceClientCredentialFactory, TurnContext } from 'botbui
 
 import { TeamsAdapter } from '@microsoft/teams-ai';
 import { app } from './app';
+import { createLogger } from './core/logging';
 
 // Read botFilePath and botFileSecret from .env file.
 const ENV_FILE = path.join(__dirname, '..', '.env');
@@ -28,13 +29,15 @@ const adapter = new TeamsAdapter(
     })
 );
 
+const log = createLogger('index');
+
 // Catch-all for errors.
 const onTurnErrorHandler = async (context: TurnContext, error: any) => {
     // This check writes out errors to console log .vs. app insights.
     // NOTE: In production environment, you should consider logging this to Azure
     //       application insights.
-    console.error(`\n [onTurnError] unhandled error: ${error}`);
-    console.log(error);
+    log.error(`\n [onTurnError] unhandled error: ${error}`);
+    log.error(error);
 
     // Send a trace activity, which will be displayed in Bot Framework Emulator
     await context.sendTraceActivity(

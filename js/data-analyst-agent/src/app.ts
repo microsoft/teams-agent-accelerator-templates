@@ -1,4 +1,4 @@
-import { Application, TurnState, StreamingResponse } from "@microsoft/teams-ai";
+import { Application, TurnState, StreamingResponse, FeedbackLoopData } from "@microsoft/teams-ai";
 import { MemoryStorage, TurnContext } from "botbuilder";
 
 import { ActivityTypes } from "botbuilder";
@@ -43,6 +43,7 @@ const onProgressFn = (streamer: StreamingResponse) => (update: ProcessingState) 
 
 // // Listen for ANY message to be received. MUST BE AFTER ANY OTHER MESSAGE HANDLERS
 app.activity(ActivityTypes.Message, async (context: TurnContext, _: ApplicationTurnState) => {
+    log.trace(`Incoming Message Activity.`)
     const streamer = new StreamingResponse(context);
     streamer.setGeneratedByAILabel(true);
     streamer.setFeedbackLoop(true);
@@ -53,8 +54,6 @@ app.activity(ActivityTypes.Message, async (context: TurnContext, _: ApplicationT
     const dataAnalyst = DataAnalyst({ onProgress });
 
     let response: DataAnalystResponse = await dataAnalyst.chat(context.activity.text);
-
-    log.info(`Data Analyst Response: ${JSON.stringify(response, null, 2)}`);
 
     const firstItem = response[0];
     let initialText = "Here's what I was able to come up with:";
@@ -89,5 +88,16 @@ app.activity(ActivityTypes.Message, async (context: TurnContext, _: ApplicationT
                 await context.sendActivity(`I'm sorry, I was unable to generate a valid visualization. Please try again.`);
             }
         }
+    }
+});
+
+app.feedbackLoop(async (_context: TurnContext, _state: TurnState, feedbackLoopData: FeedbackLoopData) => {
+    log.trace(`Incoming Feedback Loop Activity.`)
+    if (feedbackLoopData.actionValue.reaction === 'like') {
+        log.info('👍');
+        log.info(`Feedback: ${JSON.stringify(feedbackLoopData.actionValue.feedback, null, 2)}`);
+    } else {
+        log.info('👎');
+        log.info(`Feedback: ${JSON.stringify(feedbackLoopData.actionValue.feedback, null, 2)}`);
     }
 });

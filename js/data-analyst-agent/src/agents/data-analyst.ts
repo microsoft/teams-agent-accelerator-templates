@@ -225,7 +225,9 @@ export const DataAnalyst = ({ onProgress }: CommonAgentOptions) => {
     return {
         chat: async (text: string): Promise<DataAnalystResponse> => {
             onProgress?.('PROCESSING_MESSAGE');
+            log.info(`Data Analyst Query: ${text}`);
             const response = await agent.chat(text);
+            log.info(`Data Analyst Response: ${JSON.stringify(response, null, 2)}`);
             return response.content;
         }
     };
