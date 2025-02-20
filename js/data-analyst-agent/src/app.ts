@@ -28,12 +28,6 @@ app.message('/reset', async (context: TurnContext, state: ApplicationTurnState) 
 
 // Listen for ANY message to be received. MUST BE AFTER ANY OTHER MESSAGE HANDLERS
 app.activity(ActivityTypes.Message, async (context: TurnContext, _: ApplicationTurnState) => {
-    // // Increment count state
-    // let count = state.conversation.count ?? 0;
-    // state.conversation.count = ++count;
-
-    // // Echo back users request
-    // await context.sendActivity(`[${count}] you said: ${context.activity.text}`);
     const response: DataAnalystResponse = await dataAnalyst.chat(context.activity.text);
     log.info(`Data Analyst Response: ${JSON.stringify(response, null, 2)}`);
     

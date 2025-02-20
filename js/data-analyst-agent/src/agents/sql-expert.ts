@@ -91,8 +91,7 @@ export const SQLExpert = ({ responseFormat }: SQLExpertOptions = {}) => {
         const sqlite = sqlite3.verbose();
         const db = new sqlite.Database(dbPath, sqlite3.OPEN_READONLY, err => {
             if (err) {
-                console.error('Failed to open database:', err);
-                return;
+                throw new Error('Failed to open database:', err);
             }
             db.run('PRAGMA foreign_keys = ON');
         });
