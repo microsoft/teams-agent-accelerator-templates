@@ -1,5 +1,6 @@
 import asyncio
 import os
+from typing import Callable, Coroutine
 
 from botbuilder.core import TurnContext
 from botbuilder.schema import Activity, ActivityTypes, Attachment, AttachmentLayoutTypes
@@ -7,10 +8,37 @@ from browser_use import Agent, Browser, BrowserConfig
 from browser_use.agent.views import AgentOutput
 from browser_use.browser.context import BrowserContext
 from browser_use.browser.views import BrowserState
+from langchain_openai import AzureChatOpenAI, ChatOpenAI
+
 from cards import create_final_card, create_progress_card
 from config import Config
-from langchain_openai import AzureChatOpenAI, ChatOpenAI
 from storage.session import Session, SessionState, SessionStepState
+
+MAX_EXECUTION_TIME_SECONDS = 600  # 10 minutes
+
+
+class WrappedAgent(Agent):
+    """
+    We are wrapping the Agent class to add a post_step_callback that is called after each step.
+    The Agent class calls a callback before the execution of each step, but not after.
+    Without this, we wouldn't be able to get the latest screenshot after each step, which
+    isn't the worst, but it it does lead to added latency to show what the agent just did
+    and also doesn't provide the last _actual_ screenshot after the agent has finished.
+    """
+
+    def __init__(self, *args, **kwargs):
+        self.register_new_post_step_callback: Callable[
+            [AgentOutput], Coroutine[None, None, None]
+        ] = kwargs.get("register_post_step_callback")
+        # Remove the callback from kwargs so it's not passed to the superclass
+        kwargs.pop("register_post_step_callback", None)
+        super().__init__(*args, **kwargs)
+
+    async def step(self) -> None:
+        await super().step()
+        if self.register_new_post_step_callback:
+            last_model_output = self.history.model_outputs()[-1]
+            await self.register_new_post_step_callback(last_model_output)
 
 
 class BrowserAgent:
@@ -112,12 +140,8 @@ class BrowserAgent:
             )
             return
 
-        # Handle screenshot and update card in one go
-        asyncio.create_task(
-            self._handle_screenshot_and_emit(
-                output,
-            )
-        )
+    async def post_step_callback(self, output: AgentOutput) -> None:
+        await self._handle_screenshot_and_emit(output)
 
     async def _send_final_activity(
         self, message: str, include_screenshot: bool = True, override_title: str = None
@@ -148,6 +172,7 @@ class BrowserAgent:
 
         # First update the progress card
         step = SessionStepState(action=message, screenshot=last_screenshot)
+        self.session.session_state.append(step)
         activity = Activity(
             id=self.activity_id,
             type="message",
@@ -156,7 +181,7 @@ class BrowserAgent:
                 Attachment(
                     content_type="application/vnd.microsoft.card.adaptive",
                     content=create_progress_card(
-                        screenshot=last_screenshot,
+                        screenshot=None,
                         action="The session concluded",
                         history_facts=history_facts,
                     ),
@@ -191,11 +216,12 @@ class BrowserAgent:
             asyncio.create_task(self._send_final_activity("No results found"))
 
     async def run(self, query: str) -> str:
-        agent = Agent(
+        agent = WrappedAgent(
             task=query,
             llm=self.llm,
             register_new_step_callback=self.step_callback,
             register_done_callback=self.done_callback,
+            register_post_step_callback=self.post_step_callback,
             browser_context=self.browser_context,
             generate_gif=False,
         )
@@ -203,7 +229,21 @@ class BrowserAgent:
         self.agent_history = agent.history
 
         try:
-            result = await agent.run()
+            # Run the agent with a 10-minute timeout
+            result = await asyncio.wait_for(
+                agent.run(), timeout=MAX_EXECUTION_TIME_SECONDS
+            )
+
+            # Take final screenshot and update session before closing browser
+            if result.action_results() and result.action_results()[-1]:
+                final_screenshot = await self.browser_context.take_screenshot()
+                step = SessionStepState(
+                    screenshot=final_screenshot,
+                    action="Final state",
+                )
+                self.session.session_state.append(step)
+
+            # Now safe to close the browser
             asyncio.create_task(self.browser_context.close())
 
             action_results = result.action_results()
@@ -213,6 +253,15 @@ class BrowserAgent:
                 else "No results found"
             )
 
+        except asyncio.TimeoutError:
+            self.session.state = SessionState.ERROR
+            error_message = "Browser agent execution timed out after 10 minutes"
+            await self._send_final_activity(
+                error_message, include_screenshot=False, override_title="⏰ Timeout"
+            )
+            # Make sure to close the browser even on timeout
+            asyncio.create_task(self.browser_context.close())
+            return error_message
         except Exception as e:
             self.session.state = SessionState.ERROR
             error_message = f"Error during browser agent execution: {str(e)}"

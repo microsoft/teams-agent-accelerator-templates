@@ -9,6 +9,16 @@ This sample demonstrates how to build an AI-powered web browsing agent that can 
 - 🔄 **Interruptable**: Allows users to stop the browsing session at any time
 - 🚢 **Dockerized**: Docker file ready to be deployed to an Azure App Service
 
+## Examples
+
+### Fetching the news
+
+![News Example](./docs/news-example.gif)
+
+### Compare prices of products
+
+![Compare Prices Example](./docs/compare-prices-example.gif)
+
 ## Running the sample
 
 ### Prerequisites

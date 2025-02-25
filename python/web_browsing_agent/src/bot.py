@@ -1,14 +1,14 @@
 import asyncio
-import re
 import sys
 import traceback
+from datetime import datetime, timedelta, timezone
 
 from botbuilder.core import TurnContext
 from botbuilder.schema import Activity, ActivityTypes, Attachment
 from teams import Application, ApplicationOptions, TeamsAdapter
 from teams.state import TurnState
 
-from browser.browser_agent import BrowserAgent
+from browser.browser_agent import MAX_EXECUTION_TIME_SECONDS, BrowserAgent
 from cards import create_in_progress_card
 from config import Config
 from middleware.session_middleware import SessionMiddleware
@@ -58,17 +58,24 @@ async def run_agent(
     return result
 
 
-@bot_app.message(re.compile(".*"))
+@bot_app.activity("message")
 async def on_web_browse(context: TurnContext, turn_state: TurnState):
     """Handle web browsing requests from the user."""
     query = context.activity.text
     if not query:
         return
 
-    session = context.has("session") and context.get("session")
+    session: Session | None = context.has("session") and context.get("session")
 
     # Check if there's an active session
-    if session and session.state == SessionState.STARTED:
+    if (
+        session
+        and session.state == SessionState.STARTED
+        and (
+            session.created_at
+            > datetime.now(timezone.utc) - timedelta(seconds=MAX_EXECUTION_TIME_SECONDS)
+        )
+    ):
         # Send card asking if user wants to stop current session
         card = create_in_progress_card(session.id)
         await context.send_activity(
