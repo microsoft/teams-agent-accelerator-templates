@@ -234,18 +234,6 @@ class BrowserAgent:
                 agent.run(), timeout=MAX_EXECUTION_TIME_SECONDS
             )
 
-            # Take final screenshot and update session before closing browser
-            if result.action_results() and result.action_results()[-1]:
-                final_screenshot = await self.browser_context.take_screenshot()
-                step = SessionStepState(
-                    screenshot=final_screenshot,
-                    action="Final state",
-                )
-                self.session.session_state.append(step)
-
-            # Now safe to close the browser
-            asyncio.create_task(self.browser_context.close())
-
             action_results = result.action_results()
             return (
                 action_results[-1].extracted_content
