@@ -37,9 +37,10 @@ class WrappedAgent(Agent):
     async def step(self) -> None:
         await super().step()
         if self.register_new_post_step_callback:
-            last_model_output = self.history.model_outputs()[-1]
-            await self.register_new_post_step_callback(last_model_output)
-
+            model_outputs = self.history.model_outputs()
+            if model_outputs:
+                last_model_output = model_outputs[-1]
+                await self.register_new_post_step_callback(last_model_output)
 
 class BrowserAgent:
     def __init__(self, context: TurnContext, session: Session, activity_id: str):
