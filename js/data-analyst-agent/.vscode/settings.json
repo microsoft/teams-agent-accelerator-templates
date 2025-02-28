@@ -1,0 +1,14 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "SQLite",
+            "database": "./data/adventureworks.db"
+        }
+    ],
+    "sqltools.useNodeRuntime": true,
+    "githubPullRequests.ignoredPullRequestBranches": [
+        "main"
+    ]
+}

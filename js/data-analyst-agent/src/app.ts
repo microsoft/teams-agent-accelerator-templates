@@ -4,6 +4,7 @@ import { MemoryStorage, TurnContext } from "botbuilder";
 import { ActivityTypes } from "botbuilder";
 import { DataAnalyst, DataAnalystResponse } from "./agents/data-analyst";
 import { createLogger } from "./core/logging";
+import { ProgressUpdate } from "./core/progress";
 interface ConversationState {
     count: number;
 }
@@ -23,71 +24,24 @@ export type ProcessingState =
   | 'FETCHING_DATA'
   | 'GENERATING_VISUALIZATION'
 
-// Listen for user to say '/reset' and then delete conversation state
-app.message('/reset', async (context: TurnContext, state: ApplicationTurnState) => {
-    state.deleteConversationState();
-    await context.sendActivity(`Ok I've deleted the current conversation state.`);
+const progressUpdate = new ProgressUpdate();
+let dataAnalyst = DataAnalyst({ progressUpdate });
+
+// Clears the conversation history of all the agents.
+app.message("/reset", async (context: TurnContext, _: ApplicationTurnState) => {
+    // Reset the agent
+    dataAnalyst = DataAnalyst({ progressUpdate });
+    await context.sendActivity(`Resetting agent...`);
 });
 
-const onProgressFn = (streamer: StreamingResponse) => (update: ProcessingState) => {
-    const progressMessages = {
-        'PROCESSING_MESSAGE': "Processing...",
-        'PLANNING_QUERY': "Planning query...", 
-        'FETCHING_DATA': "Fetching data...",
-        'GENERATING_VISUALIZATION': "Generating visualization..."
-    };
-
-    streamer.queueInformativeUpdate(progressMessages[update]);
-}
-
-
-// // Listen for ANY message to be received. MUST BE AFTER ANY OTHER MESSAGE HANDLERS
+// Listen for ANY message to be received. MUST BE AFTER ANY OTHER MESSAGE HANDLERS
 app.activity(ActivityTypes.Message, async (context: TurnContext, _: ApplicationTurnState) => {
     log.trace(`Incoming Message Activity.`)
-    const streamer = new StreamingResponse(context);
-    streamer.setGeneratedByAILabel(true);
-    streamer.setFeedbackLoop(true);
-    streamer.setFeedbackLoopType('default');
 
-    const onProgress = onProgressFn(streamer);
-
-    const dataAnalyst = DataAnalyst({ onProgress });
-
-    let response: DataAnalystResponse = await dataAnalyst.chat(context.activity.text);
-
-    const firstItem = response[0];
-    let initialText = "Here's what I was able to come up with:";
-    if (firstItem.text) {
-        initialText = firstItem.text;
-        response = response.slice(1);
-    } else if (firstItem.card) {
-        initialText = "Here are the visualizations I was able to create:";
-    }
-
-    await streamer.queueTextChunk(initialText);
-    await streamer.waitForQueue();
-    await streamer.endStream();
-
-    // Send each content item individually.
-    for (const item of response) {
-        if (item.text) {
-            await context.sendActivity(item.text);
-        }
-
-        if (item.card) {
-            try {
-                await context.sendActivity({
-                    type: ActivityTypes.Message,
-                    attachments: [{
-                    contentType: 'application/vnd.microsoft.card.adaptive',
-                        content: item.card
-                    }]
-                });
-            } catch (error) {
-                log.error(`Error sending adaptive card: ${error}`);
-                await context.sendActivity(`I'm sorry, I was unable to generate a valid visualization. Please try again.`);
-            }
-        }
+    if (isPersonalScope(context)) {
+        await streamingDataAnalyst(context);
+    } else {
+        await nonStreamingDataAnalyst(context);
     }
 });
 
@@ -101,3 +55,113 @@ app.feedbackLoop(async (_context: TurnContext, _state: TurnState, feedbackLoopDa
         log.info(`Feedback: ${JSON.stringify(feedbackLoopData.actionValue.feedback, null, 2)}`);
     }
 });
+
+function isPersonalScope(context: TurnContext) {
+    return context.activity.conversation?.conversationType == 'personal';
+}
+
+async function streamingDataAnalyst(context: TurnContext) {
+    const streamer = new StreamingResponse(context);
+    streamer.setGeneratedByAILabel(true);
+    streamer.setFeedbackLoop(true);
+    streamer.setFeedbackLoopType('default');
+
+    progressUpdate.setStreamer(streamer);
+
+    let response: DataAnalystResponse = await dataAnalyst.chat(context.activity.text);
+
+    progressUpdate.endProgressUpdate();
+
+    // Send each content item individually.
+    const attachments = [];
+    for (const item of response) {
+        if (item.text) {
+            const text = item.text + "\n\n";
+            streamer.queueTextChunk(text);
+        }
+
+        if (item.card) {
+            attachments.push({
+                contentType: 'application/vnd.microsoft.card.adaptive',
+                content: item.card
+            });
+        }
+    }
+
+    streamer.setAttachments(attachments);
+    await streamer.waitForQueue();
+    await streamer.endStream();
+}
+
+async function nonStreamingDataAnalyst(context: TurnContext) {
+    const activity = await context.sendActivity(`Working on it...`);
+    
+    if (!activity) {
+        log.error(`Failed to send activity`);
+        return;
+    }
+
+    try {
+        let response: DataAnalystResponse = await dataAnalyst.chat(context.activity.text);
+
+        // Send each content item individually.
+        const attachments = [];
+        let textBuffer = ""
+        for (const item of response) {
+            if (item.text) {
+                textBuffer += item.text + "\n\n";
+            }
+
+            if (item.card) {
+                attachments.push({
+                    contentType: 'application/vnd.microsoft.card.adaptive',
+                    content: item.card
+                });
+            }
+        }
+
+        if (textBuffer.length === 0) {
+            if (attachments.length > 0) {
+                textBuffer = "Here are the visualizations:";
+            } else {
+                textBuffer = "Sorry I wasn't able to answer your query. Please try again.";
+            }
+        }
+
+        // Update the original activity with the text response
+        await context.updateActivity({
+            id: activity.id,
+            type: ActivityTypes.Message,
+            text: textBuffer,
+            channelData: {
+                feedbackLoop: {
+                    type: 'default'
+                }
+            },
+            entities: [
+                {
+                    type: 'https://schema.org/Message',
+                    '@type': 'Message',
+                    '@context': 'https://schema.org',
+                    '@id': '',
+                    additionalType: ['AIGeneratedContent'],
+                }
+            ]
+        })
+
+        if (attachments.length > 0) {    
+            // Send the Adaptive Card attachments. Teams doesn't allow multiple attachments in a single update activity, so we have to send them in a separate activity.
+            await context.sendActivity({
+                type: ActivityTypes.Message,
+                attachments: attachments
+            });
+        }
+    } catch (error) {
+        log.error(`Error: ${error}`);
+        await context.updateActivity({
+            id: activity.id,
+            type: ActivityTypes.Message,
+            text: `Failure Occured. ${error}`
+        });
+    }
+}

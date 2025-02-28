@@ -41,7 +41,7 @@
             "commandLists":[
                 {
                 "scopes":[
-                    "personal"
+                    "personal", "team", "groupChat"
                 ],
                 "commands":[
                     {
@@ -53,8 +53,8 @@
                     "description":"Show examples of charts that can be created."
                     },
                     {
-                    "title":"Product category distribution",
-                    "description":"Visualize the distribution of products across categories"
+                    "title":"What do you do?",
+                    "description":"Learn about the capabilities of the Data Analyst."
                     }
                 ]
                 }

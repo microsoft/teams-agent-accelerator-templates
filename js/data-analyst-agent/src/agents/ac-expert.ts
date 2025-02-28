@@ -3,10 +3,11 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { createLogger } from '../core/logging';
 import { responseSchema } from '../schemas/ac-expert-schema';
+import { pathToSrc } from '../utils';
 
 export const AdaptiveCardExpert = () => {
-    // const fullAcSchema = fs.readFileSync(path.join(__dirname, '..', 'schemas', 'full-ac-schema.json'), 'utf-8');
-    const examplesPath = path.join(__dirname, '..', 'examples', 'ac-expert-examples.json');
+    // const fullAcSchema = fs.readFileSync(path.join(pathToSrc(), 'schemas', 'full-ac-schema.json'), 'utf-8');
+    const examplesPath = path.join(pathToSrc(), 'examples', 'ac-expert-examples.json');
     const examples = JSON.parse(fs.readFileSync(examplesPath, 'utf-8'));
 
     const log = createLogger('ac-expert', 'DEBUG');
@@ -43,6 +44,9 @@ export const AdaptiveCardExpert = () => {
             '  * DIVERGINGTEAL, DIVERGINGYELLOW, DIVERGINGPEACH',
             '  * DIVERGINGLIGHTRED, DIVERGINGRED, DIVERGINGMAROON',
             '  * DIVERGINGGRAY',
+            '',
+            'It is very important that you strictly use the colors mentioned above. DO NOT use any other colors (e.g. HEX, RGB, etc.).',
+            'For example in the generated card, if you see "color": "#FF0000", it is wrong. It should be something like "color": "CATEGORICALRED".',
             '',
             '- Ensure proper formatting and readability',
             '- Support data of any size efficiently',

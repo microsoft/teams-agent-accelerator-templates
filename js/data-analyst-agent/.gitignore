@@ -1,3 +1,4 @@
-.vscode/
+env
+node_modules/
 .env
-SQLite.session.sql
+appPackage/build

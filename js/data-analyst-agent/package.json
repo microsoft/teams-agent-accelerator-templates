@@ -12,7 +12,7 @@
   "scripts": {
     "clean": "npx rimraf ./dist",
     "build": "npx tsup",
-    "start": "node .",
+    "start": "node ./dist/index.js",
     "dev": "npx nodemon -w \"./src/**\" -e ts --exec \"node -r ts-node/register -r dotenv/config ./src/index.ts\"",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint \"src/**/*.ts\" --fix",

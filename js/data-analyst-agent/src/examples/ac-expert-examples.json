@@ -18,22 +18,22 @@
                         {
                             "legend": "Accessories",
                             "value": 12,
-                            "color": "#FF0000"
+                            "color": "CATEGORICALBLUE"
                         },
                         {
                             "legend": "Bikes",
                             "value": 3,
-                            "color": "#00FF00"
+                            "color": "CATEGORICALLIGHTBLUE"
                         },
                         {
                             "legend": "Clothing",
                             "value": 8,
-                            "color": "#0000FF"
+                            "color": "CATEGORICALTEAL"
                         },
                         {
                             "legend": "Components",
                             "value": 14,
-                            "color": "#FFFF00"
+                            "color": "CATEGORICALBLUE"
                         }
                     ]
                 }
@@ -95,17 +95,17 @@
                         {
                             "x": "2020",
                             "y": 6404933.5803,
-                            "color": "#FF0000"
+                            "color": "CATEGORICALLAVENDER"
                         },
                         {
                             "x": "2021",
                             "y": 9324203.7917,
-                            "color": "#00FF00"
+                            "color": "CATEGORICALPURPLE"
                         },
                         {
                             "x": "2022",
                             "y": 9185449.4473,
-                            "color": "#0000FF"
+                            "color": "CATEGORICALLIME"
                         }
                     ]
                 }

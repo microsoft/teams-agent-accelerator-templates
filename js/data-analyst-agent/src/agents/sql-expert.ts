@@ -4,14 +4,15 @@ import * as path from 'path';
 import sqlite3 from 'sqlite3';
 import { createLogger } from '../core/logging';
 import { CommonAgentOptions } from './data-analyst';
+import { pathToSrc } from '../utils';
 
 export interface SQLExpertOptions extends CommonAgentOptions {
     responseFormat?: JsonSchema;
 };
 
-export const SQLExpert = ({ responseFormat, onProgress }: SQLExpertOptions = {}) => {
+export const SQLExpert = ({ responseFormat, progressUpdate }: SQLExpertOptions = {}) => {
     // Load schema from file
-    const schemaPath = path.join(__dirname, '..', 'data', 'schema.sql');
+    const schemaPath = path.join(pathToSrc(), 'data', 'schema.sql');
     const dbSchema = fs.readFileSync(schemaPath, 'utf-8');
 
     const log = createLogger('sql-expert', 'DEBUG');
@@ -50,7 +51,7 @@ export const SQLExpert = ({ responseFormat, onProgress }: SQLExpertOptions = {})
             required: ["query"]
         },
         async ({ query }) => {
-            onProgress?.('FETCHING_DATA');
+            progressUpdate?.update('FETCHING_DATA');
             log.info(`Attempting to execute SQL query: ${query}`);
 
             // Query validation
@@ -88,7 +89,7 @@ export const SQLExpert = ({ responseFormat, onProgress }: SQLExpertOptions = {})
     );
 
     function initializeDatabase() {
-        const dbPath = path.join(__dirname, '..', 'data', 'adventureworks.db');
+        const dbPath = path.join(pathToSrc(), 'data', 'adventureworks.db');
         const sqlite = sqlite3.verbose();
         const db = new sqlite.Database(dbPath, sqlite3.OPEN_READONLY, err => {
             if (err) {

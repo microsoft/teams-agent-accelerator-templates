@@ -5,7 +5,8 @@ import { createLogger } from '../core/logging';
 import { BaseAgent, JsonSchema } from '../core/base-agent';
 import { SQLExpert } from './sql-expert';
 import { AdaptiveCardExpert } from './ac-expert';
-import { ProcessingState } from '../app';
+import { pathToSrc } from '../utils';
+import { ProgressUpdate } from '../core/progress';
 
 const chatSchema: JsonSchema = {
     type: "object",
@@ -110,18 +111,18 @@ export type DataAnalystResponse = {
 }[];
 
 export interface CommonAgentOptions {
-    onProgress?: (update: ProcessingState) => void;
+    progressUpdate?: ProgressUpdate;
 }
 
-export const DataAnalyst = ({ onProgress }: CommonAgentOptions) => {
-    const schemaPath = path.join(__dirname, '..', 'data', 'schema.sql');
+export const DataAnalyst = ({ progressUpdate }: CommonAgentOptions) => {
+    const schemaPath = path.join(pathToSrc(), 'data', 'schema.sql');
     const dbSchema = fs.readFileSync(schemaPath, 'utf-8');
-    const examplesPath = path.join(__dirname, '..', 'examples', 'data-analyst-examples.jsonl');
+    const examplesPath = path.join(pathToSrc(), 'examples', 'data-analyst-examples.jsonl');
     const examples = JSON.parse(fs.readFileSync(examplesPath, 'utf-8'));
 
     const log = createLogger('data-analyst', 'DEBUG');
 
-    const sql = SQLExpert({ onProgress });
+    const sql = SQLExpert({ progressUpdate });
     const card = AdaptiveCardExpert();
 
     const agent = new BaseAgent({
@@ -133,7 +134,12 @@ export const DataAnalyst = ({ onProgress }: CommonAgentOptions) => {
             '2. Adaptive Card Expert - Creates visual representations of data',
             '',
             'Your process:',
-            '1. Understand what data the user needs',
+            '1. Understand what data the user needs. ',
+            '       If their request is one of the following examples then simply return that. No need to call the SQL or Adaptive Card experts.',
+            '       Do not feel obligated to follow the entire process if the user is asking for something simple.',
+            '       Examples:',
+            '           - "What do you do?"',
+            '           - "What can you help me with?"',
             '2. Get the data through the SQL Expert',
             '3. Choose appropriate visualization types and create them through the Adaptive Card Expert:',
             '   - Use bar charts for comparing categories',
@@ -172,7 +178,7 @@ export const DataAnalyst = ({ onProgress }: CommonAgentOptions) => {
             ...examples.map((example: any) => [
                 '---',
                 `User: ${example.user_message}`,
-                `Assistant: ${example.data_analyst_response}`,
+                `Assistant: ${JSON.stringify(example.data_analyst_response, null, 0)}`,
             ].join('\n')),
             '',
             'Database Schema:',
@@ -188,7 +194,7 @@ export const DataAnalyst = ({ onProgress }: CommonAgentOptions) => {
         'Ask the SQL expert to help you query and analyze the database',
         chatSchema,
         async ({ text }) => {
-            onProgress?.('PLANNING_QUERY');
+            progressUpdate?.update('PLANNING_QUERY');
             log.info(`Data Analyst -> SQL Expert`);
             const response = await sql.chat(text);
             log.info(`Data Analyst <- SQL Expert`);
@@ -199,7 +205,7 @@ export const DataAnalyst = ({ onProgress }: CommonAgentOptions) => {
         'Ask the adaptive card expert to create visualizations of data.',
         acExpertSchema,
         async ({ instructions, visualization, title, xAxis, xAxisFormat, yAxis }) => {
-            onProgress?.('GENERATING_VISUALIZATION');
+            progressUpdate?.update('GENERATING_VISUALIZATION');
             let message = `Please create a ${visualization} visualization with the following instructions: ${instructions}.`;
             if (title) {
                 message += ` Use "${title}" as the chart title.`;
@@ -224,7 +230,7 @@ export const DataAnalyst = ({ onProgress }: CommonAgentOptions) => {
 
     return {
         chat: async (text: string): Promise<DataAnalystResponse> => {
-            onProgress?.('PROCESSING_MESSAGE');
+            progressUpdate?.update('PROCESSING_MESSAGE');
             log.info(`Data Analyst Query: ${text}`);
             const response = await agent.chat(text);
             log.info(`Data Analyst Response: ${JSON.stringify(response, null, 2)}`);

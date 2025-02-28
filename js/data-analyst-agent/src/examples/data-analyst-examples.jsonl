@@ -22,22 +22,22 @@
                                     {
                                         "legend": "Accessories",
                                         "value": 12,
-                                        "color": "#FF0000"
+                                        "color": "CATEGORICALBLUE"
                                     },
                                     {
                                         "legend": "Bikes",
                                         "value": 3,
-                                        "color": "#00FF00"
+                                        "color": "CATEGORICALLIGHTBLUE"
                                     },
                                     {
                                         "legend": "Clothing",
                                         "value": 8,
-                                        "color": "#0000FF"
+                                        "color": "CATEGORICALPURPLE"
                                     },
                                     {
                                         "legend": "Components",
                                         "value": 14,
-                                        "color": "#FFFF00"
+                                        "color": "CATEGORICALLAVENDER"
                                     }
                                 ]
                             }
@@ -113,17 +113,17 @@
                                     {
                                         "x": "2020",
                                         "y": 6404933.5803,
-                                        "color": "#FF0000"
+                                        "color": "CATEGORICALLAVENDER"
                                     },
                                     {
                                         "x": "2021",
                                         "y": 9324203.7917,
-                                        "color": "#00FF00"
+                                        "color": "CATEGORICALLAVENDER"
                                     },
                                     {
                                         "x": "2022",
                                         "y": 9185449.4473,
-                                        "color": "#0000FF"
+                                        "color": "CATEGORICALLAVENDER"
                                     }
                                 ]
                             }
@@ -167,6 +167,389 @@
                                     {
                                         "title": "4.",
                                         "value": "Accessories"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
+            ]
+        }
+    },
+    {
+        "user_message": "Show examples of charts.",
+        "data_analyst_response": {
+            "content": [
+                {
+                    "type": "card",
+                    "card": {
+                        "type": "AdaptiveCard",
+                        "version": "1.5",
+                        "body": [
+                            {
+                                "type": "Chart.VerticalBar",
+                                "title": "Vertical Bar Graph of Random Data",
+                                "xAxisTitle": "Categories",
+                                "yAxisTitle": "Values",
+                                "data": [
+                                    {
+                                        "x": "Category A",
+                                        "y": 15,
+                                        "color": "CATEGORICALMARIGOLD"
+                                    },
+                                    {
+                                        "x": "Category B",
+                                        "y": 30,
+                                        "color": "CATEGORICALLIME"
+                                    },
+                                    {
+                                        "x": "Category C",
+                                        "y": 22,
+                                        "color": "CATEGORICALGREEN"
+                                    },
+                                    {
+                                        "x": "Category D",
+                                        "y": 40,
+                                        "color": "CATEGORICALBLUE"
+                                    },
+                                    {
+                                        "x": "Category E",
+                                        "y": 5,
+                                        "color": "CATEGORICALLAVENDER"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "card",
+                    "card": {
+                        "type": "AdaptiveCard",
+                        "version": "1.5",
+                        "body": [
+                            {
+                                "type": "Chart.HorizontalBar",
+                                "title": "Horizontal Bar Graph of Random Data with Predefined Colors (No Y-Axis Label)",
+                                "xAxisTitle": "Values",
+                                "yAxisTitle": "",
+                                "data": [
+                                    {
+                                        "x": "Category A",
+                                        "y": 28,
+                                        "color": "CATEGORICALRED"
+                                    },
+                                    {
+                                        "x": "Category B",
+                                        "y": 18,
+                                        "color": "CATEGORICALBLUE"
+                                    },
+                                    {
+                                        "x": "Category C",
+                                        "y": 23,
+                                        "color": "CATEGORICALGREEN"
+                                    },
+                                    {
+                                        "x": "Category D",
+                                        "y": 35,
+                                        "color": "CATEGORICALPURPLE"
+                                    },
+                                    {
+                                        "x": "Category E",
+                                        "y": 10,
+                                        "color": "CATEGORICALLIME"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "card",
+                    "card": {
+                        "type": "AdaptiveCard",
+                        "version": "1.5",
+                        "body": [
+                            {
+                                "type": "TextBlock",
+                                "text": "Pie Chart of Random Data",
+                                "weight": "Bolder",
+                                "size": "Large",
+                                "horizontalAlignment": "Center"
+                            },
+                            {
+                                "type": "Chart.Pie",
+                                "data": [
+                                    {
+                                        "legend": "Category A",
+                                        "value": 40,
+                                        "color": "CATEGORICALRED"
+                                    },
+                                    {
+                                        "legend": "Category B",
+                                        "value": 25,
+                                        "color": "CATEGORICALBLUE"
+                                    },
+                                    {
+                                        "legend": "Category C",
+                                        "value": 15,
+                                        "color": "CATEGORICALGREEN"
+                                    },
+                                    {
+                                        "legend": "Category D",
+                                        "value": 10,
+                                        "color": "CATEGORICALPURPLE"
+                                    },
+                                    {
+                                        "legend": "Category E",
+                                        "value": 10,
+                                        "color": "CATEGORICALLIME"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "card",
+                    "card": {
+                        "type": "AdaptiveCard",
+                        "version": "1.5",
+                        "body": [
+                            {
+                                "type": "Chart.Line",
+                                "title": "Line Chart of Random Data",
+                                "xAxisTitle": "Date (yyyy-mm-dd)",
+                                "yAxisTitle": "Values",
+                                "data": [
+                                    {
+                                        "legend": "Data Series 1",
+                                        "values": [
+                                            {
+                                                "x": "2023-01-01",
+                                                "y": 10
+                                            },
+                                            {
+                                                "x": "2023-01-02",
+                                                "y": 15
+                                            },
+                                            {
+                                                "x": "2023-01-03",
+                                                "y": 7
+                                            },
+                                            {
+                                                "x": "2023-01-04",
+                                                "y": 20
+                                            },
+                                            {
+                                                "x": "2023-01-05",
+                                                "y": 30
+                                            }
+                                        ],
+                                        "color": "SEQUENTIAL1"
+                                    },
+                                    {
+                                        "legend": "Data Series 2",
+                                        "values": [
+                                            {
+                                                "x": "2023-01-01",
+                                                "y": 12
+                                            },
+                                            {
+                                                "x": "2023-01-02",
+                                                "y": 18
+                                            },
+                                            {
+                                                "x": "2023-01-03",
+                                                "y": 20
+                                            },
+                                            {
+                                                "x": "2023-01-04",
+                                                "y": 15
+                                            },
+                                            {
+                                                "x": "2023-01-05",
+                                                "y": 25
+                                            }
+                                        ],
+                                        "color": "SEQUENTIAL2"
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "card",
+                    "card": {
+                        "type": "AdaptiveCard",
+                        "version": "1.5",
+                        "body": [
+                            {
+                                "type": "TextBlock",
+                                "text": "Simple Table of Random Data",
+                                "weight": "Bolder",
+                                "size": "Large",
+                                "horizontalAlignment": "Center"
+                            },
+                            {
+                                "type": "Table",
+                                "roundedCorners": true,
+                                "firstRowAsHeaders": true,
+                                "columns": [
+                                    {
+                                        "width": 3
+                                    },
+                                    {
+                                        "width": 2
+                                    },
+                                    {
+                                        "width": 3
+                                    }
+                                ],
+                                "rows": [
+                                    {
+                                        "type": "TableRow",
+                                        "cells": [
+                                            {
+                                                "type": "TableCell",
+                                                "items": [
+                                                    {
+                                                        "type": "TextBlock",
+                                                        "text": "Item",
+                                                        "wrap": true,
+                                                        "weight": "Bolder"
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "TableCell",
+                                                "items": [
+                                                    {
+                                                        "type": "TextBlock",
+                                                        "text": "Value",
+                                                        "wrap": true,
+                                                        "weight": "Bolder"
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "TableCell",
+                                                "items": [
+                                                    {
+                                                        "type": "TextBlock",
+                                                        "text": "Description",
+                                                        "wrap": true,
+                                                        "weight": "Bolder"
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "TableRow",
+                                        "cells": [
+                                            {
+                                                "type": "TableCell",
+                                                "items": [
+                                                    {
+                                                        "type": "TextBlock",
+                                                        "text": "Item A",
+                                                        "wrap": true
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "TableCell",
+                                                "items": [
+                                                    {
+                                                        "type": "TextBlock",
+                                                        "text": "10",
+                                                        "wrap": true
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "TableCell",
+                                                "items": [
+                                                    {
+                                                        "type": "TextBlock",
+                                                        "text": "Description for Item A",
+                                                        "wrap": true
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "TableRow",
+                                        "cells": [
+                                            {
+                                                "type": "TableCell",
+                                                "items": [
+                                                    {
+                                                        "type": "TextBlock",
+                                                        "text": "Item B",
+                                                        "wrap": true
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "TableCell",
+                                                "items": [
+                                                    {
+                                                        "type": "TextBlock",
+                                                        "text": "25",
+                                                        "wrap": true
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "TableCell",
+                                                "items": [
+                                                    {
+                                                        "type": "TextBlock",
+                                                        "text": "Description for Item B",
+                                                        "wrap": true
+                                                    }
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    {
+                                        "type": "TableRow",
+                                        "cells": [
+                                            {
+                                                "type": "TableCell",
+                                                "items": [
+                                                    {
+                                                        "type": "TextBlock",
+                                                        "text": "Item C",
+                                                        "wrap": true
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "TableCell",
+                                                "items": [
+                                                    {
+                                                        "type": "TextBlock",
+                                                        "text": "15",
+                                                        "wrap": true
+                                                    }
+                                                ]
+                                            },
+                                            {
+                                                "type": "TableCell",
+                                                "items": [
+                                                    {
+                                                        "type": "TextBlock",
+                                                        "text": "Description for Item C",
+                                                        "wrap": true
+                                                    }
+                                                ]
+                                            }
+                                        ]
                                     }
                                 ]
                             }

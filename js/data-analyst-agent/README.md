@@ -8,6 +8,7 @@ The Data Analyst Agent combines SQL querying capabilities with data visualizatio
 - Generate visualizations from query results
 - Analyze data patterns and trends
 - Create interactive Adaptive Cards for data presentation
+- `"/reset"` command to clear the conversation history.
 
 ![Data Analyst Agent Demo](assets/demo.gif)
 
