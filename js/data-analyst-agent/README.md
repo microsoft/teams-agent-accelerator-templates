@@ -46,22 +46,31 @@ The Data Analyst Agent combines SQL querying capabilities with data visualizatio
 
 ### Running the Bot
 
-#### Option 1: Using Teams Toolkit (Recommended)
+#### Option 1: Local deployment using Teams Toolkit (Recommended)
 1. Open the project in Visual Studio Code
-2. Press F5 to start the debug session
+2. Press F5 to start the debug session (Debug Edge)
 3. Teams Toolkit will handle:
    - Starting the local bot server
    - Tunneling for external access
    - Opening Teams with your bot loaded
 
-#### Option 2: Manual Start
-1. Start the development server:
-   ```bash
-   npm run dev
-   ```
-2. The bot will be available on `http://localhost:3978`
-3. Use ngrok or similar to expose your local server
-4. Update your bot endpoint in Azure Bot Service
+
+#### Option 2: Deploy to Azure using Teams Toolkit
+1. Create an empty `.env.dev` file and place it in the `env` folder.
+2. Create a `.env.dev.user` file in the `env` folder and add the following contents to it:
+
+```
+SECRET_AZURE_OPENAI_API_KEY=<api key>
+SECRET_AZURE_OPENAI_API_BASE=<api base> // Example: https://<id>-eastus2.openai.azure.com/
+SECRET_AZURE_OPENAI_API_VERSION=<api version> // Example: 2024-08-01-preview
+```
+
+3. Navigate over to the Teams Toolkit Extension in VSCode, and login to your Azure & M365 credentials.
+4. Then select "Provision" under the "Lifecycle" tab. Follow the instructions to select a resource group, and then click "Provision".
+5. Once the resources have been provisioned successfully, select "Deploy". It can take 5-10 minutes to deploy your app.
+6. Once the app has been deployed successfully, sideload `appPackage.dev.zip` file into Teams following the instructions [here](https://learn.microsoft.com/en-us/microsoftteams/platform/concepts/deploy-and-publish/apps-upload).
+
+To learn more about `Deploying to Azure using Teams Toolkit` see [this](https://learn.microsoft.com/en-us/microsoftteams/platform/toolkit/provision).
 
 ## Dataset
 This agent uses the AdventureWorks sample database, a Microsoft-provided dataset that simulates a bicycle manufacturer's data. The database includes:
