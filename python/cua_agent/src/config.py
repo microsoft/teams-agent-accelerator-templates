@@ -28,5 +28,5 @@ class Config:
     # By default, we use VNC to control the computer.
     # But you may use a playwright browser instead.
     USE_BROWSER = os.environ.get("USE_BROWSER", "false").lower() == "true"
-    VNC_ADDRESS = os.environ.get("VNC_ADDRESS", "localhost:5900")
+    VNC_ADDRESS = os.environ.get("VNC_ADDRESS", "localhost::5900")
     VNC_PASSWORD = os.environ.get("VNC_PASSWORD", "secret")

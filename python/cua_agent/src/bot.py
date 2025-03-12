@@ -8,6 +8,7 @@ from teams.state import TurnState
 
 from config import Config
 from cua.cua_agent import ComputerUseAgent
+from middleware.session_middleware import SessionMiddleware
 from storage.cua_session import CuaSession
 from storage.session_storage import SessionStorage
 
@@ -23,7 +24,7 @@ bot_app = Application(
         adapter=TeamsAdapter(config),
     )
 )
-# bot_app._adapter.use(SessionMiddleware(session_storage))
+bot_app._adapter.use(SessionMiddleware(session_storage))
 
 
 @bot_app.conversation_update("membersAdded")
