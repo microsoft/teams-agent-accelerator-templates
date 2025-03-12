@@ -7,6 +7,7 @@ requires-python = ">=3.12"
 dependencies = [
     "aiohttp==3.9.3",
     "openai>=1.66.0",
+    "playwright>=1.50.0",
     "python-dotenv>=1.0.1",
     "teams-ai==1.5.0",
     "vncdotool>=1.2.0",

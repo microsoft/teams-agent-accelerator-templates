@@ -1,5 +1,4 @@
 import asyncio
-import logging
 import signal
 
 from botbuilder.core import TurnContext
@@ -14,7 +13,7 @@ from cua.scaler import Scaler
 from cua.vnc.machine import Machine
 from storage.cua_session import CuaSession
 
-logger = logging.getLogger(__name__)
+# logger = logging.getLogger(__name__)
 
 
 class ComputerUseAgent:

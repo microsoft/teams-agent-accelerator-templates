@@ -3,13 +3,11 @@ import logging
 import traceback
 
 from botbuilder.core import TurnContext
-from botbuilder.core.memory_storage import MemoryStorage
 from teams import Application, ApplicationOptions, TeamsAdapter
 from teams.state import TurnState
 
 from config import Config
 from cua.cua_agent import ComputerUseAgent
-from middleware.session_middleware import SessionMiddleware
 from storage.cua_session import CuaSession
 from storage.session_storage import SessionStorage
 
@@ -19,26 +17,24 @@ logger = logging.getLogger(__name__)
 
 # Initialize application with session management
 session_storage = SessionStorage()
-memory_storage = MemoryStorage()
 bot_app = Application(
     ApplicationOptions(
         bot_app_id=config.APP_ID,
         adapter=TeamsAdapter(config),
-        storage=memory_storage,
     )
 )
-bot_app._adapter.use(SessionMiddleware(session_storage))
+# bot_app._adapter.use(SessionMiddleware(session_storage))
 
 
 @bot_app.conversation_update("membersAdded")
-async def on_members_added(context: TurnContext):
+async def on_members_added(context: TurnContext, state: TurnState):
     await context.send_activity(
         "How can I help you today? I am able to use the computer"
     )
 
 
 @bot_app.adaptive_cards.action_submit("approve_safety_check")
-async def on_approve_safety_check(context: TurnContext, _state: TurnState, data: dict):
+async def on_approve_safety_check(context: TurnContext, state: TurnState, data: dict):
     """Handle the user's approval of a safety check."""
     session: CuaSession | None = context.has("session") and context.get("session")
     if not session:
@@ -53,7 +49,7 @@ async def on_approve_safety_check(context: TurnContext, _state: TurnState, data:
 
 
 @bot_app.adaptive_cards.action_submit("toggle_pause")
-async def on_toggle_pause(context: TurnContext, _state: TurnState, data: dict):
+async def on_toggle_pause(context: TurnContext, state: TurnState, data: dict):
     """Handle the user's request to pause/resume the session."""
     session: CuaSession | None = context.has("session") and context.get("session")
     if not session:
@@ -82,7 +78,7 @@ async def run_cua_agent(
 
 
 @bot_app.activity("message")
-async def on_cua(context: TurnContext, turn_state: TurnState):
+async def on_cua(context: TurnContext, state: TurnState):
     """Handle web browsing requests from the user."""
     logger.info(f"Received message: {context.activity.text}")
     query = context.activity.text

@@ -15,12 +15,12 @@
     "outline": "outline.png"
   },
   "name": {
-    "short": "web-browsing-agent${{APP_NAME_SUFFIX}}",
-    "full": "full name for web-browsing-agent"
+    "short": "cua-agent${{APP_NAME_SUFFIX}}",
+    "full": "full name for cua-agent"
   },
   "description": {
-    "short": "short description for web-browsing-agent",
-    "full": "full description for web-browsing-agent"
+    "short": "short description for cua-agent",
+    "full": "full description for cua-agent"
   },
   "accentColor": "#FFFFFF",
   "bots": [

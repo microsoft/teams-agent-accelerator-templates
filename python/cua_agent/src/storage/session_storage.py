@@ -1,4 +1,4 @@
-from storage.browser_use_session import BrowserUseSession
+from storage.cua_session import CuaSession
 
 
 class SessionStorage:
@@ -7,11 +7,11 @@ class SessionStorage:
     def __init__(self):
         self._sessions = {}
 
-    async def get_session(self, user_id: str) -> BrowserUseSession | None:
+    async def get_session(self, user_id: str) -> CuaSession | None:
         """Get a session for a user if it exists."""
         return self._sessions.get(user_id)
 
-    async def set_session(self, user_id: str, session: BrowserUseSession) -> None:
+    async def set_session(self, user_id: str, session: CuaSession) -> None:
         """Store a session for a user."""
         self._sessions[user_id] = session
 

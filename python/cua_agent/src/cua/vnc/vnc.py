@@ -2,9 +2,7 @@ import logging
 import math
 import time
 from contextlib import contextmanager
-from typing import Iterator, Literal
-
-from vncdotool import api
+from typing import Any, Iterator, Literal
 
 logger = logging.getLogger(__name__)
 
@@ -54,8 +52,20 @@ class VNCMachine:
         self.mouse_last_position = None
         self.password = password
         self.cached_client = None
+        self._api = None
 
-    async def _get_vnc_client(self) -> api.ThreadedVNCClientProxy:
+    @property
+    def api(self):
+        if self._api is None:
+            # We need to lazy load this because the vncdotool
+            # uses Twisted for dependency injection, which seems to be
+            # conflicting with Teams framework's state management.
+            from vncdotool import api
+
+            self._api = api
+        return self._api
+
+    async def _get_vnc_client(self) -> Any:
         """
         Return the VNC client connected to this machine.
         """
@@ -65,7 +75,7 @@ class VNCMachine:
             logger.info(
                 f"Connecting to vnc client with address: {self.address} and password: {self.password}"
             )
-            self.cached_client = api.connect(self.address, password=self.password)
+            self.cached_client = self.api.connect(self.address, password=self.password)
         except Exception as e:
             logger.error(f"Error connecting to VNC: {e}")
             raise e
@@ -171,7 +181,7 @@ class VNCMachine:
         self,
         scroll_amount: int,
         direction: int,
-        client: api.ThreadedVNCClientProxy,
+        client: Any,
         delay: float = 0.05,
     ) -> None:
         scroll_amount = abs(int(scroll_amount / 10))
@@ -182,7 +192,7 @@ class VNCMachine:
     def _move_mouse_internal(
         self,
         position: tuple[int, int],
-        client: api.ThreadedVNCClientProxy,
+        client: Any,
         delay: float = 0.0002,
     ) -> None:
         if (
@@ -202,9 +212,7 @@ class VNCMachine:
 
     @staticmethod
     @contextmanager
-    def hold_keys(
-        client: api.ThreadedVNCClientProxy, keys: list[str] | None = None
-    ) -> Iterator[None]:
+    def hold_keys(client: Any, keys: list[str] | None = None) -> Iterator[None]:
         keys = keys or []
         client.factory.force_caps = True
         try:
