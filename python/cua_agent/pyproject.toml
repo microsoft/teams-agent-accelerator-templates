@@ -1,0 +1,13 @@
+[project]
+name = "cua-agent"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "aiohttp==3.9.3",
+    "openai>=1.66.0",
+    "python-dotenv>=1.0.1",
+    "teams-ai==1.5.0",
+    "vncdotool>=1.2.0",
+]
