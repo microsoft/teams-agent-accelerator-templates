@@ -39,7 +39,7 @@ In this example, the agent is using a VNC connection to control a computer. The 
    - Set either Azure Open AI or Open AI credentials
      - For Azure Open AI, make sure your model has computer-use capabilities
 5. Use [Teams-Toolkit](https://github.com/Office-Dev/Teams-Toolkit) to run the app locally - Check out [these](https://github.com/microsoft/teams-ai/tree/main/python/samples#appendix) on how to run the sample using teams-toolkit.
-6. Set up either Local computer (see below) or Local browser (also below) depending on what you want to try
+6. Set up [Local computer](#local-computer) or [Browser mode](#browser-mode)
 
 ### Local computer
 
