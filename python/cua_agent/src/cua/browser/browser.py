@@ -99,6 +99,25 @@ class Browser(CUATarget):
             await self.page.goto(
                 "https://bing.com", wait_until="domcontentloaded", timeout=60000
             )
+            await self._setup_popup_handler()
+
+    async def _setup_popup_handler(self):
+        """Set up event listener for popups."""
+
+        async def handle_popup(popup):
+            logger.info("New popup detected, switching to it")
+            await popup.wait_for_load_state("domcontentloaded")
+            self.page = popup
+            logger.info(f"Switched to popup with title: {await popup.title()}")
+            await self._setup_popup_handler()
+
+        self.page.on("popup", handle_popup)
+
+    async def set_auto_switch_to_popup(self, enabled: bool):
+        """Enable or disable automatic switching to popups."""
+        self.auto_switch_to_popup = enabled
+        if enabled and self.page:
+            await self._setup_popup_handler()
 
     async def cleanup(self):
         """Clean up browser resources."""
