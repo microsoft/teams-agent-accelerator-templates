@@ -8,19 +8,15 @@ This sample demonstrates how to build an AI-powered Computer Use Agent (CUA) tha
 - 📸 **Real-time Visual Feedback**: Shows screenshots of agent actions via adaptive cards in Teams
 - ✨ **Responses API**: Uses the OpenAI Responses API to track the state of the agent
 - ⏸️ **Pausable**: Allows users to pause and resume agent operations at any time
-- 🔒 **Safety First**: Uses adaptive cards for user approval of actions
-- 🌐 **Optional Browser Mode**: Can use Playwright browser for web interactions (with some limitations)
-- 🐳 **Dockerized**: Includes a Dockerfile that sets up a sandboxed environment with VNC enabled
+- 🔒 **Safety First**: Uses adaptive cards for user approval of actions if the model wants it
+- 🌐 **Browser Mode**: Can use Playwright browser for web interactions
+- 🐳 **Dockerized VNC**: Includes a Dockerfile that sets up a sandboxed environment with VNC enabled
 
-## Examples
+## Example
 
-### Fetching the news
+![Example](./docs/VNCExample.gif)
 
-![News Example](./docs/news-example.gif)
-
-### Compare prices of products
-
-![Compare Prices Example](./docs/compare-prices-example.gif)
+In this example, the agent is using a VNC connection to control a computer. The screenshots and progress and sent as adaptive cards and displayed in Teams.
 
 ## Running the sample
 
@@ -42,7 +38,11 @@ This sample demonstrates how to build an AI-powered Computer Use Agent (CUA) tha
      - For Azure Open AI, make sure your model has computer-use capabilities
 5. Use [Teams-Toolkit](https://github.com/Office-Dev/Teams-Toolkit) to run the app locally - Check out [these](https://github.com/microsoft/teams-ai/tree/main/python/samples#appendix) on how to run the sample using teams-toolkit.
 
-### Setting up a VNC enabled container in Docker
+### Local computer
+
+This is the default mode for the agent. It sets up a sandboxed dockerized container with VNC enabled. Then the local agent will connect to this container and control it.
+
+#### Setting up a VNC enabled container in Docker
 
 There is a [Dockerfile](Dockerfile) in the root of this repo that sets up a sandboxed environment with VNC enabled. You can use this to build a container and deploy it to Azure App Service or run it locally.
 
@@ -74,6 +74,15 @@ docker rmi cua_mode_image
 ```
 
 3. By default, we have [noVNC](https://novnc.com/info.html) enabled for the container. You can access the VNC server at `http://localhost:6080/vnc.html`. Use password "secret" to login and view the desktop of your container!
+
+### Local browser
+
+This mode will use Playwright to open a browser and interact with it. This is not the default mode and needs to be enabled by setting `USE_BROWSER=true` in the .env file.
+
+#### Setting up playwright
+
+1. Run `playwright install` to install the browsers on your machine
+2. Set `USE_BROWSER=true` in the .env file
 
 ### Using the agent
 
