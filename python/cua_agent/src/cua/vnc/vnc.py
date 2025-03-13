@@ -203,8 +203,8 @@ class VNCMachine:
         scroll_amount: int,
         direction: int,
         client: VNCDoToolClient,
-        delay: float = 0.05,
-        scroll_factor: float = 5.0,
+        delay: float = 0.5,
+        scroll_factor: float = 50.0,
     ) -> None:
         # Calculate number of scroll events
         num_events = max(int(abs(scroll_amount) / scroll_factor), 1)
