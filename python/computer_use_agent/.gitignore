@@ -16,4 +16,4 @@ node_modules/
 # Dev tool directories
 /devTools/
 data/
-*.png
+screenshot.png
