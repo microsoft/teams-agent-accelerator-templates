@@ -13,6 +13,7 @@ from openai.types.responses.response_computer_tool_call import (
 from openai.types.responses.response_function_tool_call import (
     ResponseFunctionToolCall,
 )
+from openai.types.responses.response_input_param import Reasoning
 
 from cua.browser.browser import Browser
 
@@ -32,10 +33,10 @@ class CuaSessionStepState:
 
     response_id: str
     next_action: typing.Literal[
-        "user_interaction", "computer_call_output", "functional_call"
+        "user_interaction", "computer_call_output", "functional_call", "reasoning"
     ]
     call_id: str = ""
-    call_action: Action | ResponseFunctionToolCall | None = None
+    call_action: Action | ResponseFunctionToolCall | Reasoning | None = None
     pending_safety_checks: list[PendingSafetyCheck] = []
     last_message: str = ""
     response: Response
@@ -60,6 +61,9 @@ class CuaSessionStepState:
                 self.call_id = item.call_id
                 self.call_action = item.action
                 self.pending_safety_checks = getattr(item, "pending_safety_checks", [])
+            elif item.type == "reasoning":
+                self.next_action = "reasoning"
+                self.call_action = item
             else:
                 self.next_action = "user_interaction"
                 if item.type == "message":

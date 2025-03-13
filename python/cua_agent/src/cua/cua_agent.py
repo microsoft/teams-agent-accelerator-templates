@@ -141,6 +141,15 @@ class ComputerUseAgent:
             ):
                 # For dict actions (like navigate, go_back), use the name
                 action_str = self._session.current_step.call_action.name
+            elif self._session.current_step.call_action.type == "reasoning":
+                # concatenate the reasoning content
+                content = "\n".join(
+                    [
+                        item.text
+                        for item in self._session.current_step.call_action.content
+                    ]
+                )
+                action_str = content if content else "Reasoning"
             else:
                 # For standard Action type, use the type field
                 action_str = self._session.current_step.call_action.type
@@ -158,6 +167,12 @@ class ComputerUseAgent:
             if step.call_action:
                 if isinstance(step.call_action, ResponseFunctionToolCall):
                     action_str = step.call_action.name
+                elif step.call_action.type == "reasoning":
+                    # concatenate the reasoning content
+                    content = "\n".join(
+                        [item.text for item in step.call_action.content]
+                    )
+                    action_str = content if content else "Reasoning"
                 else:
                     action_str = step.call_action.type
 

@@ -46,7 +46,7 @@ class ScaledCUATarget(CUATarget):
         return self.target.additional_tool_schemas
 
     def _adjust_action_args(self, action: Action) -> None:
-        if action.type in ("click", "double_click", "move", "scroll"):
+        if action.type in ("click", "double_click", "move"):
             action.x, action.y = self._point_to_screen_coords(action.x, action.y)
         elif action.type == "drag":
             for point in action.path:

@@ -5,6 +5,7 @@ from openai.types.responses.tool_param import ToolParam
 
 from cua.client import setup_openai_client
 from cua.cua_target import CUATarget
+from cua.utils import retry_async_operation
 from storage.cua_session import CuaSession
 
 # Get logger for this module
@@ -66,8 +67,11 @@ class ComputerUse:
             logger.debug("screenshot %s...", screenshot_base64[:20])
             # Store the screenshot in the session
             self.session.current_step.screenshot = screenshot_base64
-
-        data = user_message
+        if self.session.current_step.next_action == "reasoning":
+            # For reasoning, we send back the reasoning content
+            data = self.session.current_step.call_action
+        else:
+            data = user_message
         if self.session.current_step.next_action == "computer_call_output":
             data = [
                 {
@@ -97,14 +101,27 @@ class ComputerUse:
 
         tools = self._build_computer_use_tool()
         logger.debug("Creating next response...")
-        next_response = await self.client.responses.create(
-            model=self.model,
-            previous_response_id=previous_response_id,
-            input=data,
-            tools=tools,
-            timeout=10,
-            truncation="auto",
-            parallel_tool_calls=False,
+
+        # Define the operation to retry
+        async def create_response():
+            return await self.client.responses.create(
+                model=self.model,
+                previous_response_id=previous_response_id,
+                input=data,
+                tools=tools,
+                timeout=10,
+                truncation="auto",
+                parallel_tool_calls=False,
+            )
+
+        # Define the check function
+        def has_output(response):
+            return bool(response.output)
+
+        # Use the retry function
+        next_response = await retry_async_operation(
+            operation=create_response, max_retries=3, check_result=has_output
         )
+
         logger.debug("Next response created: %s", next_response)
         self.session.add_step(next_response, screenshot_base64)
