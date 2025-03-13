@@ -109,7 +109,7 @@ async def on_cua(context: TurnContext, state: TurnState):
     session: CuaSession | None = context.has("session") and context.get("session")
 
     # Check if there's an active session
-    if session and session.current_step.next_action not in ("user_interaction"):
+    if session and session.current_step.next_action != "user_interaction":
         # Send card asking if user wants to stop current session
         await context.send_activity("The session is already in progress.")
         return
