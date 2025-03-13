@@ -39,6 +39,7 @@ In this example, the agent is using a VNC connection to control a computer. The 
    - Set either Azure Open AI or Open AI credentials
      - For Azure Open AI, make sure your model has computer-use capabilities
 5. Use [Teams-Toolkit](https://github.com/Office-Dev/Teams-Toolkit) to run the app locally - Check out [these](https://github.com/microsoft/teams-ai/tree/main/python/samples#appendix) on how to run the sample using teams-toolkit.
+6. Set up either Local computer (see below) or Local browser (also below) depending on what you want to try
 
 ### Local computer
 
@@ -93,20 +94,6 @@ This mode will use Playwright to open a browser and interact with it. This is no
 3. The agent will perform the requested actions, showing screenshots and asking for approval when needed
 4. You can pause the agent at any time during its operation
 5. The agent will display results in adaptive cards
-
-### Browser Mode Limitations
-
-Instead of a sandboxed computer, you also have the ability to use browser mode. This will use Playwright to open a browser and interact with it.
-
-#### Prerequisites
-
-1. Set `USE_BROWSER=true` in the .env file
-2. Run `playwright install` to install the browser
-
-#### Limitations
-
-- The agent cannot interact with browser UI elements like the navigation bar
-- Web interactions are limited to within the browser window
 
 ## Appendix
 
