@@ -1,6 +1,8 @@
 # Computer Use Agent for Microsoft Teams
 
-This sample demonstrates how to build an AI-powered Computer Use Agent (CUA) that can be integrated into Microsoft Teams. The agent can perform various computer tasks including web browsing and terminal operations, providing real-time visual feedback and interactive responses. It leverages OpenAI's [Computer Use Agent](https://platform.openai.com/docs/guides/tools-computer-use) capabilities.
+This sample introduces an AI-powered Computer Use Agent (CUA) that integrates with Microsoft Teams to automate tasks such as booking flights, searching for products, and filling out forms. Powered by OpenAI, the agent interacts with computer interfaces—clicking, typing, scrolling, and more—while providing real-time updates through Microsoft Teams. It can handle a variety of computer-based tasks, including web browsing and terminal operations and also handle user inputs when needed.
+
+It leverages OpenAI's [Computer Use](https://platform.openai.com/docs/guides/tools-computer-use) capabilities.
 
 ## Features
 
