@@ -2,6 +2,7 @@ import asyncio
 import logging
 
 from openai.types.responses.response_computer_tool_call import Action
+from openai.types.responses.response_function_tool_call import ResponseFunctionToolCall
 
 from cua.cua_target import CUATarget, Screenshot
 from cua.vnc.vnc import VNCMachine
@@ -66,6 +67,10 @@ class Machine(CUATarget):
         else:
             raise ValueError(f"Invalid action: {action.type}")
 
-    async def handle_tool_call(self, action: Action) -> Screenshot | None:
+    async def handle_tool_call(
+        self, action: Action | ResponseFunctionToolCall
+    ) -> Screenshot | None:
         logger.info("Taking action: %s", action)
+        if isinstance(action, ResponseFunctionToolCall):
+            raise ValueError("Machine does not support additional action types")
         return await self._take_action(action)

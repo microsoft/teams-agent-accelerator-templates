@@ -1,8 +1,11 @@
 import asyncio
+import json
 import logging
 
+from openai.types.responses.function_tool_param import FunctionToolParam
 from openai.types.responses.response_computer_tool_call import Action
-from playwright.sync_api import sync_playwright
+from openai.types.responses.response_function_tool_call import ResponseFunctionToolCall
+from playwright.async_api import async_playwright
 
 from cua.cua_target import CUATarget, Screenshot
 
@@ -69,57 +72,73 @@ class Browser(CUATarget):
         self.context = None
         self.page = None
 
-    async def __aenter__(self):
-        self.playwright = sync_playwright().start()
-        self.browser = self.playwright.chromium.launch(
-            headless=False,
-            chromium_sandbox=True,
-            env={},
-            args=["--disable-extensions", "--disable-file-system"],
-        )
-        self.page = self.browser.new_page()
-        self.page.set_viewport_size({"width": self.width, "height": self.height})
-        self.page.goto("https://bing.com")
-        return self
+    async def initialize(self):
+        if self.browser is not None and self.page is not None:
+            # If we already have a fully initialized browser instance, just return
+            return
 
-    async def __aexit__(self, exc_type, exc_val, exc_tb):
-        if self.page:
-            self.page.close()
-        if self.context:
-            self.context.close()
+        if self.playwright is None:
+            self.playwright = await async_playwright().start()
+
+        if self.browser is None:
+            self.browser = await self.playwright.chromium.launch(
+                headless=False,
+                chromium_sandbox=True,
+                env={},
+                args=["--disable-extensions", "--disable-file-system"],
+            )
+
+        if self.context is None:
+            self.context = await self.browser.new_context()
+
+        if self.page is None:
+            self.page = await self.context.new_page()
+            await self.page.set_viewport_size(
+                {"width": self.width, "height": self.height}
+            )
+            await self.page.goto(
+                "https://bing.com", wait_until="domcontentloaded", timeout=60000
+            )
+
+    async def cleanup(self):
+        """Clean up browser resources."""
         if self.browser:
-            self.browser.close()
+            await self.browser.close()
+            self.browser = None
         if self.playwright:
-            self.playwright.stop()
+            await self.playwright.stop()
+            self.playwright = None
+        self.context = None
+        self.page = None
 
     async def take_screenshot(self) -> Screenshot:
-        screenshot = self.page.screenshot()
+        screenshot = await self.page.screenshot()
         return Screenshot(screenshot)
 
     async def _take_action(self, action: Action) -> Screenshot | None:
         if action.type == "click":
-            self.page.mouse.click(action.x, action.y)
+            await self.page.mouse.click(action.x, action.y)
         elif action.type == "double_click":
-            self.page.mouse.dblclick(action.x, action.y)
+            await self.page.mouse.dblclick(action.x, action.y)
         elif action.type == "drag":
             path = action.path
             if not path:
                 return
-            self.page.mouse.move(path[0]["x"], path[0]["y"])
-            self.page.mouse.down()
+            await self.page.mouse.move(path[0]["x"], path[0]["y"])
+            await self.page.mouse.down()
             for point in path[1:]:
-                self.page.mouse.move(point["x"], point["y"])
-            self.page.mouse.up()
+                await self.page.mouse.move(point["x"], point["y"])
+            await self.page.mouse.up()
         elif action.type == "keypress":
             for key in action.keys:
-                self.page.keyboard.press(cua_key_to_playwright_key(key))
+                await self.page.keyboard.press(cua_key_to_playwright_key(key))
         elif action.type == "move":
-            self.page.mouse.move(action.x, action.y)
+            await self.page.mouse.move(action.x, action.y)
         elif action.type == "scroll":
-            self.page.mouse.move(action.x, action.y)
-            self.page.mouse.wheel(action.scroll_x, action.scroll_y)
+            await self.page.mouse.move(action.x, action.y)
+            await self.page.mouse.wheel(action.scroll_x, action.scroll_y)
         elif action.type == "type":
-            self.page.keyboard.type(action.text)
+            await self.page.keyboard.type(action.text)
         elif action.type == "wait":
             await asyncio.sleep(1)  # Keep this async for the wait action
         elif action.type == "screenshot":
@@ -127,10 +146,50 @@ class Browser(CUATarget):
         else:
             raise ValueError(f"Invalid action: {action.type}")
 
-    async def handle_tool_call(self, action: Action) -> Screenshot | None:
+    async def handle_tool_call(
+        self, action: Action | ResponseFunctionToolCall
+    ) -> Screenshot | str | None:
         logger.info("Taking action: %s", action)
+        if isinstance(action, ResponseFunctionToolCall):
+            args = json.loads(action.arguments)
+            if action.name == "navigate":
+                await self.navigate(args["url"])
+                return "Done!"
+            elif action.name == "go_back":
+                await self.go_back()
+                return "Done!"
+            raise ValueError("Browser does not support additional action types")
         return await self._take_action(action)
 
     async def navigate(self, url: str):
         """Navigate to a specific URL."""
-        self.page.goto(url)
+        await self.page.goto(url, wait_until="domcontentloaded", timeout=30000)
+
+    async def go_back(self):
+        """Go back to the previous page."""
+        await self.page.go_back()
+
+    @property
+    def additional_tool_schemas(self) -> list[FunctionToolParam]:
+        return [
+            FunctionToolParam(
+                name="navigate",
+                type="function",
+                description="Navigate to a specific URL.",
+                parameters={
+                    "type": "object",
+                    "properties": {
+                        "url": {
+                            "type": "string",
+                            "description": "The URL to navigate to.",
+                        },
+                    },
+                },
+            ),
+            FunctionToolParam(
+                name="go_back",
+                type="function",
+                description="Go back to the previous page.",
+                parameters={},
+            ),
+        ]

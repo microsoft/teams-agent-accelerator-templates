@@ -1,6 +1,8 @@
 import base64
 import logging
 
+from openai.types.responses.tool_param import ToolParam
+
 from cua.client import setup_openai_client
 from cua.cua_target import CUATarget
 from storage.cua_session import CuaSession
@@ -19,17 +21,21 @@ class ComputerUse:
         self.client, self.model = setup_openai_client()
         self.step_count = 0
 
-    def _build_computer_use_tool(self):
-        return {
-            "type": "computer-preview",
-            "display_width": self.target.width,
-            "display_height": self.target.height,
-            "environment": self.target.environment,
-        }
+    def _build_computer_use_tool(self) -> list[ToolParam]:
+        default_tools = [
+            {
+                "type": "computer-preview",
+                "display_width": self.target.width,
+                "display_height": self.target.height,
+                "environment": self.target.environment,
+            }
+        ]
+        default_tools.extend(self.target.additional_tool_schemas)
+        return default_tools
 
     async def start_task(self, user_message: str):
         logger.info("Starting task...")
-        tools = [self._build_computer_use_tool()]
+        tools = self._build_computer_use_tool()
         response = await self.client.responses.create(
             model=self.model, input=user_message, tools=tools, truncation="auto"
         )
@@ -50,8 +56,9 @@ class ComputerUse:
         screenshot: str | None = None
         previous_response_id = self.session.current_step.response_id
         screenshot_base64: str | None = None
+
         if self.session.current_step.next_action == "computer_call_output":
-            action = self.session.current_step.computer_action
+            action = self.session.current_step.call_action
             screenshot = await self.target.handle_tool_call(action)
             if not screenshot:
                 screenshot = await self.target.take_screenshot()
@@ -59,12 +66,13 @@ class ComputerUse:
             logger.debug("screenshot %s...", screenshot_base64[:20])
             # Store the screenshot in the session
             self.session.current_step.screenshot = screenshot_base64
+
         data = user_message
         if self.session.current_step.next_action == "computer_call_output":
             data = [
                 {
                     "type": "computer_call_output",
-                    "call_id": self.session.current_step.computer_id,
+                    "call_id": self.session.current_step.call_id,
                     "output": {
                         "type": "input_image",
                         "image_url": f"data:image/png;base64,{screenshot_base64}",
@@ -75,7 +83,19 @@ class ComputerUse:
                 data["acknowledged_safety_checks"] = (
                     self.session.current_step.pending_safety_checks
                 )
-        tools = [self._build_computer_use_tool()]
+        elif self.session.current_step.next_action == "functional_call":
+            # Handle functional call output
+            action = self.session.current_step.call_action
+            result = await self.target.handle_tool_call(action)
+            data = [
+                {
+                    "type": "function_call_output",
+                    "call_id": self.session.current_step.call_id,
+                    "output": result,
+                }
+            ]
+
+        tools = self._build_computer_use_tool()
         logger.debug("Creating next response...")
         next_response = await self.client.responses.create(
             model=self.model,
@@ -84,6 +104,7 @@ class ComputerUse:
             tools=tools,
             timeout=10,
             truncation="auto",
+            parallel_tool_calls=False,
         )
         logger.debug("Next response created: %s", next_response)
         self.session.add_step(next_response, screenshot_base64)

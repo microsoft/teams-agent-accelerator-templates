@@ -33,7 +33,9 @@ def setup_openai_client():
         )
         model = Config.AZURE_OPENAI_DEPLOYMENT
     else:
-        logger.info("Using OpenAI for computer use")
+        logger.info(
+            "Using OpenAI for computer use using key: %s", Config.OPENAI_API_KEY
+        )
         client = AsyncOpenAI(
             api_key=Config.OPENAI_API_KEY,
         )

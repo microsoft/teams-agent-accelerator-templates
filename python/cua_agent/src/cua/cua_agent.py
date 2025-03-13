@@ -1,16 +1,24 @@
 import asyncio
 import logging
 import signal
+import traceback
 
 from botbuilder.core import TurnContext
 from botbuilder.schema import Activity, ActivityTypes, Attachment, AttachmentLayoutTypes
+from openai.types.responses.response_function_tool_call import (
+    ResponseFunctionToolCall,
+)
 
-from cards import create_cua_progress_card, create_safety_check_card
+from cards import (
+    ProgressStepDict,
+    create_cua_progress_card,
+    create_safety_check_card,
+)
 from config import Config
 from cua.browser.browser import Browser
 from cua.computer_use import ComputerUse
 from cua.cua_target import CUATarget
-from cua.scaler import Scaler
+from cua.scaled_cua_target import ScaledCUATarget
 from cua.vnc.machine import Machine
 from storage.cua_session import CuaSession
 
@@ -34,7 +42,7 @@ class ComputerUseAgent:
         loop.add_signal_handler(signal.SIGINT, signal_handler)
 
         try:
-            cua_target = self._build_cua_target()
+            cua_target = await self._build_cua_target()
             agent = ComputerUse(cua_target, self._session)
 
             user_message = task
@@ -55,7 +63,7 @@ class ComputerUseAgent:
                 await agent.start_task(user_message)
 
             while True:
-                logger.debug("Running loop iteration")
+                logger.info("Running loop iteration")
                 user_message = None
 
                 # Check for pause request
@@ -91,27 +99,29 @@ class ComputerUseAgent:
                             f"⏩️ {self._session.current_step.last_message}"
                         )
                     break
-                logger.debug("Calling continue task")
+                logger.info("Calling continue task")
                 await agent.continue_task(user_message)
                 await self._update_progress()
         except Exception as e:
             logger.error(f"Error in CUA agent: {e}")
+            # print the full traceback
+            traceback.print_exc()
             await self._context.send_activity(f"An error occurred: {str(e)}")
         finally:
             # Remove the signal handler
             loop.remove_signal_handler(signal.SIGINT)
-            return
 
-    def interrupt(self):
-        """Interrupt the current execution loop."""
-        self._interrupted = True
-
-    def _build_cua_target(self) -> CUATarget:
+    async def _build_cua_target(self) -> CUATarget:
         width = 1024  # Default width
         height = 768  # Default height
 
         if Config.USE_BROWSER:
-            return Browser(width=width, height=height)
+            if self._session.browser is None:
+                # Create new browser instance if none exists
+                self._session.browser = Browser(width=width, height=height)
+            # Initialize the browser (will reuse if already initialized)
+            await self._session.browser.initialize()
+            return self._session.browser
         else:
             machine = Machine(
                 width=width,
@@ -119,31 +129,42 @@ class ComputerUseAgent:
                 address=Config.VNC_ADDRESS,
                 password=Config.VNC_PASSWORD,
             )
-            return Scaler(width=width, height=height, target=machine)
+            return ScaledCUATarget(width=width, height=height, target=machine)
 
     async def _update_progress(self, status: str = "Running"):
         """Update the Teams message with a progress card."""
-        current_step = {
-            "action": (
-                self._session.current_step.computer_action.type
-                if self._session.current_step.computer_action
-                else "No action"
-            ),
+        # Map the current step's action to a string representation
+        action_str = "No action"
+        if self._session.current_step.call_action:
+            if isinstance(
+                self._session.current_step.call_action, ResponseFunctionToolCall
+            ):
+                # For dict actions (like navigate, go_back), use the name
+                action_str = self._session.current_step.call_action.name
+            else:
+                # For standard Action type, use the type field
+                action_str = self._session.current_step.call_action.type
+
+        current_step: ProgressStepDict = {
+            "action": action_str,
             "next_action": self._session.current_step.next_action,
             "message": self._session.current_step.last_message,
         }
 
         # Convert history to the format expected by the card
-        history = []
+        history: list[ProgressStepDict] = []
         for step in self._session.history:
+            action_str = "No action"
+            if step.call_action:
+                if isinstance(step.call_action, ResponseFunctionToolCall):
+                    action_str = step.call_action.name
+                else:
+                    action_str = step.call_action.type
+
             history.append(
                 {
-                    "action": (
-                        step.computer_action.type
-                        if step.computer_action
-                        else "No action"
-                    ),
-                    "next_action": self._session.current_step.next_action,  # We don't store this in history currently
+                    "action": action_str,
+                    "next_action": self._session.current_step.next_action,
                     "message": step.last_message,
                 }
             )
