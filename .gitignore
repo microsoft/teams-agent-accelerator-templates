@@ -403,3 +403,6 @@ FodyWeavers.xsd
 env
 .env.*
 build/
+
+# MacOS system files
+.DS_Store
