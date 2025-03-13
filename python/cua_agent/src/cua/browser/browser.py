@@ -112,7 +112,12 @@ class Browser(CUATarget):
         self.page = None
 
     async def take_screenshot(self) -> Screenshot:
+        return await self._screenshot_and_save("screenshot.png")
+
+    async def _screenshot_and_save(self, screenshot_name: str) -> Screenshot:
         screenshot = await self.page.screenshot()
+        with open(screenshot_name, "wb") as f:
+            f.write(screenshot)
         return Screenshot(screenshot)
 
     async def _take_action(self, action: Action) -> Screenshot | None:
