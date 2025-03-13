@@ -78,6 +78,7 @@ class CuaSession:
     id: str
     created_at: datetime
     signal: Literal["acknowledged_pending_safety_checks", "pause_requested"] | None
+    status: Literal["Running", "Paused", "Error"] | None
     browser: Browser | None
 
     def __init__(self):
@@ -86,6 +87,7 @@ class CuaSession:
         self.id = str(uuid.uuid4())
         self.created_at = datetime.now()
         self.signal = None
+        self.status = "Running"
         self.browser = None
 
     def add_step(self, response: Response, screenshot_base64: str | None = None):

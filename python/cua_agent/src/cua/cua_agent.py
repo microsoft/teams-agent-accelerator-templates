@@ -12,6 +12,7 @@ from openai.types.responses.response_function_tool_call import (
 from cards import (
     ProgressStepDict,
     create_cua_progress_card,
+    create_error_card,
     create_safety_check_card,
 )
 from config import Config
@@ -46,7 +47,10 @@ class ComputerUseAgent:
             agent = ComputerUse(cua_target, self._session)
 
             user_message = task
-            if self._session.current_step:
+            if self._session.current_step or self._session.status in (
+                "Paused",
+                "Error",
+            ):
                 if agent.requires_safety_check():
                     if self._session.signal == "acknowledged_pending_safety_checks":
                         # Clear the signal and continue
@@ -64,12 +68,14 @@ class ComputerUseAgent:
 
             while True:
                 logger.info("Running loop iteration")
+                self._session.status = "Running"
                 user_message = None
 
                 # Check for pause request
                 if self._session.signal == "pause_requested":
                     logger.info("Session paused by user request")
-                    await self._update_progress(status="Paused")
+                    self._session.status = "Paused"
+                    await self._update_progress(status=self._session.status)
                     break
 
                 if agent.requires_safety_check():
@@ -104,9 +110,21 @@ class ComputerUseAgent:
                 await self._update_progress()
         except Exception as e:
             logger.error(f"Error in CUA agent: {e}")
-            # print the full traceback
             traceback.print_exc()
-            await self._context.send_activity(f"An error occurred: {str(e)}")
+            self._session.status = "Error"
+
+            await self._context.send_activity(
+                Activity(
+                    type=ActivityTypes.message,
+                    attachments=[
+                        Attachment(
+                            content_type="application/vnd.microsoft.card.adaptive",
+                            content=create_error_card(self._session.id, str(e)),
+                        )
+                    ],
+                )
+            )
+            self._session.next_action = "user_interaction"
         finally:
             # Remove the signal handler
             loop.remove_signal_handler(signal.SIGINT)
@@ -131,8 +149,11 @@ class ComputerUseAgent:
             )
             return ScaledCUATarget(width=width, height=height, target=machine)
 
-    async def _update_progress(self, status: str = "Running"):
+    async def _update_progress(self, status: str | None = None):
         """Update the Teams message with a progress card."""
+        if status is not None:
+            self._session.status = status
+
         # Map the current step's action to a string representation
         action_str = "No action"
         if self._session.current_step.call_action:
@@ -143,13 +164,16 @@ class ComputerUseAgent:
                 action_str = self._session.current_step.call_action.name
             elif self._session.current_step.call_action.type == "reasoning":
                 # concatenate the reasoning content
-                content = "\n".join(
-                    [
-                        item.text
-                        for item in self._session.current_step.call_action.content
-                    ]
-                )
-                action_str = content if content else "Reasoning"
+                if self._session.current_step.call_action.content:
+                    content = "\n".join(
+                        [
+                            item.text
+                            for item in self._session.current_step.call_action.content
+                        ]
+                    )
+                    action_str = content if content else "Reasoning"
+                else:
+                    action_str = "Reasoning"
             else:
                 # For standard Action type, use the type field
                 action_str = self._session.current_step.call_action.type

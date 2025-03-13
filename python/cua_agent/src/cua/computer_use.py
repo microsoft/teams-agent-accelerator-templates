@@ -1,6 +1,7 @@
 import base64
 import logging
 
+from openai.types.responses.response import Response
 from openai.types.responses.tool_param import ToolParam
 
 from cua.client import setup_openai_client
@@ -10,7 +11,6 @@ from storage.cua_session import CuaSession
 
 # Get logger for this module
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
 
 
 class ComputerUse:
@@ -115,13 +115,13 @@ class ComputerUse:
             )
 
         # Define the check function
-        def has_output(response):
+        def validate_response(response: Response):
             return bool(response.output)
 
         # Use the retry function
         next_response = await retry_async_operation(
-            operation=create_response, max_retries=3, check_result=has_output
+            operation=create_response, max_retries=3, check_result=validate_response
         )
 
-        logger.debug("Next response created: %s", next_response)
+        logger.info("Next response created: %s", next_response)
         self.session.add_step(next_response, screenshot_base64)

@@ -13,8 +13,10 @@ from storage.cua_session import CuaSession
 from storage.session_storage import SessionStorage
 
 config = Config()
-
 logger = logging.getLogger(__name__)
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+)
 
 # Initialize application with session management
 session_storage = SessionStorage()
@@ -57,15 +59,33 @@ async def on_toggle_pause(context: TurnContext, state: TurnState, data: dict):
         await context.send_activity("No active session found.")
         return
 
-    current_status = data.get("current_status", "Running")
+    current_status = session.status
     if current_status == "Running":
         session.signal = "pause_requested"
+        session.status = "Paused"
         await context.send_activity("Pausing the session...")
     else:
         session.signal = None
+        session.status = "Running"
         await context.send_activity("Resuming the session...")
         # Continue the task with empty message since we're just resuming
         await run_cua_agent(context, session, "", None)
+
+
+@bot_app.adaptive_cards.action_submit("retry")
+async def on_retry(context: TurnContext, state: TurnState, data: dict):
+    """Handle the user's request to retry the last action."""
+    session: CuaSession | None = context.has("session") and context.get("session")
+    if not session:
+        await context.send_activity("No active session found.")
+        return
+
+    if session.status == "Error":
+        session.status = "Running"
+        # Continue the task with the last message
+        await run_cua_agent(context, session, "", None)
+    else:
+        await context.send_activity("The session is not in an error state.")
 
 
 async def run_cua_agent(

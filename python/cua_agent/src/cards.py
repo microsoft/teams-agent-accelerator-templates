@@ -259,3 +259,34 @@ def create_safety_check_card(
             },
         ],
     }
+
+
+def create_error_card(session_id: str, error_message: str) -> dict:
+    """Create an adaptive card that shows an error message with a retry button.
+
+    Args:
+        session_id: The session ID for retry action
+        error_message: The error message to display
+    """
+    return {
+        "type": "AdaptiveCard",
+        "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+        "version": "1.5",
+        "body": [
+            {
+                "type": "TextBlock",
+                "text": "❌ Error",
+                "weight": "bolder",
+                "size": "large",
+                "color": "attention",
+            },
+            {"type": "TextBlock", "text": error_message, "wrap": True},
+        ],
+        "actions": [
+            {
+                "type": "Action.Submit",
+                "title": "Retry",
+                "data": {"verb": "retry", "session_id": session_id},
+            }
+        ],
+    }

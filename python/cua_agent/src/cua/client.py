@@ -4,18 +4,8 @@ from openai import AsyncAzureOpenAI, AsyncOpenAI
 
 from config import Config
 
-# Configure root logger
-logging.basicConfig(
-    level=logging.DEBUG, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-
 # Get logger for this module
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
-# Enable debug logging for OpenAI
-logging.getLogger("openai").setLevel(logging.DEBUG)
-logging.getLogger("httpx").setLevel(logging.DEBUG)  # OpenAI's HTTP client
 
 
 def setup_openai_client():
