@@ -4,10 +4,35 @@ import time
 from contextlib import contextmanager
 from typing import Any, Iterator, Literal
 
+from vncdotool import api
+from vncdotool.client import VNCDoToolClient
+
+
+# Apply monkey patch to State.__getattr__ before importing vncdotool
+def _monkey_patch_state_getattr():
+    """
+    Apply a patch to the State.__getattr__ method.
+    """
+    from teams.state.state import State
+
+    def safe_getattr(self, key: str) -> Any:
+        try:
+            return self[key]
+        except KeyError:
+            raise AttributeError(
+                f"'{self.__class__.__name__}' object has no attribute '{key}'"
+            )
+
+    # Replace the method
+    State.__getattr__ = safe_getattr
+
+
+# Initialize logger before using it in the patch function
 logger = logging.getLogger(__name__)
 
-# ---[ VNC ]--------------------------------------
-# Based on the VNC protocol
+# Apply the patch before importing vncdotool
+_monkey_patch_state_getattr()
+
 # https://github.com/sibson/vncdotool/blob/0.13/vncdotool/client.py#L21
 CUA_KEY_TO_VNC_KEY: dict[str, str] = {
     "/": "fslash",
@@ -54,17 +79,6 @@ class VNCMachine:
         self.cached_client = None
         self._api = None
 
-    @property
-    def api(self):
-        if self._api is None:
-            # We need to lazy load this because the vncdotool
-            # uses Twisted for dependency injection, which seems to be
-            # conflicting with Teams framework's state management.
-            from vncdotool import api
-
-            self._api = api
-        return self._api
-
     async def _get_vnc_client(self) -> Any:
         """
         Return the VNC client connected to this machine.
@@ -75,7 +89,7 @@ class VNCMachine:
             logger.info(
                 f"Connecting to vnc client with address: {self.address} and password: {self.password}"
             )
-            self.cached_client = self.api.connect(self.address, password=self.password)
+            self.cached_client = api.connect(self.address, password=self.password)
         except Exception as e:
             logger.error(f"Error connecting to VNC: {e}")
             raise e
@@ -167,32 +181,42 @@ class VNCMachine:
 
         client = await self._get_vnc_client()
         self._move_mouse_internal((x, y), client)
+
+        # VNC mouse button constants - http://xahlee.info/linux/linux_x11_mouse_button_number.html
+        BUTTON_SCROLL_UP = 4  # linux maapping to scroll up
+        BUTTON_SCROLL_DOWN = 5  # linux maapping to scroll down
+
         with self.hold_keys(client, keys):
             if vertical != 0:
-                self._scroll_with_delay(vertical, 5 if vertical > 0 else 4, client)
+                direction = BUTTON_SCROLL_DOWN if vertical > 0 else BUTTON_SCROLL_UP
+                self._scroll(abs(vertical), direction, client)
 
             if horizontal != 0:
                 with self.hold_keys(client, ["shift"]):
-                    self._scroll_with_delay(
-                        horizontal, 5 if horizontal > 0 else 4, client
+                    direction = (
+                        BUTTON_SCROLL_DOWN if horizontal > 0 else BUTTON_SCROLL_UP
                     )
+                    self._scroll(abs(horizontal), direction, client)
 
-    def _scroll_with_delay(
+    def _scroll(
         self,
         scroll_amount: int,
         direction: int,
-        client: Any,
+        client: VNCDoToolClient,
         delay: float = 0.05,
+        scroll_factor: float = 5.0,
     ) -> None:
-        scroll_amount = abs(int(scroll_amount / 10))
-        for _ in range(scroll_amount + 2):
+        # Calculate number of scroll events
+        num_events = max(int(abs(scroll_amount) / scroll_factor), 1)
+
+        for _ in range(num_events):
             client.mousePress(direction)
             time.sleep(delay)
 
     def _move_mouse_internal(
         self,
         position: tuple[int, int],
-        client: Any,
+        client: VNCDoToolClient,
         delay: float = 0.0002,
     ) -> None:
         if (
@@ -212,7 +236,9 @@ class VNCMachine:
 
     @staticmethod
     @contextmanager
-    def hold_keys(client: Any, keys: list[str] | None = None) -> Iterator[None]:
+    def hold_keys(
+        client: VNCDoToolClient, keys: list[str] | None = None
+    ) -> Iterator[None]:
         keys = keys or []
         client.factory.force_caps = True
         try:
