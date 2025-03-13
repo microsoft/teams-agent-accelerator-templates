@@ -17,3 +17,5 @@ node_modules/
 /devTools/
 data/
 screenshot.png
+# MacOS system files
+.DS_Store
