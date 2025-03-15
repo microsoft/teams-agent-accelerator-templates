@@ -17,9 +17,6 @@ def setup_openai_client():
             azure_deployment=Config.AZURE_OPENAI_DEPLOYMENT,
             api_version=Config.AZURE_OPENAI_API_VERSION,
             api_key=Config.AZURE_OPENAI_API_KEY,
-            default_headers={
-                "x-ms-enable-preview": "true",  # TODO: Remove before release
-            },
         )
         model = Config.AZURE_OPENAI_DEPLOYMENT
     else:
