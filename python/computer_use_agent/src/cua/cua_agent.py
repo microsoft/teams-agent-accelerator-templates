@@ -193,10 +193,13 @@ class ComputerUseAgent:
                     action_str = step.call_action.name
                 elif step.call_action.type == "reasoning":
                     # concatenate the reasoning content
-                    content = "\n".join(
-                        [item.text for item in step.call_action.content]
-                    )
-                    action_str = content if content else "Reasoning"
+                    if step.call_action.content:
+                        content = "\n".join(
+                            [item.text for item in step.call_action.content]
+                        )
+                        action_str = content if content else "Reasoning"
+                    else:
+                        action_str = "Reasoning"
                 else:
                     action_str = step.call_action.type
 
