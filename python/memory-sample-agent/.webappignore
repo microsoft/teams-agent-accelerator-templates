@@ -1,0 +1,14 @@
+.venv/
+.vscode/
+.env
+env/
+__pycache__/
+README.md
+teamsapp.yml
+teamsapp.local.yml
+teamsapp.testtool.yml
+devTools/
+appPackage/
+mlartifacts/
+mlruns/
+tests/

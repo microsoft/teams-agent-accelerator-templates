@@ -1,0 +1,7 @@
+./dist/teams_memory-0.1.0.tar.gz
+python-dotenv
+aiohttp
+teams-ai
+botbuilder
+pydantic>=2.10.3
+litellm==1.54.1
