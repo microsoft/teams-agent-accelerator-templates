@@ -4,11 +4,12 @@ This repository contains a collection of samples that demonstrate the integratio
 
 ## 🚀 Available Samples
 
-| Sample                                             | Language     | Description                                                                                      | Tags                                                                |
-| -------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
-| 📊 [Data Analyst Agent](js/data-analyst-agent)     | `JavaScript` | Natural language interface for data exploration and visualization using AdventureWorks database. | `#llm-sql` `#adaptive-cards` `#data-viz`                            |
-| 💻 [Computer Use Agent](python/computer-use-agent) | `Python`     | AI-powered automation of computer tasks through Teams interface.                                 | `#computer-use` `#human-in-the-loop` `#stateful` `#visual-feedback` |
-| 💻 [Web Browsing Agent](python/web-browsing-agent) | `Python`     | Autonomous web navigation and interaction capabilities.                                          | `#browser-automation` `#visual-feedback` `#stateful`                |
+| Sample                                               | Language     | Description                                                                                      | Tags                                                                |
+| ---------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| 📊 [Data Analyst Agent](js/data-analyst-agent)       | `JavaScript` | Natural language interface for data exploration and visualization using AdventureWorks database. | `#llm-sql` `#adaptive-cards` `#data-viz`                            |
+| 💻 [Computer Use Agent](python/computer-use-agent)   | `Python`     | AI-powered automation of computer tasks through Teams interface.                                 | `#computer-use` `#human-in-the-loop` `#stateful` `#visual-feedback` |
+| 💻 [Web Browsing Agent](python/web-browsing-agent)   | `Python`     | Autonomous web navigation and interaction capabilities.                                          | `#browser-automation` `#visual-feedback` `#stateful`                |
+| 💻 [Memory Sample Agent](python/memory-sample-agent) | `Python`     | A sample agent that demonstrates the use of memory to enhance the agent's capabilities.          | `#memory` `#agent` `#python`                                        |
 
 ## 🏁 Getting Started
 
