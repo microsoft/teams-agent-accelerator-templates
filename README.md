@@ -4,39 +4,11 @@ This repository contains a collection of samples that demonstrate the integratio
 
 ## 🚀 Available Samples
 
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0;">
-
-<div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; transition: transform 0.2s;">
-  <h3>Data Analyst Agent</h3>
-  <p>Natural language interface for data exploration and visualization using AdventureWorks database.</p>
-  <div style="margin: 10px 0;">
-    <code>JavaScript</code>
-    <span style="color: #666; font-size: 14px;">• #llm-sql • #adaptive-cards • #data-viz</span>
-  </div>
-  <a href="js/data-analyst-agent" style="color: #0366d6; text-decoration: none;">Explore Demo →</a>
-</div>
-
-<div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; transition: transform 0.2s;">
-  <h3>Computer Use Agent</h3>
-  <p>AI-powered automation of computer tasks through Teams interface.</p>
-  <div style="margin: 10px 0;">
-    <code>Python</code>
-    <span style="color: #666; font-size: 14px;">• #computer-use • #human-in-the-loop • #stateful</span>
-  </div>
-  <a href="python/computer-use-agent" style="color: #0366d6; text-decoration: none;">Explore Demo →</a>
-</div>
-
-<div style="border: 1px solid #e5e7eb; border-radius: 8px; padding: 16px; transition: transform 0.2s;">
-  <h3>Web Browsing Agent</h3>
-  <p>Autonomous web navigation and interaction capabilities.</p>
-  <div style="margin: 10px 0;">
-    <code>Python</code>
-    <span style="color: #666; font-size: 14px;">• #browser-automation • #visual-feedback • #stateful</span>
-  </div>
-  <a href="python/web-browsing-agent" style="color: #0366d6; text-decoration: none;">Explore Demo →</a>
-</div>
-
-</div>
+| Sample                                          | Language     | Description                                                                                      | Tags                                                                | Preview                     |
+| ----------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- | --------------------------- |
+| [Data Analyst Agent](js/data-analyst-agent)     | `JavaScript` | Natural language interface for data exploration and visualization using AdventureWorks database. | `#llm-sql` `#adaptive-cards` `#data-viz`                            | [Preview image to be added] |
+| [Computer Use Agent](python/computer-use-agent) | `Python`     | AI-powered automation of computer tasks through Teams interface.                                 | `#computer-use` `#human-in-the-loop` `#stateful` `#visual-feedback` | [Preview image to be added] |
+| [Web Browsing Agent](python/web-browsing-agent) | `Python`     | Autonomous web navigation and interaction capabilities.                                          | `#browser-automation` `#visual-feedback` `#stateful`                | [Preview image to be added] |
 
 ## 🏁 Getting Started
 
