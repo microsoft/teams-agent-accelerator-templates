@@ -2,7 +2,10 @@
 
 This sample demonstrates how to build an AI-powered data analyst agent that can be integrated into Microsoft Teams. It helps users explore and visualize data through natural language conversations and Adaptive Cards charts.
 
+Check out the [LinkedIn post](https://www.linkedin.com/feed/update/urn:li:activity:7305726858308792321/) for a video of the sample in action.
+
 ## Features
+
 - 🔍Query databases using natural language
 - 📊 Generate visualizations using [Adaptive Cards](https://adaptivecards.microsoft.com/?topic=welcome) from query results
 - 📈 Analyze data patterns and trends
@@ -15,6 +18,7 @@ This sample demonstrates how to build an AI-powered data analyst agent that can 
 ## Running the Sample
 
 ### Prerequisites
+
 - [Node.js](https://nodejs.org/) version 18.x or higher
 - [npm](https://www.npmjs.com/) (comes with Node.js)
 - [Teams Toolkit Extension](https://marketplace.visualstudio.com/items?itemName=TeamsDevApp.ms-teams-vscode-extension) for Visual Studio Code
@@ -23,40 +27,45 @@ This sample demonstrates how to build an AI-powered data analyst agent that can 
 - OpenAI API Key or Azure OpenAI resource.
 
 ### Installation
+
 1. Clone this repository:
-   ```bash
-   git clone https://github.com/microsoft/teams-agent-accelerator-samples
-   cd js/data-analyst-agent
-   ```
+
+    ```bash
+    git clone https://github.com/microsoft/teams-agent-accelerator-samples
+    cd js/data-analyst-agent
+    ```
 
 2. Install dependencies:
-   ```bash
-   npm install
-   ```
+    ```bash
+    npm install
+    ```
 
 ### Environment Setup
+
 1. Copy the sample environment file:
-   ```bash
-   cp sample.env .env
-   ```
+
+    ```bash
+    cp sample.env .env
+    ```
 
 2. Update the `.env` file with your configuration:
-   - `BOT_ID`: Your Microsoft Teams bot ID (will be automatically generated if using Teams Toolkit)
-   - `BOT_PASSWORD`: Your bot's password (will be automatically generated if using Teams Toolkit)
-   - Azure OpenAI or OpenAI configurations. See `sample.env` for more details.
+    - `BOT_ID`: Your Microsoft Teams bot ID (will be automatically generated if using Teams Toolkit)
+    - `BOT_PASSWORD`: Your bot's password (will be automatically generated if using Teams Toolkit)
+    - Azure OpenAI or OpenAI configurations. See `sample.env` for more details.
 
 ### Running the Bot
 
 #### Option 1: Local deployment using Teams Toolkit (Recommended)
+
 1. Open the project in Visual Studio Code
 2. Press F5 to start the debug session (Debug Edge)
 3. Teams Toolkit will handle:
-   - Starting the local bot server
-   - Tunneling for external access
-   - Opening Teams with your bot loaded
-
+    - Starting the local bot server
+    - Tunneling for external access
+    - Opening Teams with your bot loaded
 
 #### Option 2: Deploy to Azure using Teams Toolkit
+
 1. Create an empty `.env.dev` file and place it in the `env` folder.
 2. Create a `.env.dev.user` file in the `env` folder and add the following contents to it:
 
@@ -76,9 +85,11 @@ To learn more about `Deploying to Azure using Teams Toolkit` see [this](https://
 ## Appendix
 
 ### Dataset
+
 This agent uses the AdventureWorks sample database, a Microsoft-provided dataset that simulates a bicycle manufacturer's data. The database includes:
 
 #### Core Business Areas
+
 - **Sales**: Orders, customers, territories
 - **Production**: Products, inventory, work orders
 - **Purchasing**: Vendors, purchase orders
@@ -86,21 +97,24 @@ This agent uses the AdventureWorks sample database, a Microsoft-provided dataset
 - **Person**: Contact information
 
 #### Sample Questions
+
 You can ask the agent questions like:
+
 - "Show me the top-selling products this year"
 - "What's the sales trend by territory?"
 
 See the [AdventureWorks README](src/data/README.md) for more details.
 
 ### Architecture
+
 ![Data Analyst Agent Architecture](assets/architecture-diagram.png)
 
 **Core Components**
-  - __Data Analyst Agent__: Main orchestrator that handles user requests
-  - __SQL Expert Agent__: Handles database querying
-  - __AC Expert Agent__: Creates data visualizations using Adaptive Cards
-  - __Base Agent__: Handles LLM calls and orchestration. Other agents are built on top of this.
 
+- **Data Analyst Agent**: Main orchestrator that handles user requests
+- **SQL Expert Agent**: Handles database querying
+- **AC Expert Agent**: Creates data visualizations using Adaptive Cards
+- **Base Agent**: Handles LLM calls and orchestration. Other agents are built on top of this.
 
 <!-- TODO: ## Evaluation System
 - Judges Overview

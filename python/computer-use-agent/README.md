@@ -4,6 +4,8 @@ This sample introduces an AI-powered Computer Use Agent (CUA) that integrates wi
 
 It leverages OpenAI's [Computer Use](https://platform.openai.com/docs/guides/tools-computer-use) capabilities.
 
+Check out the [LinkedIn post](https://www.linkedin.com/feed/update/urn:li:activity:7307477075148320768/) for a video of the sample in action.
+
 ## Features
 
 - 🖥️ **Computer Control**: Uses AI to understand and execute computer tasks including terminal operations and web browsing

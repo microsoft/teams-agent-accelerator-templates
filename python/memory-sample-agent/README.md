@@ -2,6 +2,8 @@
 
 This sample showcases a powerful Tech Support Assistant that remembers your device details and past issues, eliminating the frustration of repeating yourself. By leveraging Semantic Memories, this agent delivers a more personalized and efficient support experience. It shocases using the [Memory Module](https://github.com/microsoft/teams-agent-accelerator-libs-py/tree/main/packages/teams_memory) to extract semantic memories from the user's messages and use them to answer questions more efficiently.
 
+Check out the [LinkedIn post](https://www.linkedin.com/feed/update/urn:li:activity:7303208304627826688/) for a video of the sample in action.
+
 ![An example interaction](./docs/images/Tech-Assistant-Starting.gif)
 _An initial example with the tech support assistant._
 

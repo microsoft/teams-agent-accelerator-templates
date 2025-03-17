@@ -2,6 +2,8 @@
 
 This sample demonstrates how to build an AI-powered web browsing agent that can be integrated into Microsoft Teams. The agent can perform web browsing tasks on behalf of users, providing real-time visual feedback and interactive responses. It uses [Browser-Use](https://github.com/Browser-Use/Browser-Use) to navigate the web.
 
+Check out the [LinkedIn post](https://www.linkedin.com/feed/update/urn:li:activity:7307477075148320768/) for a video of the sample in action.
+
 ## Features
 
 - 🌐 **Autonomous Web Navigation**: Uses AI to understand and execute web browsing tasks
