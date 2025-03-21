@@ -51,13 +51,6 @@ const TemplateCard: FC<TemplateCardProps> = ({
     }
   };
 
-  const languageColorMap = {
-    JavaScript: '#f1e05a',
-    Python: '#3572A5',
-    TypeScript: '#2b7489',
-    'C#': '#178600',
-  };
-
   return (
     <>
       <Card className={classes.card} onClick={() => setIsModalOpen(true)}>
