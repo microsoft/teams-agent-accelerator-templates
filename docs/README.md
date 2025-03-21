@@ -2,7 +2,7 @@
 
 A template gallery showcasing AI-powered Teams applications built by the Teams AI Accelerator Group.
 
-![Template Gallery](./docs/asssets/gallery-example.png)
+![Template Gallery](assets/gallery-example.png)
 
 ## Overview
 
