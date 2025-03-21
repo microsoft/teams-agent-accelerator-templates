@@ -42,9 +42,7 @@ const TemplateGallery: FC = () => {
     async function loadTemplates() {
       try {
         const response = await fetch(`${config.basePath}/data/templates.yaml`);
-        console.log(response);
         const yamlText = await response.text();
-        console.log(yamlText);
         const data = parse(yamlText) as TemplatesData;
         setTemplates(data.templates);
       } catch (error) {
