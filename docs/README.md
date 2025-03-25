@@ -96,7 +96,7 @@ Each template in `templates.yaml` has the following fields:
 
 Update the `public/data/templates.yaml` file.
 
-### Discussion: Centralized template data file VS Distributed template files
+### Discussion: Centralized template data file VS Distributed template data files
 
 #### Centralized template data file
 ##### Pros
@@ -104,7 +104,7 @@ Update the `public/data/templates.yaml` file.
 - Easily integrates into next build process. `public/data/templates.yaml` file is served as a single static asset on Github pages.
 
 ##### Cons
-- Detached from source folders of individual templates. Easy to forget to update the `template.yaml` file when updating the templates. 
+- Detached from source folders of individual templates. Easy to forget to update. 
 
 #### Distributed template files
 Each template folder will have a `template.yaml` file with the same exact information.
