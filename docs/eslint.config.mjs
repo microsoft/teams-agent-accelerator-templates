@@ -10,7 +10,8 @@ const eslintConfig = [
     extends: ['next', 'prettier'],
     rules: {
       '@next/next/no-img-element': 'off',
-    }
+      'no-unused-vars': 'warn',
+    },
   }),
 ]
 

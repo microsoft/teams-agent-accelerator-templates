@@ -78,7 +78,6 @@ const TemplateDetails: FC<TemplateDetailsProps> = ({
   tags,
   imageUrl,
   demoUrlGif,
-  author,
 }) => {
   const classes = useStyles();
 

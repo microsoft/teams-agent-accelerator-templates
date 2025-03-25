@@ -1,7 +1,5 @@
 'use client';
 
-import { Text, Input, Checkbox } from '@fluentui/react-components';
-import { Search24Regular } from '@fluentui/react-icons';
 import useStyles from './TemplateGallery.styles';
 import TemplateCard from '../TemplateCard/TemplateCard';
 import { FC, useEffect, useState } from 'react';
