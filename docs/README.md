@@ -40,7 +40,9 @@ pnpm dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## Production Build
+## Production
+
+### Build
 
 To create static export build to `out/` folder, run:
 
@@ -52,6 +54,10 @@ pnpm next build
 > application into HTML, CSS, JS, and static assets that can be deployed as a static page. Hence features like
 > Server-side rendering, Dynamic routes, and many more do not work. The local development server support these features
 > and so it is possible to introduce code changes that work locally but will failed on static export build.
+
+### Testing in Github Pages
+
+First create a fork of this repo. Then enable Github Actions and Github Pages. Run the `Deploy Next.js site to Pages` workflow to deploy to Github Pages. Once testing is done in your forked repository, you can create a PR to merge it into the source repository.  
 
 ## Other commands
 
