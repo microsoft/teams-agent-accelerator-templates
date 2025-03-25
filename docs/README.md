@@ -57,7 +57,7 @@ pnpm next build
 
 ### Testing in Github Pages
 
-First create a fork of this repo. Then enable Github Actions and Github Pages. Run the `Deploy Next.js site to Pages` workflow to deploy to Github Pages. Once testing is done in your forked repository, you can create a PR to merge it into the source repository.  
+First create a fork of this repo. Then enable Github Actions and Github Pages. Run the `Deploy Next.js site to Pages` workflow to deploy to Github Pages. Once testing is done in your forked repository, you can create a PR to merge it into the source repository.
 
 ## Other commands
 
@@ -99,20 +99,26 @@ Update the `public/data/templates.yaml` file.
 ### Discussion: Centralized template data file VS Distributed template data files
 
 #### Centralized template data file
+
 ##### Pros
+
 - Single source of truth. Easier to update changes that will affect multiple templates.
 - Easily integrates into next build process. `public/data/templates.yaml` file is served as a single static asset on Github pages.
 
 ##### Cons
-- Detached from source folders of individual templates. Easy to forget to update. 
+
+- Detached from source folders of individual templates. Easy to forget to update.
 
 #### Distributed template files
+
 Each template folder will have a `template.yaml` file with the same exact information.
 
 ##### Pros
+
 - Lives in template folder. Easy to update.
 
 ##### Cons
+
 - Tightly coupled with repository folder structure. Requires `template.yaml` files to be under `<language>/<template>/template.yaml` repository structure. For example `python/computer-use-agent/template.yaml`.
 - Slightly complicates Next build process. Will have to copy files over and merge into a single `templates.yaml` file.
 
