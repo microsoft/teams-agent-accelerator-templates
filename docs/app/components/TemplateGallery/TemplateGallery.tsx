@@ -6,7 +6,7 @@ import { FC, useEffect, useState } from 'react';
 import { parse } from 'yaml';
 import config from '../../../next.config';
 
-interface Template {
+export interface Template {
   title: string;
   description: string;
   tags: string[];

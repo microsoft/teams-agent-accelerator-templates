@@ -5,20 +5,11 @@ import { Button, Text, Link, tokens } from '@fluentui/react-components';
 import { ArrowLeft24Regular, Open16Regular } from '@fluentui/react-icons';
 import Modal from '../Modal/Modal';
 import useStyles from './TemplateDetails.styles';
+import type { Template } from '../TemplateGallery/TemplateGallery';
 
-interface TemplateDetailsProps {
+export interface TemplateDetailsProps extends Template {
   isOpen: boolean;
   onClose: () => void;
-  title: string;
-  description: string;
-  longDescription: string;
-  featuresList: string[];
-  githubUrl: string;
-  language: string;
-  tags: string[];
-  imageUrl: string;
-  demoUrlGif: string;
-  author: string;
 }
 
 const renderMarkdown = (text: string): JSX.Element => {

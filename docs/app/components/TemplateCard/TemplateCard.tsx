@@ -5,20 +5,9 @@ import { Card, CardPreview, Text, tokens } from '@fluentui/react-components';
 import useStyles from './TemplateCard.styles';
 import config from '../../../next.config';
 import TemplateDetails from '../TemplateDetails/TemplateDetails';
+import type { Template } from '../TemplateGallery/TemplateGallery';
 
-export interface TemplateCardProps {
-  title: string;
-  description: string;
-  imageUrl: string;
-  githubUrl: string;
-  author: string;
-  language: string;
-  tags: string[];
-  readmeUrl: string;
-  demoUrlGif: string;
-  longDescription: string;
-  featuresList: string[];
-}
+export type TemplateCardProps = Template;
 
 const TemplateCard: FC<TemplateCardProps> = ({
   title,
@@ -31,6 +20,7 @@ const TemplateCard: FC<TemplateCardProps> = ({
   demoUrlGif,
   longDescription,
   featuresList,
+  readmeUrl,
 }) => {
   const classes = useStyles();
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -99,6 +89,7 @@ const TemplateCard: FC<TemplateCardProps> = ({
         demoUrlGif={demoUrlGif}
         longDescription={longDescription}
         featuresList={featuresList}
+        readmeUrl={readmeUrl}
       />
     </>
   );
