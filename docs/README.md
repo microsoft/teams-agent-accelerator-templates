@@ -92,7 +92,7 @@ Each template in `templates.yaml` has the following fields:
 - `readmeUrl`: Raw URL to the template's README file
 - `demoUrlGif`: URL to an animated GIF demonstrating the template
 
-### How update templates in the gallery?
+### How to update templates in the gallery?
 
 Update the `public/data/templates.yaml` file.
 
