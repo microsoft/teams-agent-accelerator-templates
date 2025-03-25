@@ -189,5 +189,13 @@ export default makeStyles({
     width: '100%',
     height: 'auto',
     display: 'block',
+    opacity: 1,
+    transition: 'opacity 0.3s ease-in-out',
+    '&.hidden': {
+      opacity: 0,
+      position: 'absolute',
+      top: 0,
+      left: 0,
+    },
   },
 });
