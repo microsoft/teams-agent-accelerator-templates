@@ -24,7 +24,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={classes.root}>
-        { isProduction ?? <ClarityScript /> }
+        {isProduction ? <ClarityScript /> : null}
         <ThemeContext.Provider value={{ isDark, toggleTheme }}>
           <FluentProvider theme={isDark ? webDarkTheme : webLightTheme}>
             <main className={classes.main}>{children}</main>
