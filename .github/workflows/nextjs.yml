@@ -40,6 +40,7 @@ jobs:
         with:
           node-version: "20"
           cache: pnpm
+          cache-dependency-path: ./docs/pnpm-lock.yaml
       - name: Setup Pages
         uses: actions/configure-pages@v5
         with:
@@ -48,6 +49,7 @@ jobs:
           #
           # You may remove this line if you want to manage the configuration yourself.
           static_site_generator: next
+          generator_config_file: ./docs/next.config.ts
       - name: Restore cache
         uses: actions/cache@v4
         with:
