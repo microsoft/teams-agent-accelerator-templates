@@ -406,3 +406,6 @@ build/
 
 # MacOS system files
 .DS_Store
+
+# Miscellanous
+.specstory/
