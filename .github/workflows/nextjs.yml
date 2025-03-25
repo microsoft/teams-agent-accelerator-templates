@@ -44,7 +44,7 @@ jobs:
       - name: Set next.config.ts basePath for GitHub Pages
         # Sets the NEXT_PUBLIC_BASE_PATH environment variable which is used in the next.config.ts file to set the basePath for GitHub Pages.
         run: |
-          echo "NEXT_PUBLIC_BASE_PATH=$(echo ${GITHUB_REPOSITORY} | cut -d'/' -f2)" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_BASE_PATH=/$(echo ${GITHUB_REPOSITORY} | cut -d'/' -f2)" >> $GITHUB_ENV
           echo $NEXT_PUBLIC_BASE_PATH
       - name: Restore cache
         uses: actions/cache@v4
