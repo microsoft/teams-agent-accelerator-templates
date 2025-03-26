@@ -5,7 +5,7 @@ import TemplateDetails from '@/app/components/TemplateDetails/TemplateDetails';
 import { Metadata } from 'next';
 
 export async function generateStaticParams() {
-  let templates = [];
+  let templates: Template[] = [];
   try {
     const response = await fs.readFile('public/data/templates.yaml', 'utf8');
     templates = parse(response).templates;
@@ -21,9 +21,9 @@ export async function generateStaticParams() {
 export async function generateMetadata({
   params,
 }: {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }): Promise<Metadata> {
-  let templates = [];
+  let templates: Template[] = [];
   try {
     const response = await fs.readFile('public/data/templates.yaml', 'utf8');
     templates = parse(response).templates;
@@ -31,7 +31,8 @@ export async function generateMetadata({
     console.error('Error loading templates:', error);
   }
 
-  const template = templates.find((t: Template) => t.id === params.id);
+  const { id } = await params;
+  const template = templates.find((t: Template) => t.id === id);
 
   if (!template) {
     return {
@@ -56,8 +57,13 @@ async function getTemplate(id: string): Promise<Template | null> {
   }
 }
 
-export default async function Page({ params }: { params: { id: string } }) {
-  const template = await getTemplate(params.id);
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
+  const template = await getTemplate(id);
 
   if (!template) {
     return (
