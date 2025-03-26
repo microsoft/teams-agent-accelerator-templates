@@ -82,22 +82,22 @@ For example the Front Matter in the `Data Analyst Agent`'s README file:
 ```md
 ---
 id: data-analyst-agent
-title: "Data Analyst Agent"
-description: "Natural language interface for data exploration and visualization."
+title: 'Data Analyst Agent'
+description: 'Natural language interface for data exploration and visualization.'
 longDescription: ...
 featuresList:
-  - "🔍 Query databases using natural language"
-  - "📊 Generate visualizations using Adaptive Cards from query results"
-  - "📈 Analyze data patterns and trends"
+  - '🔍 Query databases using natural language'
+  - '📊 Generate visualizations using Adaptive Cards from query results'
+  - '📈 Analyze data patterns and trends'
   - "🔄 'reset' command to clear the conversation history."
 tags:
-  - "llm-sql"
-  - "adaptive-cards"
-  - "data-viz"
+  - 'llm-sql'
+  - 'adaptive-cards'
+  - 'data-viz'
 githubUrl: ...
-imageUrl: "/data-analyst-thumbnail.png"
-author: "Microsoft"
-language: "JavaScript"
+imageUrl: '/data-analyst-thumbnail.png'
+author: 'Microsoft'
+language: 'JavaScript'
 readmeUrl: ...
 demoUrlGif: ...
 ---
@@ -106,7 +106,6 @@ demoUrlGif: ...
 
 This sample demonstrates....
 ```
-
 
 Each template in `templates.yaml` has the following fields:
 
@@ -130,7 +129,6 @@ Each template in `templates.yaml` has the following fields:
 2. Update the [frontmatter.json](../frontmatter.json) config file by adding a new object to the `"frontMatter.content.pageFolders"` list.
 
 Viola!
-
 
 ## Appendix
 

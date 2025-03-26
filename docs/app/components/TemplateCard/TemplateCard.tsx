@@ -13,14 +13,9 @@ const TemplateCard: FC<TemplateCardProps> = ({
   title,
   description,
   imageUrl,
-  githubUrl,
   author,
   language,
   tags,
-  demoUrlGif,
-  longDescription,
-  featuresList,
-  readmeUrl,
   id,
 }) => {
   const classes = useStyles();
