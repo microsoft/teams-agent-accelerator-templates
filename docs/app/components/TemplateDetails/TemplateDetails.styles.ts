@@ -10,21 +10,12 @@ export default makeStyles({
     flexDirection: 'column',
     padding: `${tokens.spacingHorizontalXXXL} calc(${tokens.spacingHorizontalXXXL} * 2)`,
     position: 'relative',
-  },
-  header: {
-    top: 0,
-    backgroundColor: tokens.colorNeutralBackground1,
-    paddingTop: tokens.spacingVerticalXL,
-    paddingBottom: tokens.spacingVerticalXL,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    zIndex: 1,
-    marginBottom: tokens.spacingVerticalXL,
+    margin: '0 auto',
   },
   mainContent: {
     display: 'flex',
     position: 'relative',
+    gap: tokens.spacingHorizontalXL,
     '@media (max-width: 800px)': {
       flexDirection: 'column',
       gap: tokens.spacingVerticalXL,
@@ -46,13 +37,16 @@ export default makeStyles({
     flexDirection: 'column',
     gap: tokens.spacingVerticalXL,
     position: 'sticky',
-    top: tokens.spacingVerticalXXL,
+    top: `calc(${tokens.spacingVerticalXXL} + 80px)`,
     maxHeight: 'calc(100vh - 200px)',
     '@media (max-width: 800px)': {
       position: 'relative',
       top: 0,
       maxHeight: 'none',
     },
+  },
+  backButton: {
+    marginBottom: tokens.spacingVerticalM,
   },
   rightColumn: {
     display: 'flex',
@@ -79,7 +73,7 @@ export default makeStyles({
   titleContainer: {
     display: 'flex',
     flexDirection: 'column',
-    gap: tokens.spacingVerticalL,
+    gap: tokens.spacingVerticalXL,
   },
   title: {
     fontSize: tokens.fontSizeHero700,
@@ -95,7 +89,6 @@ export default makeStyles({
   titleMeta: {
     display: 'flex',
     gap: tokens.spacingHorizontalXL,
-    marginBottom: tokens.spacingVerticalL,
   },
   metaSection: {
     display: 'flex',
@@ -153,8 +146,8 @@ export default makeStyles({
     fontWeight: tokens.fontWeightSemibold,
     color: tokens.colorNeutralForeground1,
     paddingBottom: tokens.spacingVerticalM,
-    borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
-    marginBottom: tokens.spacingVerticalL,
+    // borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
+    // marginBottom: tokens.spacingVerticalL,
   },
   featuresList: {
     display: 'flex',
@@ -180,13 +173,14 @@ export default makeStyles({
     },
   },
   demoContainer: {
-    width: '100%',
+    width: 'fit-content',
     borderRadius: tokens.borderRadiusLarge,
     overflow: 'hidden',
     border: `1px solid ${tokens.colorNeutralStroke1}`,
   },
   demo: {
-    width: '100%',
+    width: 'auto',
+    maxHeight: '600px',
     height: 'auto',
     display: 'block',
     opacity: 1,
@@ -197,5 +191,8 @@ export default makeStyles({
       top: 0,
       left: 0,
     },
+  },
+  githubButton: {
+    width: '100%',
   },
 });

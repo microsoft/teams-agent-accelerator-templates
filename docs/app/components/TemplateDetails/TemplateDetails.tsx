@@ -9,14 +9,11 @@ import {
   Skeleton,
 } from '@fluentui/react-components';
 import { ArrowLeft24Regular, Open16Regular } from '@fluentui/react-icons';
-import Modal from '../Modal/Modal';
 import useStyles from './TemplateDetails.styles';
 import type { Template } from '../TemplateGallery/TemplateGallery';
+import NextLink from 'next/link';
 
-export interface TemplateDetailsProps extends Template {
-  isOpen: boolean;
-  onClose: () => void;
-}
+export interface TemplateDetailsProps extends Template {}
 
 const renderMarkdown = (text: string): JSX.Element => {
   // First process bold text
@@ -98,8 +95,6 @@ const DemoImage = ({
 };
 
 const TemplateDetails: FC<TemplateDetailsProps> = ({
-  isOpen,
-  onClose,
   title,
   description,
   longDescription,
@@ -128,99 +123,93 @@ const TemplateDetails: FC<TemplateDetailsProps> = ({
   };
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose}>
-      <div className={classes.container}>
-        <div className={classes.header}>
-          <Button
-            appearance="subtle"
-            icon={<ArrowLeft24Regular />}
-            onClick={onClose}
-          >
-            Back to Gallery
-          </Button>
-          <Button
-            appearance="primary"
-            icon={<Open16Regular />}
-            as="a"
-            href={githubUrl}
-            target="_blank"
-          >
-            View on GitHub
-          </Button>
-        </div>
-
-        <div className={classes.mainContent}>
-          <div className={classes.leftColumn}>
-            <div className={classes.leftColumnContent}>
-              <div className={classes.imageContainer}>
-                <img src={imageUrl} alt={title} className={classes.image} />
-              </div>
-              <div className={classes.titleContainer}>
-                <Text className={classes.title}>{title}</Text>
-                <Text className={classes.description}>{description}</Text>
-                <div className={classes.titleMeta}>
-                  <div className={classes.metaSection}>
-                    <Text className={classes.metaLabel}>LANGUAGE</Text>
-                    <div className={classes.language}>
-                      <span
-                        className={classes.languageDot}
-                        style={{ backgroundColor: getLanguageColor(language) }}
-                      />
-                      <Text>{language}</Text>
-                    </div>
+    <div className={classes.container}>
+      <div className={classes.mainContent}>
+        <div className={classes.leftColumn}>
+          <div className={classes.leftColumnContent}>
+            <NextLink href="/" style={{ textDecoration: 'none' }}>
+              <Button appearance="subtle" icon={<ArrowLeft24Regular />} className={classes.backButton}>
+                Back to Gallery
+              </Button>
+            </NextLink>
+            <div className={classes.imageContainer}>
+              <img src={imageUrl} alt={title} className={classes.image} />
+            </div>
+            <div className={classes.titleContainer}>
+              <Text className={classes.title}>{title}</Text>
+              <Text className={classes.description}>{description}</Text>
+              <Button
+                appearance="primary"
+                icon={<Open16Regular />}
+                as="a"
+                href={githubUrl}
+                target="_blank"
+                className={classes.githubButton}
+              >
+                View on GitHub
+              </Button>
+              <div className={classes.titleMeta}>
+                <div className={classes.metaSection}>
+                  <Text className={classes.metaLabel}>LANGUAGE</Text>
+                  <div className={classes.language}>
+                    <span
+                      className={classes.languageDot}
+                      style={{ backgroundColor: getLanguageColor(language) }}
+                    />
+                    <Text>{language}</Text>
                   </div>
-                  <div className={classes.metaSection}>
-                    <Text className={classes.metaLabel}>TAGS</Text>
-                    <div className={classes.tags}>
-                      {tags.map((tag, index) => (
-                        <span key={index} className={classes.tag}>
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
+                </div>
+                <div className={classes.metaSection}>
+                  <Text className={classes.metaLabel}>TAGS</Text>
+                  <div className={classes.tags}>
+                    {tags.map((tag, index) => (
+                      <span key={index} className={classes.tag}>
+                        {tag}
+                      </span>
+                    ))}
                   </div>
                 </div>
               </div>
             </div>
           </div>
+        </div>
 
-          <div className={classes.rightColumn}>
-            <div className={classes.section}>
-              <Text className={classes.sectionTitle}>Description</Text>
-              <div className={classes.contentBox}>
-                <div className={classes.description}>
-                  {renderMarkdown(longDescription)}
-                </div>
+        <div className={classes.rightColumn}>
+          <div className={classes.section}>
+            <Text className={classes.sectionTitle}>Description</Text>
+            <div className={classes.contentBox}>
+              <div className={classes.description}>
+                {renderMarkdown(longDescription)}
               </div>
             </div>
+          </div>
 
-            <div className={classes.section}>
-              <Text className={classes.sectionTitle}>Features</Text>
-              <div className={classes.contentBox}>
-                <ul className={classes.featuresList}>
-                  {featuresList.map((feature, index) => (
-                    <li key={index} className={classes.featureItem}>
-                      {renderMarkdown(feature)}
-                    </li>
-                  ))}
-                </ul>
-              </div>
+          <div className={classes.section}>
+            <Text className={classes.sectionTitle}>Features</Text>
+            <div className={classes.contentBox}>
+              <ul className={classes.featuresList}>
+                {featuresList.map((feature, index) => (
+                  <li key={index} className={classes.featureItem}>
+                    {renderMarkdown(feature)}
+                  </li>
+                ))}
+              </ul>
             </div>
+          </div>
 
-            <div className={classes.section}>
-              <Text className={classes.sectionTitle}>Demo</Text>
-              <div className={classes.demoContainer}>
-                <DemoImage
-                  src={demoUrlGif}
-                  alt={`${title} demo`}
-                  className={classes.demo}
-                />
-              </div>
+          <div className={classes.section}>
+            <Text className={classes.sectionTitle}>Demo</Text>
+            <div className={classes.demoContainer}>
+              <DemoImage
+                src={demoUrlGif}
+                alt={`${title} demo`}
+                className={classes.demo}
+              />
             </div>
           </div>
         </div>
       </div>
-    </Modal>
+    </div>
   );
 };
 

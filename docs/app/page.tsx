@@ -1,7 +1,6 @@
 'use client';
 
 import TemplateGallery from './components/TemplateGallery/TemplateGallery';
-import NavBar from './components/NavBar/NavBar';
 import Header from './components/Header/Header';
 import { makeStyles, tokens } from '@fluentui/react-components';
 
@@ -18,7 +17,6 @@ export default function Home() {
 
   return (
     <main>
-      <NavBar />
       <div className={classes.root}>
         <Header />
         <TemplateGallery />

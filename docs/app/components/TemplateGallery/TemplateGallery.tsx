@@ -7,6 +7,7 @@ import { parse } from 'yaml';
 import config from '../../../next.config';
 
 export interface Template {
+  id: string;
   title: string;
   description: string;
   tags: string[];
@@ -75,6 +76,7 @@ const TemplateGallery: FC = () => {
           {templates.map((template, index) => (
             <TemplateCard
               key={index}
+              id={template.id}
               title={template.title}
               description={template.description}
               imageUrl={resolveImageUrl(template.imageUrl)}

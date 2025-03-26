@@ -1,11 +1,11 @@
 'use client';
 
-import { FC, useState } from 'react';
+import { FC } from 'react';
 import { Card, CardPreview, Text, tokens } from '@fluentui/react-components';
 import useStyles from './TemplateCard.styles';
 import config from '../../../next.config';
-import TemplateDetails from '../TemplateDetails/TemplateDetails';
 import type { Template } from '../TemplateGallery/TemplateGallery';
+import Link from 'next/link';
 
 export type TemplateCardProps = Template;
 
@@ -21,9 +21,9 @@ const TemplateCard: FC<TemplateCardProps> = ({
   longDescription,
   featuresList,
   readmeUrl,
+  id,
 }) => {
   const classes = useStyles();
-  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const getLanguageColor = (language: string) => {
     // Retrieved from https://gist.github.com/robertpeteuil/bb2dc86f3b3e25d203664d61410bfa30
@@ -42,8 +42,8 @@ const TemplateCard: FC<TemplateCardProps> = ({
   };
 
   return (
-    <>
-      <Card className={classes.card} onClick={() => setIsModalOpen(true)}>
+    <Link href={`/template/${id}`} style={{ textDecoration: 'none' }}>
+      <Card className={classes.card}>
         <CardPreview className={classes.preview}>
           <img
             src={imageUrl || `${config.basePath}/placeholder-img.svg`}
@@ -75,23 +75,7 @@ const TemplateCard: FC<TemplateCardProps> = ({
           </div>
         </div>
       </Card>
-
-      <TemplateDetails
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={title}
-        description={description}
-        imageUrl={imageUrl}
-        githubUrl={githubUrl}
-        author={author}
-        language={language}
-        tags={tags}
-        demoUrlGif={demoUrlGif}
-        longDescription={longDescription}
-        featuresList={featuresList}
-        readmeUrl={readmeUrl}
-      />
-    </>
+    </Link>
   );
 };
 

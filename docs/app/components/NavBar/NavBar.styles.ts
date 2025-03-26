@@ -10,6 +10,9 @@ export default makeStyles({
     padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalXXL}`,
     borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
     backgroundColor: tokens.colorNeutralBackground1,
+    position: 'sticky',
+    top: 0,
+    zIndex: 1000,
   },
   logo: {
     display: 'flex',
