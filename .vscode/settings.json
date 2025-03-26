@@ -1,0 +1,23 @@
+{
+    "frontMatter.framework.id": "next",
+    "frontMatter.content.publicFolder": "public",
+    "frontMatter.preview.host": "http://localhost:3000",
+    "frontMatter.content.pageFolders": [
+        {
+            "path": "[[workspace]]/js/data-analyst-agent",
+            "title": "data-analyst-agent"
+        },
+        {
+            "path": "[[workspace]]/python/computer-use-agent",
+            "title": "computer-use-agent"
+        },
+        {
+            "path": "[[workspace]]/python/web-browsing-agent",
+            "title": "web-browsing-agent"
+        },
+        {
+            "path": "[[workspace]]/python/memory-sample-agent",
+            "title": "memory-sample-agent"
+        }
+    ]
+}
