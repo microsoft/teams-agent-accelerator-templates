@@ -2,13 +2,18 @@
   "$schema": "https://frontmatter.codes/frontmatter.schema.json",
   "frontMatter.taxonomy.contentTypes": [
     {
-      "name": "default",
+      "name": "template",
       "pageBundle": false,
       "previewPath": null,
       "fields": [
         {
+          "title": "ID",
+          "name": "id",
+          "type": "string"
+        },
+        {
           "title": "Title",
-          "name": "title",
+          "name": "title", 
           "type": "string"
         },
         {
@@ -17,21 +22,14 @@
           "type": "string"
         },
         {
-          "title": "Publishing date",
-          "name": "date",
-          "type": "datetime",
-          "default": "{{now}}",
-          "isPublishDate": true
+          "title": "Long Description",
+          "name": "longDescription",
+          "type": "string"
         },
         {
-          "title": "Content preview",
-          "name": "preview",
-          "type": "image"
-        },
-        {
-          "title": "Is in draft",
-          "name": "draft",
-          "type": "draft"
+          "title": "Features List",
+          "name": "featuresList",
+          "type": "list"
         },
         {
           "title": "Tags",
@@ -39,12 +37,59 @@
           "type": "tags"
         },
         {
-          "title": "Categories",
-          "name": "categories",
-          "type": "categories"
+          "title": "GitHub URL",
+          "name": "githubUrl",
+          "type": "string"
+        },
+        {
+          "title": "Image URL",
+          "name": "imageUrl",
+          "type": "string"
+        },
+        {
+          "title": "Author",
+          "name": "author",
+          "type": "string"
+        },
+        {
+          "title": "Language",
+          "name": "language",
+          "type": "string"
+        },
+        {
+          "title": "README URL",
+          "name": "readmeUrl",
+          "type": "string"
+        },
+        {
+          "title": "Demo GIF URL",
+          "name": "demoUrlGif",
+          "type": "string"
         }
       ]
     }
   ],
-  "frontMatter.git.enabled": true
+  "frontMatter.git.enabled": true,
+  "frontMatter.content.pageFolders": [
+    {
+      "path": "[[workspace]]/js/data-analyst-agent",
+      "title": "data-analyst-agent"
+    },
+    {
+      "path": "[[workspace]]/python/computer-use-agent", 
+      "title": "computer-use-agent"
+    },
+    {
+      "path": "[[workspace]]/python/web-browsing-agent",
+      "title": "web-browsing-agent"
+    },
+    {
+      "path": "[[workspace]]/python/memory-sample-agent",
+      "title": "memory-sample-agent"
+    },
+    {
+      "path": "[[workspace]]/docs/_posts",
+      "title": "posts"
+    }
+  ]
 }

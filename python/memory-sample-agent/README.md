@@ -1,3 +1,27 @@
+---
+# This will be used to generate template information in the template gallery. Only Markdown links, and **bold** tags are supported in `longDescription`.
+id: memory-sample-agent
+title: "Tech Support Agent"
+description: "AI Agent demonstrating the use of memory to enhance capabilities."
+longDescription: |
+  This sample showcases a powerful Tech Support Assistant that remembers your device details and past issues, eliminating the frustration of repeating yourself. By leveraging Semantic Memories, this agent delivers a more personalized and efficient support experience. It shocases using the [Memory Module](https://github.com/microsoft/teams-agent-accelerator-libs-py/tree/main/packages/teams_memory) to extract semantic memories from the user's messages and use them to answer questions more efficiently.
+  Check out the [LinkedIn post](https://www.linkedin.com/feed/update/urn:li:activity:7303208304627826688/) for a video of the sample in action.
+featuresList:
+  - "💾 **Remembers your device details:** No more repeating your device type, OS, or year"
+  - "👤 **Personalized support experience:** Conversations that feel continuous, not disconnected"
+  - "⚡ **Efficient problem-solving:** Faster resolutions by building on past interactions"
+  - "🔄 **Seamless memory integration:** Demonstrates practical implementation of memory in AI assistants"
+tags:
+  - "memory"
+  - "agent"
+  - "python"
+githubUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/blob/main/python/memory-sample-agent"
+imageUrl: "/memory-thumbnail.png"
+author: "Microsoft"
+language: "Python"
+readmeUrl: "https://raw.githubusercontent.com/microsoft/teams-agent-accelerator-samples/refs/heads/main/python/memory-sample-agent/README.md"
+demoUrlGif: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/python/memory-sample-agent/docs/images/Tech-Assistant-Starting.gif"
+---
 # 🧠 Tech Support Assistant with Memory
 
 This sample showcases a powerful Tech Support Assistant that remembers your device details and past issues, eliminating the frustration of repeating yourself. By leveraging Semantic Memories, this agent delivers a more personalized and efficient support experience. It shocases using the [Memory Module](https://github.com/microsoft/teams-agent-accelerator-libs-py/tree/main/packages/teams_memory) to extract semantic memories from the user's messages and use them to answer questions more efficiently.

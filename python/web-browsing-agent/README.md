@@ -1,3 +1,27 @@
+---
+# This will be used to generate template information in the template gallery. Only Markdown links, and **bold** tags are supported in `longDescription`.
+id: web-browsing-agent
+title: "Web Browsing Agent"
+description: "Autonomous web navigation and interaction capabilities."
+longDescription: |
+  This sample demonstrates how to build an AI-powered web browsing agent that can be integrated into Microsoft Teams. The agent can perform web browsing tasks on behalf of users, providing real-time visual feedback and interactive responses. It uses [Browser-Use](https://github.com/Browser-Use/Browser-Use) to navigate the web.
+  Check out the [LinkedIn post](https://www.linkedin.com/feed/update/urn:li:activity:7307477075148320768/) for a video of the sample in action.
+featuresList:
+  - "🌐 **Autonomous Web Navigation:** Uses AI to understand and execute web browsing tasks"
+  - "📸 **Real-time Visual Feedback:** Shows screenshots of browsing progress via adaptive cards in Adaptive Cards"
+  - "🔄 **Interruptable:** Allows users to stop the browsing session at any time" 
+  - "🚢 **Dockerized:** Docker file ready to be deployed to an Azure App Service"
+tags:
+  - "browser-automation"
+  - "visual-feedback"
+  - "stateful"
+githubUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/blob/main/python/web-browsing-agent"
+imageUrl: "/web-browser-thumbnail.png"
+author: "Microsoft"
+language: "Python"
+readmeUrl: "https://raw.githubusercontent.com/microsoft/teams-agent-accelerator-samples/refs/heads/main/python/web-browsing-agent/README.md"
+demoUrlGif: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/python/web-browsing-agent/docs/news-example.gif"
+---
 # Web Browsing Agent for Microsoft Teams
 
 This sample demonstrates how to build an AI-powered web browsing agent that can be integrated into Microsoft Teams. The agent can perform web browsing tasks on behalf of users, providing real-time visual feedback and interactive responses. It uses [Browser-Use](https://github.com/Browser-Use/Browser-Use) to navigate the web.
