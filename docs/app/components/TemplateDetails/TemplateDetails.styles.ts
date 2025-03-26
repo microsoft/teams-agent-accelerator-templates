@@ -179,7 +179,7 @@ export default makeStyles({
     border: `1px solid ${tokens.colorNeutralStroke1}`,
   },
   demo: {
-    width: 'auto',
+    width: '100%',
     maxHeight: '600px',
     height: 'auto',
     display: 'block',
