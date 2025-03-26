@@ -124,11 +124,20 @@ Each template in `templates.yaml` has the following fields:
 
 ### How to add a template to the gallery?
 
-1. Add front matter content following the above format to the top of any README file in this repository.
+1. Add front matter content following the above format to the top of a README file.
 
 2. Update the [frontmatter.json](../frontmatter.json) config file by adding a new object to the `"frontMatter.content.pageFolders"` list.
 
-Viola!
+The object will look like this:
+
+```json
+{
+  "path": "[[workspace]]/python/memory-sample-agent",
+  "title": "memory-sample-agent"
+}
+```
+
+The `path` should point to a folder with the `README.md` file.
 
 ## Appendix
 
