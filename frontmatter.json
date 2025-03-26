@@ -86,10 +86,6 @@
     {
       "path": "[[workspace]]/python/memory-sample-agent",
       "title": "memory-sample-agent"
-    },
-    {
-      "path": "[[workspace]]/docs/_posts",
-      "title": "posts"
     }
   ]
 }

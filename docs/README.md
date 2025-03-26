@@ -75,7 +75,38 @@ pnpm format
 
 ## Templates
 
-Templates in the gallery are loaded from the `public/data/templates.yaml` file.
+Templates in the gallery are loaded from the [frontmatter](https://frontmatter.codes/) of each samples' README file.
+
+For example the Front Matter in the `Data Analyst Agent`'s README file:
+
+```md
+---
+id: data-analyst-agent
+title: "Data Analyst Agent"
+description: "Natural language interface for data exploration and visualization."
+longDescription: ...
+featuresList:
+  - "🔍 Query databases using natural language"
+  - "📊 Generate visualizations using Adaptive Cards from query results"
+  - "📈 Analyze data patterns and trends"
+  - "🔄 'reset' command to clear the conversation history."
+tags:
+  - "llm-sql"
+  - "adaptive-cards"
+  - "data-viz"
+githubUrl: ...
+imageUrl: "/data-analyst-thumbnail.png"
+author: "Microsoft"
+language: "JavaScript"
+readmeUrl: ...
+demoUrlGif: ...
+---
+
+# Data Analyst Agent for Microsoft Teams
+
+This sample demonstrates....
+```
+
 
 Each template in `templates.yaml` has the following fields:
 
@@ -92,35 +123,14 @@ Each template in `templates.yaml` has the following fields:
 - `readmeUrl`: Raw URL to the template's README file
 - `demoUrlGif`: URL to an animated GIF demonstrating the template
 
-### How to update templates in the gallery?
+### How to add a template to the gallery?
 
-Update the `public/data/templates.yaml` file.
+1. Add front matter content following the above format to the top of any README file in this repository.
 
-### Discussion: Centralized template data file VS Distributed template data files
+2. Update the [frontmatter.json](../frontmatter.json) config file by adding a new object to the `"frontMatter.content.pageFolders"` list.
 
-#### Centralized template data file
+Viola!
 
-##### Pros
-
-- Single source of truth. Easier to update changes that will affect multiple templates.
-- Easily integrates into next build process. `public/data/templates.yaml` file is served as a single static asset on Github pages.
-
-##### Cons
-
-- Detached from source folders of individual templates. Easy to forget to update.
-
-#### Distributed template files
-
-Each template folder will have a `template.yaml` file with the same exact information.
-
-##### Pros
-
-- Lives in template folder. Easy to update.
-
-##### Cons
-
-- Tightly coupled with repository folder structure. Requires `template.yaml` files to be under `<language>/<template>/template.yaml` repository structure. For example `python/computer-use-agent/template.yaml`.
-- Slightly complicates Next build process. Will have to copy files over and merge into a single `templates.yaml` file.
 
 ## Appendix
 

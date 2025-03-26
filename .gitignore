@@ -409,3 +409,4 @@ build/
 
 # Miscellanous
 .specstory/
+docs/public/data/templates.yaml

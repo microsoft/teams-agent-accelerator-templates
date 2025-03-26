@@ -128,7 +128,11 @@ const TemplateDetails: FC<TemplateDetailsProps> = ({
         <div className={classes.leftColumn}>
           <div className={classes.leftColumnContent}>
             <NextLink href="/" style={{ textDecoration: 'none' }}>
-              <Button appearance="subtle" icon={<ArrowLeft24Regular />} className={classes.backButton}>
+              <Button
+                appearance="subtle"
+                icon={<ArrowLeft24Regular />}
+                className={classes.backButton}
+              >
                 Back to Gallery
               </Button>
             </NextLink>
