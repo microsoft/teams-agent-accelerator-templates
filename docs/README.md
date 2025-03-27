@@ -57,7 +57,7 @@ pnpm next build
 
 ### Testing in Github Pages
 
-First create a fork of this repo. Then enable Github Actions and Github Pages. Run the `Deploy Next.js site to Pages` workflow to deploy to Github Pages. Once testing is done in your forked repository, you can create a PR to merge it into the source repository.
+First create a fork of this repo. Then enable Github Actions and Github Pages in the repository settings. Run the `Deploy Next.js site to Pages` workflow to deploy to Github Pages. Once testing is done in your forked repository, you can create a PR to merge it into the source repository.
 
 ## Other commands
 
@@ -137,7 +137,9 @@ The object will look like this:
 }
 ```
 
-The `path` should point to a folder with the `README.md` file.
+The `path` should point to the folder that contains the `README.md` file.
+
+3. Once that is done follow instructions in the [Testing In Github Pages](#testing-in-github-pages) section to test your changes.
 
 ## Appendix
 
