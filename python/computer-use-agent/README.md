@@ -21,7 +21,7 @@ tags:
   - "stateful"
   - "visual-feedback"
 githubUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/blob/main/python/computer-use-agent"
-imageUrl: "/cua-thumbnail.png"
+imageUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/python/computer-use-agent/docs/cua-thumbnail.png"
 author: "Microsoft"
 language: "Python"
 readmeUrl: "https://raw.githubusercontent.com/microsoft/teams-agent-accelerator-samples/refs/heads/main/python/computer-use-agent/README.md"

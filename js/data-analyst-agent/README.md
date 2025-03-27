@@ -16,7 +16,7 @@ tags:
   - "adaptive-cards"
   - "data-viz"
 githubUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/blob/main/js/data-analyst-agent"
-imageUrl: "/data-analyst-thumbnail.png"
+imageUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/js/data-analyst-agent/assets/data-analyst-thumbnail.png"
 author: "Microsoft"
 language: "JavaScript"
 readmeUrl: "https://raw.githubusercontent.com/microsoft/teams-agent-accelerator-samples/refs/heads/main/js/data-analyst-agent/README.md"

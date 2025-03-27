@@ -16,7 +16,7 @@ tags:
   - "visual-feedback"
   - "stateful"
 githubUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/blob/main/python/web-browsing-agent"
-imageUrl: "/web-browser-thumbnail.png"
+imageUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/python/web-browsing-agent/docs/web-browser-thumbnail.png"
 author: "Microsoft"
 language: "Python"
 readmeUrl: "https://raw.githubusercontent.com/microsoft/teams-agent-accelerator-samples/refs/heads/main/python/web-browsing-agent/README.md"
