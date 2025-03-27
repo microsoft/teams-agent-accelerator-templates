@@ -57,7 +57,7 @@ pnpm next build
 
 ### Testing in Github Pages
 
-First create a fork of this repo. Then enable Github Actions and Github Pages in the repository settings. Run the `Deploy Next.js site to Pages` workflow to deploy to Github Pages. Once testing is done in your forked repository, you can create a PR to merge it into the source repository.
+First create a fork of this repo. Then enable Github Actions and Github Pages in the repository settings. Run the `Deploy Next.js site to Pages` workflow to deploy to Github Pages. Once testing is done in your forked repository, you can create a PR to merge it into the source repository. Ensure that the `Build with Next.js` workflow runs for the page to successfully deploy.
 
 ## Other commands
 
