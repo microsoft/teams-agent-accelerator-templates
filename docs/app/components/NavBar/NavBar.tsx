@@ -17,17 +17,18 @@ const NavBar: FC = () => {
 
   return (
     <nav className={classes.nav}>
-      <Link href={`/`} className={classes.logo}>
-        <Text className={classes.logoText}>🤖 Teams AI Accelerator Group</Text>
+      <Link href={`/`} className={classes.logo} aria-label="Teams AI Accelerator Group">
+        <Text role="heading" aria-level={3} className={classes.logoText}>🤖 Teams AI Accelerator Group</Text>
       </Link>
       <div className={classes.navLinks}>
         <a
           href="https://github.com/microsoft/teams-agent-accelerator-samples"
           target="_blank"
           rel="noopener noreferrer"
+          aria-label="Teams Agent Accelerator Samples GitHub repository"
           className={classes.iconLink}
         >
-          <FaGithub className={classes.icon} />
+          <FaGithub className={classes.icon} aria-label="Github logo" role="img" />
         </a>
         <Button
           icon={isDark ? <WeatherSunny24Regular /> : <WeatherMoon24Regular />}

@@ -35,6 +35,7 @@ export default function RootLayout({
 
   return (
     <html lang="en">
+      <title>Teams Agent Accelerator Samples</title>
       <body className={classes.root}>
         <ThemeContext.Provider value={{ isDark, toggleTheme }}>
           <FluentProvider theme={isDark ? webDarkTheme : webLightTheme}>

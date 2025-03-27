@@ -35,7 +35,7 @@ const renderMarkdown = (text: string): JSX.Element => {
     if (linkMatch) {
       const [, text, url] = linkMatch;
       return (
-        <Link key={index} href={url} target="_blank">
+        <Link key={index} href={url} target="_blank" aria-label={text}>
           {processBold(text)}
         </Link>
       );
