@@ -62,7 +62,7 @@ jobs:
         run: pnpm install
         working-directory: ./docs
       - name: Build with Next.js
-        run: pnpm next build
+        run: pnpm build
         env:
           NEXT_PUBLIC_BASE_PATH: ${{ env.NEXT_PUBLIC_BASE_PATH }}
         working-directory: ./docs
