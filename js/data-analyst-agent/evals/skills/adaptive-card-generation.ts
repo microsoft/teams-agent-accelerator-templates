@@ -47,7 +47,7 @@ async function evaluateACGeneration() {
         try {
             const expert = DataAnalyst();
             const response = await expert.chat(
-                `Create an appropraite visualization for this data: ${JSON.stringify(testCase.input_data)}. Please return a single card.
+                `Create an appropriate visualization for this data: ${JSON.stringify(testCase.input_data)}. Please return a single card.
                 Use the following type of visualization: ${testCase.visualization_type}.`,
             );
 
