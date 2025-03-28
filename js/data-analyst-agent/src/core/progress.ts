@@ -1,10 +1,6 @@
-import { StreamingResponse } from "@microsoft/teams-ai";
+import { StreamingResponse } from '@microsoft/teams-ai';
 
-export type ProcessingState = 
-  | 'PROCESSING_MESSAGE'
-  | 'PLANNING_QUERY'
-  | 'FETCHING_DATA'
-  | 'GENERATING_VISUALIZATION'
+export type ProcessingState = 'PROCESSING_MESSAGE' | 'FETCHING_DATA';
 
 export class ProgressUpdate {
     private streamer?: StreamingResponse;
@@ -20,13 +16,10 @@ export class ProgressUpdate {
     update(update: ProcessingState) {
         if (this.streamer) {
             const progressMessages = {
-                'PROCESSING_MESSAGE': "Processing...",
-                'PLANNING_QUERY': "Planning query...", 
-                'FETCHING_DATA': "Fetching data...",
-                'GENERATING_VISUALIZATION': "Generating visualization..."
+                PROCESSING_MESSAGE: 'Processing...',
+                FETCHING_DATA: 'Fetching data...',
             };
             this.streamer.queueInformativeUpdate(progressMessages[update]);
         }
     }
-
 }

@@ -1,5 +1,5 @@
 import { ConsoleLogger } from '@teams.sdk/common';
-import { AdaptiveCardExpert } from '../../src/agents/ac-expert';
+import { DataAnalyst } from '../../src/data-analyst';
 import { ACJudge } from '../judge/ac';
 import * as fs from 'fs';
 import * as path from 'path';
@@ -26,7 +26,7 @@ interface EvalResult {
     error?: string;
 }
 
-async function evaluateACExpert() {
+async function evaluateACGeneration() {
     const log = new ConsoleLogger('ac-expert-eval', { level: 'debug' });
     const judge = ACJudge();
 
@@ -43,19 +43,21 @@ async function evaluateACExpert() {
     // Run each test case
     for (const testCase of casesToRun) {
         log.info(`Evaluating: ${testCase.task}`);
-        
+
         try {
-            const expert = AdaptiveCardExpert();
+            const expert = DataAnalyst();
             const response = await expert.chat(
-                `Create a ${testCase.visualization_type} visualization for this data: ${JSON.stringify(testCase.input_data)}`
+                `Create an appropraite visualization for this data: ${JSON.stringify(testCase.input_data)}. Please return a single card.
+                Use the following type of visualization: ${testCase.visualization_type}.`,
             );
-            const parsedResponse = JSON.parse(response);
+
+            const parsedResponse = response[0].card;
 
             // Get judgment from AC judge
             const judgeResult = await judge.evaluate({
                 input: JSON.stringify(testCase.input_data),
                 ideal: JSON.stringify(testCase.expected_card),
-                completion: JSON.stringify(parsedResponse)
+                completion: JSON.stringify(parsedResponse),
             });
 
             results.push({
@@ -68,8 +70,8 @@ async function evaluateACExpert() {
                 judge_result: {
                     choice: judgeResult.choice,
                     score: judgeResult.score,
-                    reason: judgeResult.reason
-                }
+                    reason: judgeResult.reason,
+                },
             });
         } catch (error) {
             results.push({
@@ -81,7 +83,7 @@ async function evaluateACExpert() {
                 judge_result: {
                     choice: 'Incorrect',
                     score: 0,
-                    reason: error instanceof Error ? error.message : 'Unknown error'
+                    reason: error instanceof Error ? error.message : 'Unknown error',
                 },
                 error: error instanceof Error ? error.message : 'Unknown error',
             });
@@ -97,8 +99,6 @@ function outputResults(results: EvalResult[]) {
     const successfulTests = results.filter(r => r.success).length;
     const failedTests = totalTests - successfulTests;
 
-    const timestamp = new Date().toISOString().replace(/:/g, '-');
-    const logFile = path.join(__dirname, `ac-expert-eval-${timestamp}.log`);
     let output = '';
 
     output += '\n=== Adaptive Card Expert Evaluation Results ===\n\n';
@@ -118,19 +118,28 @@ function outputResults(results: EvalResult[]) {
         if (result.judge_result.reason) {
             output += `Judge Reasoning: ${result.judge_result.reason}\n`;
         }
-        
+
         if (!result.success && result.error) {
             output += `\nError: ${result.error}\n`;
         }
     });
 
-    // Write to file and console
-    fs.writeFileSync(logFile, output);
-    console.log(`\nResults written to: ${logFile}`);
+    // Write to console
+    console.log(output);
+
+    // Write to log file
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const logDir = path.join(__dirname, '..', 'logs');
+    if (!fs.existsSync(logDir)) {
+        fs.mkdirSync(logDir, { recursive: true });
+    }
+    const logFilePath = path.join(logDir, `ac-eval-${timestamp}.log`);
+    fs.writeFileSync(logFilePath, output);
+    console.log(`\nResults have been written to: ${logFilePath}`);
 }
 
 // Run evaluation
-evaluateACExpert().catch(error => {
+evaluateACGeneration().catch(error => {
     console.error('Evaluation failed:', error);
     process.exit(1);
-}); 
+});

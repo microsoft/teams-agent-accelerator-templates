@@ -25,8 +25,8 @@ const adapter = new TeamsAdapter(
     new ConfigurationServiceClientCredentialFactory({
         MicrosoftAppId: process.env.BOT_ID,
         MicrosoftAppPassword: process.env.BOT_PASSWORD,
-        MicrosoftAppType: 'MultiTenant'
-    })
+        MicrosoftAppType: 'MultiTenant',
+    }),
 );
 
 const log = createLogger('index');
@@ -44,11 +44,11 @@ const onTurnErrorHandler = async (context: TurnContext, error: any) => {
         'OnTurnError Trace',
         `${error}`,
         'https://www.botframework.com/schemas/error',
-        'TurnError'
+        'TurnError',
     );
 
     // Send a message to the user
-    await context.sendActivity('I\'m sorry, something went wrong. Please try again.');
+    await context.sendActivity("I'm sorry, something went wrong. Please try again.");
     await context.sendActivity(`This is the error I ran into: ${error}`);
 };
 
@@ -67,7 +67,7 @@ server.listen(process.env.port || process.env.PORT || 3978, () => {
 // Listen for incoming server requests.
 server.post('/api/messages', async (req: any, res: any) => {
     // Route received a request to adapter for processing
-    await adapter.process(req, res as any, async (context) => {
+    await adapter.process(req, res as any, async context => {
         // Dispatch to application for routing
         await app.run(context);
     });

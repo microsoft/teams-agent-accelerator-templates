@@ -51,7 +51,7 @@
     },
     {
         "task": "Horizontal Bar Chart",
-        "visualization_type": "bar",
+        "visualization_type": "horizontal bar chart",
         "input_data": [
             {
                 "legend": "North America",

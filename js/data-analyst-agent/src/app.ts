@@ -1,10 +1,10 @@
-import { Application, TurnState, StreamingResponse, FeedbackLoopData } from "@microsoft/teams-ai";
-import { MemoryStorage, TurnContext } from "botbuilder";
+import { Application, TurnState, StreamingResponse, FeedbackLoopData } from '@microsoft/teams-ai';
+import { MemoryStorage, TurnContext } from 'botbuilder';
 
-import { ActivityTypes } from "botbuilder";
-import { DataAnalyst, DataAnalystResponse } from "./agents/data-analyst";
-import { createLogger } from "./core/logging";
-import { ProgressUpdate } from "./core/progress";
+import { ActivityTypes } from 'botbuilder';
+import { DataAnalyst, DataAnalystResponse } from './data-analyst';
+import { createLogger } from './core/logging';
+import { ProgressUpdate } from './core/progress';
 interface ConversationState {
     count: number;
 }
@@ -13,22 +13,18 @@ type ApplicationTurnState = TurnState<ConversationState>;
 // Define storage and application
 const storage = new MemoryStorage();
 export const app = new Application<ApplicationTurnState>({
-    storage
+    storage,
 });
 
 const log = createLogger('app');
 
-export type ProcessingState = 
-  | 'PROCESSING_MESSAGE'
-  | 'PLANNING_QUERY'
-  | 'FETCHING_DATA'
-  | 'GENERATING_VISUALIZATION'
+export type ProcessingState = 'PROCESSING_MESSAGE' | 'PLANNING_QUERY' | 'FETCHING_DATA' | 'GENERATING_VISUALIZATION';
 
 const progressUpdate = new ProgressUpdate();
 let dataAnalyst = DataAnalyst({ progressUpdate });
 
 // Clears the conversation history of all the agents.
-app.message("/reset", async (context: TurnContext, _: ApplicationTurnState) => {
+app.message('/reset', async (context: TurnContext, _: ApplicationTurnState) => {
     // Reset the agent
     dataAnalyst = DataAnalyst({ progressUpdate });
     await context.sendActivity(`Resetting agent...`);
@@ -36,7 +32,7 @@ app.message("/reset", async (context: TurnContext, _: ApplicationTurnState) => {
 
 // Listen for ANY message to be received. MUST BE AFTER ANY OTHER MESSAGE HANDLERS
 app.activity(ActivityTypes.Message, async (context: TurnContext, _: ApplicationTurnState) => {
-    log.trace(`Incoming Message Activity.`)
+    log.trace(`Incoming Message Activity.`);
 
     if (isPersonalScope(context)) {
         await streamingDataAnalyst(context);
@@ -46,7 +42,7 @@ app.activity(ActivityTypes.Message, async (context: TurnContext, _: ApplicationT
 });
 
 app.feedbackLoop(async (_context: TurnContext, _state: TurnState, feedbackLoopData: FeedbackLoopData) => {
-    log.trace(`Incoming Feedback Loop Activity.`)
+    log.trace(`Incoming Feedback Loop Activity.`);
     if (feedbackLoopData.actionValue.reaction === 'like') {
         log.info('👍');
         log.info(`Feedback: ${JSON.stringify(feedbackLoopData.actionValue.feedback, null, 2)}`);
@@ -68,7 +64,7 @@ async function streamingDataAnalyst(context: TurnContext) {
 
     progressUpdate.setStreamer(streamer);
 
-    let response: DataAnalystResponse = await dataAnalyst.chat(context.activity.text);
+    const response: DataAnalystResponse = await dataAnalyst.chat(context.activity.text);
 
     progressUpdate.endProgressUpdate();
 
@@ -76,14 +72,14 @@ async function streamingDataAnalyst(context: TurnContext) {
     const attachments = [];
     for (const item of response) {
         if (item.text) {
-            const text = item.text + "\n\n";
+            const text = item.text + '\n\n';
             streamer.queueTextChunk(text);
         }
 
         if (item.card) {
             attachments.push({
                 contentType: 'application/vnd.microsoft.card.adaptive',
-                content: item.card
+                content: item.card,
             });
         }
     }
@@ -95,34 +91,34 @@ async function streamingDataAnalyst(context: TurnContext) {
 
 async function nonStreamingDataAnalyst(context: TurnContext) {
     const activity = await context.sendActivity(`Working on it...`);
-    
+
     if (!activity) {
         log.error(`Failed to send activity`);
         return;
     }
 
     try {
-        let response: DataAnalystResponse = await dataAnalyst.chat(context.activity.text);
+        const response: DataAnalystResponse = await dataAnalyst.chat(context.activity.text);
 
         // Send each content item individually.
         const attachments = [];
-        let textBuffer = ""
+        let textBuffer = '';
         for (const item of response) {
             if (item.text) {
-                textBuffer += item.text + "\n\n";
+                textBuffer += item.text + '\n\n';
             }
 
             if (item.card) {
                 attachments.push({
                     contentType: 'application/vnd.microsoft.card.adaptive',
-                    content: item.card
+                    content: item.card,
                 });
             }
         }
 
         if (textBuffer.length === 0) {
             if (attachments.length > 0) {
-                textBuffer = "Here are the visualizations:";
+                textBuffer = 'Here are the visualizations:';
             } else {
                 textBuffer = "Sorry I wasn't able to answer your query. Please try again.";
             }
@@ -135,8 +131,8 @@ async function nonStreamingDataAnalyst(context: TurnContext) {
             text: textBuffer,
             channelData: {
                 feedbackLoop: {
-                    type: 'default'
-                }
+                    type: 'default',
+                },
             },
             entities: [
                 {
@@ -145,15 +141,15 @@ async function nonStreamingDataAnalyst(context: TurnContext) {
                     '@context': 'https://schema.org',
                     '@id': '',
                     additionalType: ['AIGeneratedContent'],
-                }
-            ]
-        })
+                },
+            ],
+        });
 
-        if (attachments.length > 0) {    
+        if (attachments.length > 0) {
             // Send the Adaptive Card attachments. Teams doesn't allow multiple attachments in a single update activity, so we have to send them in a separate activity.
             await context.sendActivity({
                 type: ActivityTypes.Message,
-                attachments: attachments
+                attachments: attachments,
             });
         }
     } catch (error) {
@@ -161,7 +157,7 @@ async function nonStreamingDataAnalyst(context: TurnContext) {
         await context.updateActivity({
             id: activity.id,
             type: ActivityTypes.Message,
-            text: `Failure Occured. ${error}`
+            text: `Failure Occured. ${error}`,
         });
     }
 }
