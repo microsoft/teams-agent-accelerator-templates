@@ -1,11 +1,12 @@
 ---
-# This will be used to generate template information in the template gallery. Only Markdown links, and **bold** tags are supported in `longDescription`.
 id: computer-use-agent
 title: "Computer Use Agent"
 description: "AI-powered automation of computer tasks through Teams interface."
 longDescription: |
   This sample introduces an AI-powered Computer Use Agent (CUA) that integrates with Microsoft Teams to automate tasks such as booking flights, searching for products, and filling out forms. Powered by OpenAI, the agent interacts with computer interfaces—clicking, typing, scrolling, and more—while providing real-time updates through Microsoft Teams. It can handle a variety of computer-based tasks, including web browsing and terminal operations and also handle user inputs when needed.
+  
   It leverages OpenAI's [Computer Use](https://platform.openai.com/docs/guides/tools-computer-use) capabilities.
+  
   Check out the [LinkedIn post](https://www.linkedin.com/feed/update/urn:li:activity:7307477075148320768/) for a video of the sample in action.
 featuresList:
   - "🖥️ **Computer Control:** Uses AI to understand and execute computer tasks including terminal operations and web browsing"

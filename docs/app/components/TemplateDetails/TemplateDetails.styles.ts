@@ -137,17 +137,14 @@ export default makeStyles({
   contentBox: {},
   section: {
     display: 'flex',
-    flexDirection: 'column',
-    gap: tokens.spacingVerticalL,
+    flexDirection: 'column'
   },
   sectionTitle: {
     fontSize: tokens.fontSizeBase600,
     lineHeight: tokens.lineHeightBase600,
     fontWeight: tokens.fontWeightSemibold,
     color: tokens.colorNeutralForeground1,
-    paddingBottom: tokens.spacingVerticalM,
-    // borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
-    // marginBottom: tokens.spacingVerticalL,
+    paddingBottom: tokens.spacingVerticalXL,
   },
   featuresList: {
     display: 'flex',
@@ -202,5 +199,21 @@ export default makeStyles({
   },
   nextLink: {
     textDecoration: 'none',
+  },
+  markdown: {
+    '& ul': {
+      margin: 0,
+      paddingLeft: tokens.spacingHorizontalS,
+    },
+    '& li': {
+      margin: 0,
+    },
+    '& p': {
+      marginTop: 0,
+    },
+    '& a': {
+      color: tokens.colorNeutralForeground1,
+      textDecoration: 'underline',
+    },
   },
 });

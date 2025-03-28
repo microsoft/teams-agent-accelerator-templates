@@ -4,7 +4,6 @@ import { FC, useState } from 'react';
 import {
   Button,
   Text,
-  Link,
   tokens,
   Skeleton,
 } from '@fluentui/react-components';
@@ -12,52 +11,27 @@ import { ArrowLeft24Regular, Open16Regular } from '@fluentui/react-icons';
 import useStyles from './TemplateDetails.styles';
 import type { Template } from '../TemplateGallery/TemplateGallery';
 import NextLink from 'next/link';
+import rehypeStringify from 'rehype-stringify'
+import remarkGfm from 'remark-gfm'
+import remarkBreaks from 'remark-breaks'
+import remarkParse from 'remark-parse'
+import remarkRehype from 'remark-rehype'
+import {unified} from 'unified'
 
 export interface TemplateDetailsProps extends Template {}
 
-const renderMarkdown = (text: string): JSX.Element => {
-  // First process bold text
-  const processBold = (part: string): JSX.Element[] => {
-    const parts = part.split(/(\*\*.*?\*\*)/g);
-    return parts.map((boldPart, idx) => {
-      const boldMatch = boldPart.match(/\*\*(.*?)\*\*/);
-      if (boldMatch) {
-        return <b key={idx}>{boldMatch[1]}</b>;
-      }
-      return <span key={idx}>{boldPart}</span>;
-    });
-  };
+const renderMarkdown = (text: string, classes: Record<string, string>): JSX.Element => {
+  const content = unified()
+  .use(remarkParse)
+  .use(remarkBreaks)
+  .use(remarkGfm)
+  .use(remarkRehype)
+  .use(rehypeStringify)
+  .processSync(text)
 
-  // Then process links and line breaks
-  const parts = text.split(/(\[.*?\]\(.*?\))/g);
-  const elements = parts.map((part, index) => {
-    const linkMatch = part.match(/\[(.*?)\]\((.*?)\)/);
-    if (linkMatch) {
-      const [, text, url] = linkMatch;
-      return (
-        <Link key={index} href={url} target="_blank" aria-label={text}>
-          {processBold(text)}
-        </Link>
-      );
-    }
-    return (
-      <span key={index}>
-        {part.split('\n').map((line, i) =>
-          i === 0 ? (
-            processBold(line)
-          ) : (
-            <span key={i}>
-              <br />
-              <br />
-              {processBold(line)}
-            </span>
-          )
-        )}
-      </span>
-    );
-  });
+  console.log(String(content))
 
-  return <span>{elements}</span>;
+  return <span dangerouslySetInnerHTML={{ __html: String(content) }} className={classes.markdown}></span>;
 };
 
 const DemoImage = ({
@@ -175,7 +149,7 @@ const TemplateDetails: FC<TemplateDetailsProps> = ({
             <Text className={classes.sectionTitle}>Description</Text>
             <div className={classes.contentBox}>
               <div className={classes.description}>
-                {renderMarkdown(longDescription)}
+                {renderMarkdown(longDescription, classes)}
               </div>
             </div>
           </div>
@@ -186,7 +160,7 @@ const TemplateDetails: FC<TemplateDetailsProps> = ({
               <ul className={classes.featuresList}>
                 {featuresList.map((feature, index) => (
                   <li key={index} className={classes.featureItem}>
-                    {renderMarkdown(feature)}
+                    {renderMarkdown(feature, classes)}
                   </li>
                 ))}
               </ul>

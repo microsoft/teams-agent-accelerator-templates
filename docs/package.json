@@ -21,7 +21,12 @@
     "react-dom": "^18.3.1",
     "react-icons": "^5.5.0",
     "react-markdown": "^10.1.0",
+    "rehype-stringify": "^10.0.1",
+    "remark": "^15.0.1",
+    "remark-breaks": "^4.0.0",
     "remark-gfm": "^4.0.1",
+    "remark-parse": "^11.0.0",
+    "remark-rehype": "^11.1.1",
     "yaml": "^2.7.0"
   },
   "devDependencies": {
