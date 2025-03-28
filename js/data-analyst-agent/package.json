@@ -14,8 +14,8 @@
     "build": "npx tsup",
     "start": "node ./dist/index.js",
     "dev": "npx nodemon -w \"./src/**\" -e ts --exec \"node -r ts-node/register -r dotenv/config ./src/index.ts\"",
-    "format": "prettier --write \"src/**/*.ts\"",
-    "lint": "eslint \"src/**/*.ts\" --fix",
+    "format": "prettier --write \"src/**/*.ts\" \"evals/**/*.ts\"",
+    "lint": "eslint \"src/**/*.ts\" \"evals/**/*.ts\" --fix",
     "eval:sql": "ts-node -r dotenv/config evals/skills/sql-generation.ts",
     "eval:ac": "ts-node -r dotenv/config evals/skills/adaptive-card-generation.ts"
   },

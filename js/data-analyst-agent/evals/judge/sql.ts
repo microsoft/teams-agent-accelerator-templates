@@ -2,8 +2,8 @@ import { BaseAgent } from '../../src/core/base-agent';
 import { createLogger } from '../../src/core/logging';
 
 interface SQLJudgeInput {
-    input: string;    // The question
-    ideal: string;    // Expert answer
+    input: string; // The question
+    ideal: string; // Expert answer
     completion: string; // Submitted answer
 }
 
@@ -23,10 +23,11 @@ export const SQLJudge = () => {
             'Ignore any differences in whitespace, style, or output column names.',
             '',
             'Guidelines:',
-            '- Two SQL queries that return the same data are considered semantically equivalent,', 
+            '- Two SQL queries that return the same data are considered semantically equivalent,',
             '  even if one includes an ORDER BY clause and the other does not',
             '- Only consider ORDER BY differences as meaningful when the user query explicitly',
             '  requires or asks for results in a specific order',
+            ' - If there is ambiguity in the user query, use best judgement to determine the correct answer',
             '',
             'The submitted answer may either be correct or incorrect. Determine which case applies.',
             'You must respond with exactly one of these two choices:',
@@ -48,7 +49,7 @@ export const SQLJudge = () => {
             },
             required: ['choice', 'reason'],
         },
-        logger: log
+        logger: log,
     });
 
     return {
@@ -66,7 +67,7 @@ export const SQLJudge = () => {
             ].join('\n');
 
             const result = await agent.chat(prompt);
-            
+
             return {
                 choice: result.choice,
                 score: result.choice === 'Correct' ? 1.0 : 0.0,

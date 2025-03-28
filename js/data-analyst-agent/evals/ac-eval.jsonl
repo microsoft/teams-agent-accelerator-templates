@@ -6,17 +6,17 @@
             {
                 "legend": "Sales Q1",
                 "value": 125000,
-                "color": "red"
+                "color": "CATEGORICALRED"
             },
             {
                 "legend": "Sales Q2",
                 "value": 168000,
-                "color": "orange"
+                "color": "CATEGORICALBLUE"
             },
             {
                 "legend": "Sales Q3",
                 "value": 145000,
-                "color": "blue"
+                "color": "CATEGORICALGREEN"
             }
         ],
         "expected_card": {
@@ -32,17 +32,17 @@
                         {
                             "x": "Sales Q1",
                             "y": 125000,
-                            "color": "red"
+                            "color": "CATEGORICALRED"
                         },
                         {
                             "x": "Sales Q2",
                             "y": 168000,
-                            "color": "orange"
+                            "color": "CATEGORICALBLUE"
                         },
                         {
                             "x": "Sales Q3",
                             "y": 145000,
-                            "color": "blue"
+                            "color": "CATEGORICALGREEN"
                         }
                     ]
                 }
@@ -56,22 +56,22 @@
             {
                 "legend": "North America",
                 "value": 450000,
-                "color": "blue"
+                "color": "CATEGORICALBLUE"
             },
             {
                 "legend": "Europe",
                 "value": 380000,
-                "color": "green"
+                "color": "CATEGORICALGREEN"
             },
             {
                 "legend": "Asia Pacific",
                 "value": 520000,
-                "color": "red"
+                "color": "CATEGORICALRED"
             },
             {
                 "legend": "Latin America",
                 "value": 180000,
-                "color": "orange"
+                "color": "CATEGORICALMARIGOLD"
             }
         ],
         "expected_card": {
@@ -87,22 +87,22 @@
                         {
                             "x": "North America",
                             "y": 450000,
-                            "color": "blue"
+                            "color": "CATEGORICALBLUE"
                         },
                         {
                             "x": "Europe",
                             "y": 380000,
-                            "color": "green"
+                            "color": "CATEGORICALGREEN"
                         },
                         {
                             "x": "Asia Pacific",
                             "y": 520000,
-                            "color": "red"
+                            "color": "CATEGORICALRED"
                         },
                         {
                             "x": "Latin America",
                             "y": 180000,
-                            "color": "orange"
+                            "color": "CATEGORICALMARIGOLD"
                         }
                     ]
                 }
@@ -141,7 +141,7 @@
                         "y": 2800
                     }
                 ],
-                "color": "blue"
+                "color": "SEQUENTIAL1"
             }
         ],
         "expected_card": {
@@ -182,7 +182,7 @@
                                     "y": 2800
                                 }
                             ],
-                            "color": "blue"
+                            "color": "SEQUENTIAL1"
                         }
                     ]
                 }
@@ -198,17 +198,17 @@
                 {
                     "legend": "Mobile",
                     "value": 45,
-                    "color": "red"
+                    "color": "CATEGORICALRED"
                 },
                 {
                     "legend": "Desktop",
                     "value": 35,
-                    "color": "blue"
+                    "color": "CATEGORICALBLUE"
                 },
                 {
                     "legend": "Tablet",
                     "value": 20,
-                    "color": "green"
+                    "color": "CATEGORICALGREEN"
                 }
             ]
         },
@@ -223,17 +223,17 @@
                         {
                             "legend": "Mobile",
                             "value": 45,
-                            "color": "red"
+                            "color": "CATEGORICALRED"
                         },
                         {
                             "legend": "Desktop",
                             "value": 35,
-                            "color": "blue"
+                            "color": "CATEGORICALBLUE"
                         },
                         {
                             "legend": "Tablet",
                             "value": 20,
-                            "color": "green"
+                            "color": "CATEGORICALGREEN"
                         }
                     ]
                 }
