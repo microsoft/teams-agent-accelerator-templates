@@ -16,8 +16,8 @@
     "dev": "npx nodemon -w \"./src/**\" -e ts --exec \"node -r ts-node/register -r dotenv/config ./src/index.ts\"",
     "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint \"src/**/*.ts\" --fix",
-    "eval:sql": "ts-node -r dotenv/config evals/experts/sql-expert.ts",
-    "eval:ac": "ts-node -r dotenv/config evals/experts/ac-expert.ts"
+    "eval:sql": "ts-node -r dotenv/config evals/skills/sql-generation.ts",
+    "eval:ac": "ts-node -r dotenv/config evals/skills/adaptive-card-generation.ts"
   },
   "dependencies": {
     "@azure/openai": "^2.0.0",

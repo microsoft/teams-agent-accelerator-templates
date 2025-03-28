@@ -135,12 +135,53 @@ See the [AdventureWorks README](src/data/README.md) for more details.
 
 **Core Components**
 
-- **Data Analyst Agent**: Main orchestrator that handles user requests
-- **SQL Expert Agent**: Handles database querying
-- **AC Expert Agent**: Creates data visualizations using Adaptive Cards
+- **Data Analyst Agent**: Main orchestrator that handles user requests. Handles database queries and also creates visualizations using Adaptive Cards.
 - **Base Agent**: Handles LLM calls and orchestration. Other agents are built on top of this.
 
-<!-- TODO: ## Evaluation System
-- Judges Overview
-- Evaluation Criteria
-- Scoring System -->
+### Running Evals
+
+This project includes evaluation scripts to test the agent's ability to generate SQL queries and Adaptive Card visualizations.
+
+#### SQL Generation Evaluation
+
+To evaluate the agent's SQL query generation capabilities:
+
+```bash
+# Run all SQL test cases
+npm run eval:sql
+
+# Run a single test case (useful for debugging)
+npm run eval:sql -- --run-one
+```
+
+The evaluation will:
+1. Load test cases from `evals/sql-eval.jsonl`
+2. Generate SQL queries for each test case
+3. Compare the generated queries against expected results
+4. Output results to both console and a log file in `evals/logs/sql-eval-[timestamp].log`
+
+#### Adaptive Card Generation Evaluation
+
+To evaluate the agent's Adaptive Card visualization capabilities:
+
+```bash
+# Run all Adaptive Card test cases
+npm run eval:ac
+
+# Run a single test case (useful for debugging)
+npm run eval:ac -- --run-one
+```
+
+The evaluation will:
+1. Load test cases from `evals/ac-eval.jsonl`
+2. Generate Adaptive Cards for each test case
+3. Compare the generated cards against expected results
+4. Output results to both console and a log file in `evals/logs/ac-eval-[timestamp].log`
+
+Both evaluations will provide detailed feedback including:
+- Success rate
+- Individual test case results
+- Expected vs actual outputs
+- Judge's reasoning for each evaluation
+
+
