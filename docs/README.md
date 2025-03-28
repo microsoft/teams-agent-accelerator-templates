@@ -98,6 +98,36 @@ githubUrl: ...
 imageUrl: '/data-analyst-thumbnail.png'
 author: 'Microsoft'
 language: 'JavaScript'
+readmeUrl: ...
+demoUrlGif: ...
+---
+
+# Data Analyst Agent for Microsoft Teams
+
+This sample demonstrates....
+```
+
+For example the Front Matter in the `Data Analyst Agent`'s README file:
+
+```md
+---
+id: data-analyst-agent
+title: 'Data Analyst Agent'
+description: 'Natural language interface for data exploration and visualization.'
+longDescription: ...
+featuresList:
+  - '🔍 Query databases using natural language'
+  - '📊 Generate visualizations using Adaptive Cards from query results'
+  - '📈 Analyze data patterns and trends'
+  - "🔄 'reset' command to clear the conversation history."
+tags:
+  - 'llm-sql'
+  - 'adaptive-cards'
+  - 'data-viz'
+githubUrl: ...
+imageUrl: '/data-analyst-thumbnail.png'
+author: 'Microsoft'
+language: 'JavaScript'
 demoUrlGif: ...
 ---
 
