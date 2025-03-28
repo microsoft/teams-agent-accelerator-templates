@@ -57,11 +57,6 @@
           "type": "string"
         },
         {
-          "title": "README URL",
-          "name": "readmeUrl",
-          "type": "string"
-        },
-        {
           "title": "Demo GIF URL",
           "name": "demoUrlGif",
           "type": "string"

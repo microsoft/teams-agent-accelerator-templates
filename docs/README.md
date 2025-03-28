@@ -98,7 +98,6 @@ githubUrl: ...
 imageUrl: '/data-analyst-thumbnail.png'
 author: 'Microsoft'
 language: 'JavaScript'
-readmeUrl: ...
 demoUrlGif: ...
 ---
 
@@ -119,7 +118,6 @@ Each template in `templates.yaml` has the following fields:
 - `imageUrl`: Path to the template's thumbnail image
 - `author`: Creator/maintainer of the template
 - `language`: Primary programming language used
-- `readmeUrl`: Raw URL to the template's README file
 - `demoUrlGif`: URL to an animated GIF demonstrating the template
 
 ### How to add a template to the gallery?

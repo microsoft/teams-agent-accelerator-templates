@@ -19,7 +19,6 @@ githubUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/blob/ma
 imageUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/js/data-analyst-agent/assets/data-analyst-thumbnail.png"
 author: "Microsoft"
 language: "JavaScript"
-readmeUrl: "https://raw.githubusercontent.com/microsoft/teams-agent-accelerator-samples/refs/heads/main/js/data-analyst-agent/README.md"
 demoUrlGif: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/js/data-analyst-agent/assets/demo.gif"
 ---
 

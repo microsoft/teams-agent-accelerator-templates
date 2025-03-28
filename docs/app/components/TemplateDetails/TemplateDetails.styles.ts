@@ -195,4 +195,12 @@ export default makeStyles({
   githubButton: {
     width: '100%',
   },
+  loadingSkeleton: {
+    width: '100%',
+    height: '300px',
+    borderRadius: tokens.borderRadiusLarge,
+  },
+  nextLink: {
+    textDecoration: 'none',
+  },
 });

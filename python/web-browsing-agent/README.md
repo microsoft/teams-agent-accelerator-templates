@@ -19,7 +19,6 @@ githubUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/blob/ma
 imageUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/python/web-browsing-agent/docs/web-browser-thumbnail.png"
 author: "Microsoft"
 language: "Python"
-readmeUrl: "https://raw.githubusercontent.com/microsoft/teams-agent-accelerator-samples/refs/heads/main/python/web-browsing-agent/README.md"
 demoUrlGif: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/python/web-browsing-agent/docs/news-example.gif"
 ---
 # Web Browsing Agent for Microsoft Teams

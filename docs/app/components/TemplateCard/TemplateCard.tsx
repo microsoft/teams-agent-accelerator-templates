@@ -39,7 +39,7 @@ const TemplateCard: FC<TemplateCardProps> = ({
   return (
     <Link
       href={`/template/${id}`}
-      style={{ textDecoration: 'none' }}
+      className={classes.link}
       aria-label={`View ${title} template`}
     >
       <Card className={classes.card}>

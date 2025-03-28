@@ -15,7 +15,6 @@ export interface Template {
   imageUrl: string;
   author: string;
   language: string;
-  readmeUrl: string;
   demoUrlGif: string;
   longDescription: string;
   featuresList: string[];
@@ -55,23 +54,6 @@ const TemplateGallery: FC = () => {
   return (
     <div className={classes.root}>
       <div className={classes.container}>
-        {/* <div className={classes.sidebar}>
-            <Text className={classes.sidebarTitle}>Filter Templates</Text>
-            <div className={classes.searchContainer}>
-              <Input
-                placeholder="Search templates..."
-                contentBefore={<Search24Regular />}
-              />
-            </div>
-            <div className={classes.filterSection}>
-              <Text className={classes.filterTitle}>Use Case</Text>
-              <div>
-                <Checkbox label="AI Chat" />
-                <Checkbox label="Document Analysis" />
-                <Checkbox label="Meeting Intelligence" />
-              </div>
-            </div>
-          </div> */}
         <div className={classes.grid}>
           {templates.map((template, index) => (
             <TemplateCard
@@ -84,7 +66,6 @@ const TemplateGallery: FC = () => {
               author={template.author}
               language={template.language}
               tags={template.tags}
-              readmeUrl={template.readmeUrl}
               demoUrlGif={template.demoUrlGif}
               longDescription={template.longDescription}
               featuresList={template.featuresList}

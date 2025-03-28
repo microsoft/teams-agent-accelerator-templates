@@ -63,29 +63,21 @@ const renderMarkdown = (text: string): JSX.Element => {
 const DemoImage = ({
   src,
   alt,
-  className,
+  classes,
 }: {
   src: string;
   alt: string;
-  className: string;
+  classes: Record<string, string>;
 }) => {
   const [isLoading, setIsLoading] = useState(true);
 
   return (
     <>
-      {isLoading && (
-        <Skeleton
-          style={{
-            width: '100%',
-            height: '300px',
-            borderRadius: tokens.borderRadiusLarge,
-          }}
-        />
-      )}
+      {isLoading && <Skeleton className={classes.loadingSkeleton} />}
       <img
         src={src}
         alt={alt}
-        className={`${className} ${isLoading ? 'hidden' : ''}`}
+        className={`${classes.demo} ${isLoading ? 'hidden' : ''}`}
         loading="lazy"
         onLoad={() => setIsLoading(false)}
         onError={() => setIsLoading(false)}
@@ -127,7 +119,7 @@ const TemplateDetails: FC<TemplateDetailsProps> = ({
       <div className={classes.mainContent}>
         <div className={classes.leftColumn}>
           <div className={classes.leftColumnContent}>
-            <NextLink href="/" style={{ textDecoration: 'none' }}>
+            <NextLink href="/" className={classes.nextLink}>
               <Button
                 appearance="subtle"
                 icon={<ArrowLeft24Regular />}
@@ -207,7 +199,7 @@ const TemplateDetails: FC<TemplateDetailsProps> = ({
               <DemoImage
                 src={demoUrlGif}
                 alt={`${title} demo`}
-                className={classes.demo}
+                classes={classes}
               />
             </div>
           </div>

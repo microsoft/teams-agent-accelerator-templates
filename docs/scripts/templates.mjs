@@ -35,7 +35,6 @@ function loadTemplates() {
         imageUrl: data.imageUrl,
         author: data.author,
         language: data.language,
-        readmeUrl: data.readmeUrl,
         demoUrlGif: data.demoUrlGif,
       };
 

@@ -104,4 +104,7 @@ export default makeStyles({
     fontSize: tokens.fontSizeBase100,
     color: tokens.colorNeutralForeground3,
   },
+  link: {
+    textDecoration: 'none',
+  },
 });
