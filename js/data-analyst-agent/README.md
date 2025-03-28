@@ -130,10 +130,6 @@ You can ask the agent questions like:
 
 See the [AdventureWorks README](src/data/README.md) for more details.
 
-### Architecture
-
-![Data Analyst Agent Architecture](assets/architecture-diagram.png)
-
 **Core Components**
 
 - **Data Analyst Agent**: Main orchestrator that handles user requests. Handles database queries and also creates visualizations using Adaptive Cards.
