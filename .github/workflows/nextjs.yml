@@ -33,16 +33,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4 # docs https://pnpm.io/continuous-integration#github-actions
-        with:
-            version: 10
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: "20"
-          cache: pnpm
-          cache-dependency-path: ./docs/pnpm-lock.yaml
+          cache: npm
+          cache-dependency-path: ./docs/package-lock.json
       - name: Set next.config.ts basePath for GitHub Pages
         # Sets the NEXT_PUBLIC_BASE_PATH environment variable which is used in the next.config.ts file to set the basePath for GitHub Pages.
         run: |
@@ -52,17 +48,17 @@ jobs:
         uses: actions/cache@v4
         with:
           path: |
-            .next/cache
+            ./docs/.next/cache
           # Generate a new cache whenever packages or source files change.
           key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-${{ hashFiles('**.[jt]s', '**.[jt]sx') }}
           # If source files changed but packages didn't, rebuild from a prior cache.
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json', '**/yarn.lock') }}-
       - name: Install dependencies
-        run: pnpm install
+        run: npm install
         working-directory: ./docs
       - name: Build with Next.js
-        run: pnpm build
+        run: npm run build
         env:
           NEXT_PUBLIC_BASE_PATH: ${{ env.NEXT_PUBLIC_BASE_PATH }}
         working-directory: ./docs

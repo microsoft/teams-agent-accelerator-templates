@@ -17,8 +17,14 @@ const NavBar: FC = () => {
 
   return (
     <nav className={classes.nav}>
-      <Link href={`/`} className={classes.logo} aria-label="Teams AI Accelerator Group">
-        <Text role="heading" aria-level={3} className={classes.logoText}>🤖 Teams AI Accelerator Group</Text>
+      <Link
+        href={`/`}
+        className={classes.logo}
+        aria-label="Teams AI Accelerator Group"
+      >
+        <Text role="heading" aria-level={3} className={classes.logoText}>
+          🤖 Teams AI Accelerator Group
+        </Text>
       </Link>
       <div className={classes.navLinks}>
         <a
@@ -28,7 +34,11 @@ const NavBar: FC = () => {
           aria-label="Teams Agent Accelerator Samples GitHub repository"
           className={classes.iconLink}
         >
-          <FaGithub className={classes.icon} aria-label="Github logo" role="img" />
+          <FaGithub
+            className={classes.icon}
+            aria-label="Github logo"
+            role="img"
+          />
         </a>
         <Button
           icon={isDark ? <WeatherSunny24Regular /> : <WeatherMoon24Regular />}

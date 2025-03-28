@@ -7,9 +7,8 @@
   },
   "scripts": {
     "load-templates": "node scripts/templates.mjs",
-    "dev": "pnpm load-templates && next dev --turbopack",
-    "build": "pnpm load-templates && next build",
-    "start": "next start",
+    "dev": "npm run load-templates && next dev --turbopack",
+    "build": "npm run load-templates && next build",
     "lint": "next lint",
     "format": "prettier \"./**/*.{ts,tsx,json,css,scss,md}\" --write --config .prettierrc --ignore-unknown"
   },

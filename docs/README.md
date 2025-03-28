@@ -12,7 +12,7 @@ This gallery is built with:
 - [React 8](https://react.dev/)
 - [Fluent UI](https://react.fluentui.dev/)
 - [Node.js 20](https://nodejs.org/)
-- [pnpm](https://pnpm.io/)
+- [npm](https://www.npmjs.com/)
 
 The gallery provides a curated collection of Teams app templates that developers can use as starting points for building their own AI-powered Teams applications. Each template includes:
 
@@ -35,7 +35,7 @@ The gallery provides a curated collection of Teams app templates that developers
 First, run the development server:
 
 ```bash
-pnpm dev
+npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
@@ -46,8 +46,8 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 To create static export build to `out/` folder, run:
 
-```
-pnpm next build
+```bash
+npm run build
 ```
 
 > Next.js [static export](https://nextjs.org/docs/pages/building-your-application/deploying/static-exports) builds the
@@ -63,14 +63,14 @@ First create a fork of this repo. Then enable Github Actions and Github Pages in
 
 ### Linter
 
-```
-pnpm lint
+```bash
+npm run lint
 ```
 
 ### Format using Prettier
 
-```
-pnpm format
+```bash
+npm run format
 ```
 
 ## Templates
