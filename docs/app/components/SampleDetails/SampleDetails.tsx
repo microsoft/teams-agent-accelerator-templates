@@ -8,8 +8,8 @@ import {
   Skeleton,
 } from '@fluentui/react-components';
 import { ArrowLeft24Regular, Open16Regular } from '@fluentui/react-icons';
-import useStyles from './TemplateDetails.styles';
-import type { Template } from '../TemplateGallery/TemplateGallery';
+import useStyles from './SampleDetails.styles';
+import type { Sample } from '../SampleGallery/SampleGallery';
 import NextLink from 'next/link';
 import rehypeStringify from 'rehype-stringify'
 import remarkGfm from 'remark-gfm'
@@ -18,7 +18,7 @@ import remarkParse from 'remark-parse'
 import remarkRehype from 'remark-rehype'
 import {unified} from 'unified'
 
-export interface TemplateDetailsProps extends Template {}
+export interface SampleDetailsProps extends Sample {}
 
 const renderMarkdown = (text: string, classes: Record<string, string>): JSX.Element => {
   const content = unified()
@@ -60,7 +60,7 @@ const DemoImage = ({
   );
 };
 
-const TemplateDetails: FC<TemplateDetailsProps> = ({
+const SampleDetails: FC<SampleDetailsProps> = ({
   title,
   description,
   longDescription,
@@ -183,6 +183,6 @@ const TemplateDetails: FC<TemplateDetailsProps> = ({
   );
 };
 
-TemplateDetails.displayName = 'TemplateDetails';
+SampleDetails.displayName = 'SampleDetails';
 
-export default TemplateDetails;
+export default SampleDetails;

@@ -1,8 +1,8 @@
 # Teams AI Accelerator Gallery
 
-A template gallery showcasing AI-powered Teams applications built by the Teams AI Accelerator Group.
+A sample gallery showcasing AI-powered Teams applications built by the Teams AI Accelerator Group.
 
-![Template Gallery](assets/gallery-example.png)
+![Sample Gallery](assets/gallery-example.png)
 
 ## Overview
 
@@ -14,7 +14,7 @@ This gallery is built with:
 - [Node.js 20](https://nodejs.org/)
 - [npm](https://www.npmjs.com/)
 
-The gallery provides a curated collection of Teams app templates that developers can use as starting points for building their own AI-powered Teams applications. Each template includes:
+The gallery provides a curated collection of Teams app samples that developers can use as starting points for building their own AI-powered Teams applications. Each sample includes:
 
 - Source code and documentation
 - Live demo
@@ -27,7 +27,7 @@ The gallery provides a curated collection of Teams app templates that developers
 - 🎨 Modern, responsive UI built with Fluent UI components
 - 🌗 Light/dark theme support
 - 📱 Mobile-friendly design
-- 📖 Detailed template documentation
+- 📖 Detailed sample documentation
 - 🚀 Link to Github project
 
 ## Getting Started
@@ -73,9 +73,9 @@ npm run lint
 npm run format
 ```
 
-## Templates
+## Samples
 
-Templates in the gallery are loaded from the [frontmatter](https://frontmatter.codes/) of each samples' README file.
+Samples in the gallery are loaded from the [frontmatter](https://frontmatter.codes/) of each samples' README file.
 
 For example the Front Matter in the `Data Analyst Agent`'s README file:
 
@@ -106,21 +106,21 @@ demoUrlGif: ...
 This sample demonstrates....
 ```
 
-Each template in `templates.yaml` has the following fields:
+Each sample in `samples.yaml` has the following fields:
 
-- `id`: Unique identifier for the template
-- `title`: Display name of the template
-- `description`: Short summary of the template's functionality
-- `longDescription`: Detailed description of template's functionality. Supports markdown links and bold syntax.
+- `id`: Unique identifier for the sample
+- `title`: Display name of the sample
+- `description`: Short summary of the sample's functionality
+- `longDescription`: Detailed description of sample's functionality. Supports markdown links and bold syntax.
 - `featuresList`: Array of key features with emoji icons
 - `tags`: Array of relevant technology/feature tags
-- `githubUrl`: Link to the template's source code repository
-- `imageUrl`: Path to the template's thumbnail image
-- `author`: Creator/maintainer of the template
+- `githubUrl`: Link to the sample's source code repository
+- `imageUrl`: Path to the sample's thumbnail image
+- `author`: Creator/maintainer of the sample
 - `language`: Primary programming language used
-- `demoUrlGif`: URL to an animated GIF demonstrating the template
+- `demoUrlGif`: URL to an animated GIF demonstrating the sample
 
-### How to add a template to the gallery?
+### How to add a sample to the gallery?
 
 1. Add front matter content following the above format to the top of a README file.
 

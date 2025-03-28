@@ -409,4 +409,5 @@ build/
 
 # Miscellanous
 .specstory/
-docs/public/data/templates.yaml
+docs/public/data/samples.yaml
+.frontmatter/

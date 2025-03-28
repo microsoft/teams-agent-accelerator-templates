@@ -1,6 +1,6 @@
 'use client';
 
-import TemplateGallery from './components/TemplateGallery/TemplateGallery';
+import SampleGallery from './components/SampleGallery/SampleGallery';
 import Header from './components/Header/Header';
 import { makeStyles, tokens } from '@fluentui/react-components';
 
@@ -19,7 +19,7 @@ export default function Home() {
     <main>
       <div className={classes.root}>
         <Header />
-        <TemplateGallery />
+        <SampleGallery />
       </div>
     </main>
   );
