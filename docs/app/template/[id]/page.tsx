@@ -1,4 +1,4 @@
-  import { loadTemplates, Template } from '@/app/page';
+import { loadTemplates, Template } from '@/app/page';
 import TemplateDetails from '@/app/components/TemplateDetails/TemplateDetails';
 import { Metadata } from 'next';
 
@@ -7,7 +7,7 @@ const TEMPLATES = loadTemplates();
 export async function generateStaticParams() {
   let templates: Template[] = [];
   try {
-    templates = TEMPLATES
+    templates = TEMPLATES;
   } catch (error) {
     console.error('Error loading templates:', error);
   }
@@ -24,7 +24,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   let templates: Template[] = [];
   try {
-    templates = TEMPLATES
+    templates = TEMPLATES;
   } catch (error) {
     console.error('Error loading templates:', error);
   }

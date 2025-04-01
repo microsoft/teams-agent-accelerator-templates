@@ -13,10 +13,10 @@ export default makeStyles({
     transition: 'all 0.2s ease-in-out',
     display: 'flex',
     flexDirection: 'column',
-    ':hover': {
-      backgroundColor: tokens.colorNeutralBackground2,
-    },
     boxShadow: 'none',
+    ':hover': {
+      boxShadow: `0 4px 8px ${tokens.colorNeutralShadowAmbient}`,
+    },
     border: `1px solid ${tokens.colorNeutralStroke1}`,
   },
   preview: {

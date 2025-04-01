@@ -137,7 +137,7 @@ export default makeStyles({
   contentBox: {},
   section: {
     display: 'flex',
-    flexDirection: 'column'
+    flexDirection: 'column',
   },
   sectionTitle: {
     fontSize: tokens.fontSizeBase600,

@@ -28,14 +28,14 @@ export type TemplateGalleryData = Template[];
 
 function renderMarkdown(text: string): string {
   const content = unified()
-  .use(remarkParse)
-  .use(remarkBreaks)
-  .use(remarkGfm)
-  .use(remarkRehype)
-  .use(rehypeStringify)
-  .processSync(text)
+    .use(remarkParse)
+    .use(remarkBreaks)
+    .use(remarkGfm)
+    .use(remarkRehype)
+    .use(rehypeStringify)
+    .processSync(text);
 
-  return String(content)
+  return String(content);
 }
 
 export function loadTemplates(): TemplateGalleryData {
@@ -46,12 +46,14 @@ export function loadTemplates(): TemplateGalleryData {
     if (template?.longDescription) {
       template.longDescription = renderMarkdown(template.longDescription);
     }
-  
+
     if (template?.featuresList) {
-      template.featuresList = template.featuresList.map((feature: string) => renderMarkdown(feature));
+      template.featuresList = template.featuresList.map((feature: string) =>
+        renderMarkdown(feature)
+      );
     }
-  
-    return template
+
+    return template;
   });
 
   return renderedTemplates;
@@ -64,8 +66,8 @@ export default function Home() {
 
   return (
     <Root>
-        <Header />
-        <TemplateGallery templates={templates} />
+      <Header />
+      <TemplateGallery templates={templates} />
     </Root>
   );
 }

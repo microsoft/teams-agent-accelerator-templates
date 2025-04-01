@@ -1,12 +1,7 @@
 'use client';
 
 import { FC, useState } from 'react';
-import {
-  Button,
-  Text,
-  tokens,
-  Skeleton,
-} from '@fluentui/react-components';
+import { Button, Text, tokens, Skeleton } from '@fluentui/react-components';
 import { ArrowLeft24Regular, Open16Regular } from '@fluentui/react-icons';
 import useStyles from './TemplateDetails.styles';
 import type { Template } from '@/app/page';
@@ -14,8 +9,16 @@ import NextLink from 'next/link';
 
 export interface TemplateDetailsProps extends Template {}
 
-const displayMarkdownHTML = (text: string, classes: Record<string, string>): JSX.Element => {
-  return <span dangerouslySetInnerHTML={{ __html: text }} className={classes.markdown}></span>;
+const displayMarkdownHTML = (
+  text: string,
+  classes: Record<string, string>
+): JSX.Element => {
+  return (
+    <span
+      dangerouslySetInnerHTML={{ __html: text }}
+      className={classes.markdown}
+    ></span>
+  );
 };
 
 const DemoImage = ({
