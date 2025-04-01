@@ -9,7 +9,7 @@ import {
 } from '@fluentui/react-components';
 import { ArrowLeft24Regular, Open16Regular } from '@fluentui/react-icons';
 import useStyles from './TemplateDetails.styles';
-import type { Template } from '../TemplateGallery/TemplateGallery';
+import type { Template } from '@/app/page';
 import NextLink from 'next/link';
 
 export interface TemplateDetailsProps extends Template {}

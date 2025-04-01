@@ -4,7 +4,7 @@ import { FC } from 'react';
 import { Card, CardPreview, Text, tokens } from '@fluentui/react-components';
 import useStyles from './TemplateCard.styles';
 import config from '../../../next.config';
-import type { Template } from '../TemplateGallery/TemplateGallery';
+import type { Template } from '@/app/page';
 import Link from 'next/link';
 
 export type TemplateCardProps = Template;

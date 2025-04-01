@@ -2,27 +2,11 @@
 
 import useStyles from './TemplateGallery.styles';
 import TemplateCard from '../TemplateCard/TemplateCard';
-import { FC, useEffect, useState } from 'react';
-import { parse } from 'yaml';
+import { FC } from 'react';
 import config from '../../../next.config';
+import { TemplateGalleryData } from '@/app/page';
 
-export interface Template {
-  id: string;
-  title: string;
-  description: string;
-  tags: string[];
-  githubUrl: string;
-  imageUrl: string;
-  author: string;
-  language: string;
-  demoUrlGif: string;
-  longDescription: string;
-  featuresList: string[];
-}
-
-interface TemplatesData {
-  templates: Template[];
-}
+type TemplateGalleryProps = { templates: TemplateGalleryData };
 
 const resolveImageUrl = (imageUrl: string) => {
   // If the image URL is relative, prepend the base path
@@ -32,24 +16,8 @@ const resolveImageUrl = (imageUrl: string) => {
   return imageUrl;
 };
 
-const TemplateGallery: FC = () => {
+const TemplateGallery: FC<TemplateGalleryProps> = ({ templates }) => {
   const classes = useStyles();
-  const [templates, setTemplates] = useState<Template[]>([]);
-
-  useEffect(() => {
-    async function loadTemplates() {
-      try {
-        const response = await fetch(`${config.basePath}/data/templates.yaml`);
-        const yamlText = await response.text();
-        const data = parse(yamlText) as TemplatesData;
-        setTemplates(data.templates);
-      } catch (error) {
-        console.error('Error loading templates:', error);
-      }
-    }
-
-    loadTemplates();
-  }, []);
 
   return (
     <div className={classes.root}>

@@ -1,20 +1,13 @@
-import { parse } from 'yaml';
-import { unified } from 'unified';
-import remarkParse from 'remark-parse';
-import remarkBreaks from 'remark-breaks';
-import remarkGfm from 'remark-gfm';
-import remarkRehype from 'remark-rehype';
-import rehypeStringify from 'rehype-stringify';
-import { Template } from '@/app/components/TemplateGallery/TemplateGallery';
-import fs from 'fs/promises';
+  import { loadTemplates, Template } from '@/app/page';
 import TemplateDetails from '@/app/components/TemplateDetails/TemplateDetails';
 import { Metadata } from 'next';
+
+const TEMPLATES = loadTemplates();
 
 export async function generateStaticParams() {
   let templates: Template[] = [];
   try {
-    const response = await fs.readFile('public/data/templates.yaml', 'utf8');
-    templates = parse(response).templates;
+    templates = TEMPLATES
   } catch (error) {
     console.error('Error loading templates:', error);
   }
@@ -31,8 +24,7 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   let templates: Template[] = [];
   try {
-    const response = await fs.readFile('public/data/templates.yaml', 'utf8');
-    templates = parse(response).templates;
+    templates = TEMPLATES
   } catch (error) {
     console.error('Error loading templates:', error);
   }
@@ -54,25 +46,11 @@ export async function generateMetadata({
 
 async function getTemplate(id: string): Promise<Template | null> {
   try {
-    const response = await fs.readFile('public/data/templates.yaml', 'utf8');
-    const templates = parse(response).templates;
-    return templates.find((template: Template) => template.id === id) || null;
+    return TEMPLATES.find((template: Template) => template.id === id) || null;
   } catch (error) {
     console.error('Error loading template:', error);
     return null;
   }
-}
-
-function renderMarkdown(text: string): string {
-  const content = unified()
-  .use(remarkParse)
-  .use(remarkBreaks)
-  .use(remarkGfm)
-  .use(remarkRehype)
-  .use(rehypeStringify)
-  .processSync(text)
-
-  return String(content)
 }
 
 export default async function Page({
@@ -82,14 +60,6 @@ export default async function Page({
 }) {
   const { id } = await params;
   const template = await getTemplate(id);
-
-  if (template?.longDescription) {
-    template.longDescription = renderMarkdown(template.longDescription);
-  }
-
-  if (template?.featuresList) {
-    template.featuresList = template.featuresList.map((feature: string) => renderMarkdown(feature));
-  }
 
   if (!template) {
     return (
