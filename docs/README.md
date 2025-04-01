@@ -169,6 +169,18 @@ The `path` should point to the folder that contains the `README.md` file.
 
 3. Once that is done follow instructions in the [Testing In Github Pages](#testing-in-github-pages) section to test your changes.
 
+#### How to generate thumbnail image for template?
+
+The thumbnail images were generated using [Microsoft Designer](https://designer.microsoft.com/image-creator?scenario=background-texttoimage). Navigate to the `Create backgrounds` section, select `wide` as the size of image.
+
+Here's the prompt used to generate the Computer Use Agent thumbnail:
+
+```
+Create a thumbnail image of a robot fixing a computer. The art style should be minimalistic.
+```
+
+Anything along these lines should produce a decent looking image that will fit the visual style of other images in the gallery.
+
 ## Appendix
 
 ### Caveats
