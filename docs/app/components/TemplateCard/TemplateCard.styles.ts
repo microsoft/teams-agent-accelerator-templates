@@ -25,10 +25,32 @@ export default makeStyles({
     borderTopLeftRadius: tokens.borderRadiusLarge,
     borderTopRightRadius: tokens.borderRadiusLarge,
     flexShrink: 0,
+    position: 'relative',
   },
   previewImage: {
     objectFit: 'cover',
     flexShrink: 0,
+    transition: 'opacity 0.3s ease-in-out',
+  },
+  skeleton: {
+    width: '100%',
+    height: '100%',
+    background: `linear-gradient(90deg, ${tokens.colorNeutralBackground3} 25%, ${tokens.colorNeutralBackground2} 50%, ${tokens.colorNeutralBackground3} 75%)`,
+    backgroundSize: '200% 100%',
+    animation: 'shimmer 1.5s infinite',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    opacity: 1,
+    transition: 'opacity 0.3s ease-in-out',
+  },
+  '@keyframes shimmer': {
+    '0%': {
+      backgroundPosition: '200% 0',
+    },
+    '100%': {
+      backgroundPosition: '-200% 0',
+    },
   },
   content: {
     position: 'relative',

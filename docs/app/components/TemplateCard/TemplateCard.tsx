@@ -1,6 +1,6 @@
 'use client';
 
-import { FC } from 'react';
+import { FC, useState } from 'react';
 import { Card, CardPreview, Text, tokens } from '@fluentui/react-components';
 import useStyles from './TemplateCard.styles';
 import config from '../../../next.config';
@@ -19,6 +19,7 @@ const TemplateCard: FC<TemplateCardProps> = ({
   id,
 }) => {
   const classes = useStyles();
+  const [isLoading, setIsLoading] = useState(true);
 
   const getLanguageColor = (language: string) => {
     // Retrieved from https://gist.github.com/robertpeteuil/bb2dc86f3b3e25d203664d61410bfa30
@@ -36,6 +37,10 @@ const TemplateCard: FC<TemplateCardProps> = ({
     }
   };
 
+  const handleImageLoad = () => {
+    setIsLoading(false);
+  };
+
   return (
     <Link
       href={`/template/${id}`}
@@ -44,10 +49,16 @@ const TemplateCard: FC<TemplateCardProps> = ({
     >
       <Card className={classes.card}>
         <CardPreview className={classes.preview}>
+          <div 
+            className={classes.skeleton} 
+            style={{ opacity: isLoading ? 1 : 0 }}
+          />
           <img
             src={imageUrl || `${config.basePath}/placeholder-img.svg`}
             alt={title}
             className={classes.previewImage}
+            style={{ opacity: isLoading ? 0 : 1 }}
+            onLoad={handleImageLoad}
           />
         </CardPreview>
         <div className={classes.content}>
