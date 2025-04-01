@@ -1,5 +1,5 @@
 ---
-name: New Template request
+name: New Template Request
 about: Suggest an idea for a template
 title: "[TEMPLATE REQUEST]"
 labels: template-request
