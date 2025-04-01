@@ -2,6 +2,7 @@
 
 import { FC, useState } from 'react';
 import { Card, CardPreview, Text, tokens } from '@fluentui/react-components';
+import { ArrowSquareUpRightRegular, ArrowSquareUpRightFilled } from '@fluentui/react-icons';
 import useStyles from './TemplateCard.styles';
 import config from '../../../next.config';
 import type { Template } from '@/app/page';
@@ -17,9 +18,11 @@ const TemplateCard: FC<TemplateCardProps> = ({
   language,
   tags,
   id,
+  githubUrl,
 }) => {
   const classes = useStyles();
   const [isLoading, setIsLoading] = useState(true);
+  const [isHovered, setIsHovered] = useState(false);
 
   const getLanguageColor = (language: string) => {
     // Retrieved from https://gist.github.com/robertpeteuil/bb2dc86f3b3e25d203664d61410bfa30
@@ -39,6 +42,12 @@ const TemplateCard: FC<TemplateCardProps> = ({
 
   const handleImageLoad = () => {
     setIsLoading(false);
+  };
+
+  const handleActionClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    window.open(githubUrl, '_blank');
   };
 
   return (
@@ -75,12 +84,23 @@ const TemplateCard: FC<TemplateCardProps> = ({
             <div className={classes.author}>
               <Text className={classes.authorText}>by {author}</Text>
             </div>
-            <div className={classes.language}>
-              <span
-                className={classes.languageDot}
-                style={{ backgroundColor: getLanguageColor(language) }}
-              />
-              <Text className={classes.languageText}>{language}</Text>
+            <div className={classes.languageSection}>
+              <div className={classes.language}>
+                <span
+                  className={classes.languageDot}
+                  style={{ backgroundColor: getLanguageColor(language) }}
+                />
+                <Text className={classes.languageText}>{language}</Text>
+              </div>
+              <div 
+                className={classes.actionButton}
+                onClick={handleActionClick}
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                aria-label={`View ${title} on GitHub`}
+              >
+                {isHovered ? <ArrowSquareUpRightFilled /> : <ArrowSquareUpRightRegular />}
+              </div>
             </div>
           </div>
         </div>

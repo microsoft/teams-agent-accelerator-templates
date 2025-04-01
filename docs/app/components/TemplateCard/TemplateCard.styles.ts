@@ -117,6 +117,20 @@ export default makeStyles({
     alignItems: 'center',
     gap: tokens.spacingHorizontalXS,
   },
+  languageSection: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: tokens.spacingHorizontalXS,
+  },
+  actionButton: {
+    cursor: 'pointer',
+    display: 'flex',
+    alignItems: 'center',
+    fontSize: '20px',
+    ':hover': {
+      color: tokens.colorNeutralForeground1,
+    },
+  },
   languageDot: {
     width: '8px',
     height: '8px',
