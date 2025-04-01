@@ -11,6 +11,7 @@ import { ThemeContext } from './contexts/ThemeContext';
 import ClarityScript from './clarity';
 import NavBar from './components/NavBar/NavBar';
 import PageLoader from './components/PageLoader/PageLoader';
+import Footer from './components/Footer/Footer';
 
 export default function RootLayout({
   children,
@@ -45,6 +46,7 @@ export default function RootLayout({
               <main className={classes.main}>
                 <NavBar />
                 {children}
+                <Footer />
               </main>
             )}
           </FluentProvider>
