@@ -28,10 +28,10 @@ const NavBar: FC = () => {
       </Link>
       <div className={classes.navLinks}>
         <a
-          href="https://github.com/microsoft/teams-agent-accelerator-samples"
+          href="https://github.com/microsoft/teams-agent-accelerator-templates"
           target="_blank"
           rel="noopener noreferrer"
-          aria-label="Teams Agent Accelerator Samples GitHub repository"
+          aria-label="Teams Agent Accelerator Templates GitHub repository"
           className={classes.iconLink}
         >
           <FaGithub

@@ -1,5 +1,5 @@
 ---
-description: React development of the Teams Agent Accelerator Samples gallery
+description: React development of the Teams Agent Accelerator Templates gallery
 globs: app/**/*.tsx,.ts,package.json
 alwaysApply: false
 ---

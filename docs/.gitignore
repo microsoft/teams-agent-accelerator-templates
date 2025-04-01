@@ -138,3 +138,4 @@ dist
 # Misc
 .specstory
 .DS_Store
+public/data/templates.yaml

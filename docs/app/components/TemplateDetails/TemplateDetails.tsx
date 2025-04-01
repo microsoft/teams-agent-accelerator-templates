@@ -8,30 +8,14 @@ import {
   Skeleton,
 } from '@fluentui/react-components';
 import { ArrowLeft24Regular, Open16Regular } from '@fluentui/react-icons';
-import useStyles from './SampleDetails.styles';
-import type { Sample } from '../SampleGallery/SampleGallery';
+import useStyles from './TemplateDetails.styles';
+import type { Template } from '../TemplateGallery/TemplateGallery';
 import NextLink from 'next/link';
-import rehypeStringify from 'rehype-stringify'
-import remarkGfm from 'remark-gfm'
-import remarkBreaks from 'remark-breaks'
-import remarkParse from 'remark-parse'
-import remarkRehype from 'remark-rehype'
-import {unified} from 'unified'
 
-export interface SampleDetailsProps extends Sample {}
+export interface TemplateDetailsProps extends Template {}
 
-const renderMarkdown = (text: string, classes: Record<string, string>): JSX.Element => {
-  const content = unified()
-  .use(remarkParse)
-  .use(remarkBreaks)
-  .use(remarkGfm)
-  .use(remarkRehype)
-  .use(rehypeStringify)
-  .processSync(text)
-
-  console.log(String(content))
-
-  return <span dangerouslySetInnerHTML={{ __html: String(content) }} className={classes.markdown}></span>;
+const displayMarkdownHTML = (text: string, classes: Record<string, string>): JSX.Element => {
+  return <span dangerouslySetInnerHTML={{ __html: text }} className={classes.markdown}></span>;
 };
 
 const DemoImage = ({
@@ -60,7 +44,7 @@ const DemoImage = ({
   );
 };
 
-const SampleDetails: FC<SampleDetailsProps> = ({
+const TemplateDetails: FC<TemplateDetailsProps> = ({
   title,
   description,
   longDescription,
@@ -149,7 +133,7 @@ const SampleDetails: FC<SampleDetailsProps> = ({
             <Text className={classes.sectionTitle}>Description</Text>
             <div className={classes.contentBox}>
               <div className={classes.description}>
-                {renderMarkdown(longDescription, classes)}
+                {displayMarkdownHTML(longDescription, classes)}
               </div>
             </div>
           </div>
@@ -160,7 +144,7 @@ const SampleDetails: FC<SampleDetailsProps> = ({
               <ul className={classes.featuresList}>
                 {featuresList.map((feature, index) => (
                   <li key={index} className={classes.featureItem}>
-                    {renderMarkdown(feature, classes)}
+                    {displayMarkdownHTML(feature, classes)}
                   </li>
                 ))}
               </ul>
@@ -183,6 +167,6 @@ const SampleDetails: FC<SampleDetailsProps> = ({
   );
 };
 
-SampleDetails.displayName = 'SampleDetails';
+TemplateDetails.displayName = 'TemplateDetails';
 
-export default SampleDetails;
+export default TemplateDetails;

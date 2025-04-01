@@ -3,28 +3,28 @@ import path from 'path';
 import matter from 'gray-matter';
 import yaml from 'yaml';
 
-function loadSamples() {
-  const TEMPLATES_YAML_PATH = path.join(process.cwd(), 'public', 'data', 'samples.yaml');
+function loadTemplates() {
+  const TEMPLATES_YAML_PATH = path.join(process.cwd(), 'public', 'data', 'templates.yaml');
 
   console.info('Loading frontmatter config...');
   const frontmatterPath = path.join(process.cwd(), '..', 'frontmatter.json');
   const frontmatterContent = fs.readFileSync(frontmatterPath, 'utf8');
   const frontmatterConfig = JSON.parse(frontmatterContent);
-  const sampleFolders = frontmatterConfig['frontMatter.content.pageFolders'].map(
+  const templateFolders = frontmatterConfig['frontMatter.content.pageFolders'].map(
     folder => folder.path.replace('[[workspace]]/', '')
   );
 
-  const samples = [];
+  const templates = [];
 
-  console.info('Processing sample folders...');
-  for (const folder of sampleFolders) {
+  console.info('Processing template folders...');
+  for (const folder of templateFolders) {
     const readmePath = path.join(process.cwd(), '..', folder, 'README.md');
 
     try {
       const fileContent = fs.readFileSync(readmePath, 'utf8');
       const { data } = matter(fileContent);
 
-      const sample = {
+      const template = {
         id: data.id,
         title: data.title,
         description: data.description,
@@ -38,9 +38,9 @@ function loadSamples() {
         demoUrlGif: data.demoUrlGif,
       };
 
-      samples.push(sample);
+      templates.push(template);
     } catch (error) {
-      console.error(`Error processing sample in ${folder}:`, error);
+      console.error(`Error processing template in ${folder}:`, error);
     }
   }
 
@@ -49,10 +49,10 @@ function loadSamples() {
     fs.mkdirSync(dir, { recursive: true });
   }
 
-  console.info('Writing samples to YAML...');
-  fs.writeFileSync(TEMPLATES_YAML_PATH, yaml.stringify({ samples }));
+  console.info('Writing templates to YAML...');
+  fs.writeFileSync(TEMPLATES_YAML_PATH, yaml.stringify({ templates }));
 
-  return samples;
+  return templates;
 }
 
-loadSamples();
+loadTemplates();

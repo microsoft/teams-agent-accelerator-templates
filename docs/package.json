@@ -6,9 +6,9 @@
     "node": ">=20.0.0"
   },
   "scripts": {
-    "load-samples": "node scripts/samples.mjs",
-    "dev": "npm run load-samples && next dev --turbopack",
-    "build": "npm run load-samples && next build",
+    "load-templates": "node scripts/templates.mjs",
+    "dev": "npm run load-templates && next dev --turbopack",
+    "build": "npm run load-templates && next build",
     "lint": "next lint",
     "format": "prettier \"./**/*.{ts,tsx,json,css,scss,md}\" --write --config .prettierrc --ignore-unknown"
   },

@@ -2,14 +2,14 @@
 
 import { FC } from 'react';
 import { Card, CardPreview, Text, tokens } from '@fluentui/react-components';
-import useStyles from './SampleCard.styles';
+import useStyles from './TemplateCard.styles';
 import config from '../../../next.config';
-import type { Sample } from '../SampleGallery/SampleGallery';
+import type { Template } from '../TemplateGallery/TemplateGallery';
 import Link from 'next/link';
 
-export type SampleCardProps = Sample;
+export type TemplateCardProps = Template;
 
-const SampleCard: FC<SampleCardProps> = ({
+const TemplateCard: FC<TemplateCardProps> = ({
   title,
   description,
   imageUrl,
@@ -38,9 +38,9 @@ const SampleCard: FC<SampleCardProps> = ({
 
   return (
     <Link
-      href={`/sample/${id}`}
+      href={`/template/${id}`}
       className={classes.link}
-      aria-label={`View ${title} sample`}
+      aria-label={`View ${title} template`}
     >
       <Card className={classes.card}>
         <CardPreview className={classes.preview}>
@@ -78,6 +78,6 @@ const SampleCard: FC<SampleCardProps> = ({
   );
 };
 
-SampleCard.displayName = 'SampleCard';
+TemplateCard.displayName = 'TemplateCard';
 
-export default SampleCard;
+export default TemplateCard;
