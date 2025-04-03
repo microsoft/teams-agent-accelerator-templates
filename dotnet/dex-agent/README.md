@@ -13,7 +13,7 @@ The agent is designed to reduce time-consuming tasks, enhance efficiency, and el
 ## Examples
 
 ### List the pull requests
-![List PRs](assets/listPRs.gif)]
+![List PRs](assets/listPRs.gif)
 
 ### Filter the pull requests
 ![Filter PRs](assets/filterPRs.gif)
