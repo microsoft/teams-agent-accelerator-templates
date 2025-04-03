@@ -2,7 +2,7 @@
 
 This repository contains a collection of templates that demonstrate the integration of Microsoft Teams with various AI agent paradigms. Each full-featured template showcases different capabilities and approaches to building intelligent agents that enhance collaboration and productivity within Teams. ✨
 
-## 🚀 Available templates
+## 🚀 [Available templates](https://microsoft.github.io/teams-agent-accelerator-templates)
 
 | Sample                                               | Language     | Description                                                                                      | Tags                                                                |
 | ---------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
