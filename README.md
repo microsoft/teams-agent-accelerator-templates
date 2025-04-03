@@ -1,19 +1,19 @@
-# <div align="center">🤖 Teams Agent Accelerator Samples</div>
+# <div align="center">🤖 Teams Agent Accelerator Templates</div>
 
-This repository contains a collection of samples that demonstrate the integration of Microsoft Teams with various AI agent paradigms. Each sample showcases different capabilities and approaches to building intelligent agents that enhance collaboration and productivity within Teams. ✨
+This repository contains a collection of templates that demonstrate the integration of Microsoft Teams with various AI agent paradigms. Each full-featured template showcases different capabilities and approaches to building intelligent agents that enhance collaboration and productivity within Teams. ✨
 
-## 🚀 Available Samples
+## 🚀 Available templates
 
 | Sample                                               | Language     | Description                                                                                      | Tags                                                                |
 | ---------------------------------------------------- | ------------ | ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------- |
 | 📊 [Data Analyst Agent](js/data-analyst-agent)       | `JavaScript` | Natural language interface for data exploration and visualization using AdventureWorks database. | `#llm-sql` `#adaptive-cards` `#data-viz`                            |
 | 💻 [Computer Use Agent](python/computer-use-agent)   | `Python`     | AI-powered automation of computer tasks through Teams interface.                                 | `#computer-use` `#human-in-the-loop` `#stateful` `#visual-feedback` |
 | 💻 [Web Browsing Agent](python/web-browsing-agent)   | `Python`     | Autonomous web navigation and interaction capabilities.                                          | `#browser-automation` `#visual-feedback` `#stateful`                |
-| 🧠 [Memory Sample Agent](python/memory-sample-agent) | `Python`     | A sample agent that demonstrates the use of memory to enhance the agent's capabilities.          | `#memory` `#agent` `#python`                                        |
+| 🧠 [Memory Template Agent](python/memory-sample-agent) | `Python`     | An agent that demonstrates the use of memory to enhance the agent's capabilities.          | `#memory` `#agent` `#python`                                        |
 
 ## 🏁 Getting Started
 
-Each sample includes its own detailed README with specific setup instructions and requirements. Navigate to the sample you're interested in to learn more about its features and how to run it.
+Each template includes its own detailed README with specific setup instructions and requirements. Navigate to the template you're interested in to learn more about its features and how to run it.
 
 ## 🤝 Contributing
 
