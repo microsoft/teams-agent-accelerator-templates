@@ -85,8 +85,7 @@ Note the restrictions:
 - Different tools require different API keys, hence these will need to be added manually.
 - Authentication is restricted to `Oauth Azure Bot Service Providers`.
 
-There are a few components. You may define your own structs similiar to those in `GitHubModels`
-
+There are a few components. You may define your own structs similar to those in `GitHubModels`
 ### 1) Authentication 
 1. Update `teamsapp.yml` and `teamsapp.local.yml`, with your keys in the `file/createOrUpdateJsonFile` step.
 2. In `.env.local`, update `OAUTH_CONNECTION_NAME` to your respective tool, and add in your keys.
