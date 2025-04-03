@@ -103,7 +103,7 @@ namespace DexAgent
                             },
                             cancellationToken);
                     }
-                });
+                };
             }
         }
 
