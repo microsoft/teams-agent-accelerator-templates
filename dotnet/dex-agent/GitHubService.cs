@@ -51,7 +51,7 @@ namespace DexAgent
 
                 Attachment attachment = GitHubCards.CreatePullRequestCard(payload);
 
-                group_convos.ForEach(async convo =>
+                foreach (var convo in group_convos)
                 {
                     if (string.IsNullOrEmpty(convo.TeamId))
                     {
