@@ -8,7 +8,7 @@ const Footer: FC = () => {
   const classes = useStyles();
 
   const handleRequestClick = () => {
-    window.open('https://github.com/OfficeDev/teams-agent-accelerator-samples/issues/new?labels=template-request&template=template_request.md&title=Template+Request%3A+', '_blank');
+    window.open('https://github.com/microsoft/teams-agent-accelerator-templates/issues/new?template=new-template-request.md', '_blank');
   };
 
   return (
