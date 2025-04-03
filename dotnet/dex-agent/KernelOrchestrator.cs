@@ -116,7 +116,7 @@ namespace DexAgent
                     if (!string.IsNullOrEmpty(chunk.Content))
                     {
                         await Task.Delay(TimeSpan.FromSeconds(0.03));
-                        complete_result.Content.Concat(chunk.Content);
+                        complete_result.Content += chunk.Content;
                         streamer.QueueTextChunk(chunk.Content);
                     }
                 }
