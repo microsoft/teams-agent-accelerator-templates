@@ -1,3 +1,4 @@
+<!--- 
 ---
 id: computer-use-agent
 title: "Computer Use Agent"
@@ -27,6 +28,7 @@ author: "Microsoft"
 language: "Python"
 demoUrlGif: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/python/computer-use-agent/docs/VNCExample.gif"
 ---
+-->
 
 # Computer Use Agent for Microsoft Teams
 

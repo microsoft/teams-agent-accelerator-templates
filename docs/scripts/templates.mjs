@@ -22,7 +22,9 @@ function loadTemplates() {
 
     try {
       const fileContent = fs.readFileSync(readmePath, 'utf8');
-      const { data } = matter(fileContent);
+      // Remove HTML comments around front matter, allowing for multiple dashes
+      const cleanContent = fileContent.replace(/[-]*<![-]+\s*(---[\s\S]*?---)\s*[-]+>[-]*/, '$1');
+      const { data } = matter(cleanContent);
 
       const template = {
         id: data.id,

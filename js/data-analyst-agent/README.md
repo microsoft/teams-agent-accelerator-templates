@@ -1,3 +1,4 @@
+<!--
 ---
 id: data-analyst-agent
 title: "Data Analyst Agent"
@@ -21,6 +22,7 @@ author: "Microsoft"
 language: "JavaScript"
 demoUrlGif: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/js/data-analyst-agent/assets/demo.gif"
 ---
+-->
 
 # Data Analyst Agent for Microsoft Teams
 

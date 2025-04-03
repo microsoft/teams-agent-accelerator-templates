@@ -1,3 +1,4 @@
+<!--
 ---
 id: web-browsing-agent
 title: "Web Browsing Agent"
@@ -21,6 +22,7 @@ author: "Microsoft"
 language: "Python"
 demoUrlGif: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/python/web-browsing-agent/docs/news-example.gif"
 ---
+---->
 # Web Browsing Agent for Microsoft Teams
 
 This sample demonstrates how to build an AI-powered web browsing agent that can be integrated into Microsoft Teams. The agent can perform web browsing tasks on behalf of users, providing real-time visual feedback and interactive responses. It uses [Browser-Use](https://github.com/Browser-Use/Browser-Use) to navigate the web.
