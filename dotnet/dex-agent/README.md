@@ -13,10 +13,10 @@ The agent is designed to reduce time-consuming tasks, enhance efficiency, and el
 ## Examples
 
 ### List the pull requests
-![List PRs](assets/listprs.gif)]
+![List PRs](assets/listPRs.gif)]
 
 ### Filter the pull requests
-![Filter PRs](assets/filterprs.gif)
+![Filter PRs](assets/filterPRs.gif)
 
 ### Proactive Notifications on Assignments
 ![Proactive Notification - Assignment](assets/proacAssignment.gif)
