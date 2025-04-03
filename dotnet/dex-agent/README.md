@@ -10,7 +10,19 @@ The agent is designed to reduce time-consuming tasks, enhance efficiency, and el
 - 🔔 **Proactive Alerts on PR Assignments**: Be notified in group chats and channels when there is a new assignee on a PR
 - 🔔 **Proactive Alerts on PR Status Changes**: Be notified in group chats and channels when there is a status update on a PR
 
-## Example
+## Examples
+
+### List the pull requests
+![List PRs](assets/listprs.gif)]
+
+### Filter the pull requests
+![Filter PRs](assets/filterprs.gif)
+
+### Proactive Notifications on Assignments
+![Proactive Notification - Assignment](assets/proacAssignment.gif)
+
+### Proactive Notifications on Status Updates
+![Proactive Notification - Status Update](assets/proacClose.gif)
 
 ## Prerequisites
 
