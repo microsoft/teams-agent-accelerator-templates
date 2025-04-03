@@ -9,15 +9,17 @@ import NextLink from 'next/link';
 
 export interface TemplateDetailsProps extends Template {}
 
-const displayMarkdownHTML = (
-  text: string,
-  classes: Record<string, string>
-): JSX.Element => {
+interface MarkdownProps {
+  markdownHtml: string;
+  classes: Record<string, string>;
+}
+
+const Markdown: FC<MarkdownProps> = ({ markdownHtml, classes }) => {
   return (
     <span
-      dangerouslySetInnerHTML={{ __html: text }}
+      dangerouslySetInnerHTML={{ __html: markdownHtml }}
       className={classes.markdown}
-    ></span>
+    />
   );
 };
 
@@ -136,7 +138,7 @@ const TemplateDetails: FC<TemplateDetailsProps> = ({
             <Text className={classes.sectionTitle}>Description</Text>
             <div className={classes.contentBox}>
               <div className={classes.description}>
-                {displayMarkdownHTML(longDescription, classes)}
+                <Markdown markdownHtml={longDescription} classes={classes} />
               </div>
             </div>
           </div>
@@ -147,7 +149,7 @@ const TemplateDetails: FC<TemplateDetailsProps> = ({
               <ul className={classes.featuresList}>
                 {featuresList.map((feature, index) => (
                   <li key={index} className={classes.featureItem}>
-                    {displayMarkdownHTML(feature, classes)}
+                    <Markdown markdownHtml={feature} classes={classes} />
                   </li>
                 ))}
               </ul>

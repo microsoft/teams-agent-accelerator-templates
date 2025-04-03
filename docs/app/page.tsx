@@ -26,15 +26,15 @@ export interface Template {
 
 export type TemplateGalleryData = Template[];
 
-function renderMarkdown(text: string): string {
-  const content = unified()
-    .use(remarkParse)
-    .use(remarkBreaks)
-    .use(remarkGfm)
-    .use(remarkRehype)
-    .use(rehypeStringify)
-    .processSync(text);
+const UNIFIED_PROCESSOR = unified()
+  .use(remarkParse)
+  .use(remarkBreaks)
+  .use(remarkGfm)
+  .use(remarkRehype)
+  .use(rehypeStringify)
 
+function markdownToHtml(text: string): string {
+  const content = UNIFIED_PROCESSOR.processSync(text);
   return String(content);
 }
 
@@ -44,12 +44,12 @@ export function loadTemplates(): TemplateGalleryData {
 
   const renderedTemplates = templates.map((template: Template) => {
     if (template?.longDescription) {
-      template.longDescription = renderMarkdown(template.longDescription);
+      template.longDescription = markdownToHtml(template.longDescription);
     }
 
     if (template?.featuresList) {
       template.featuresList = template.featuresList.map((feature: string) =>
-        renderMarkdown(feature)
+        markdownToHtml(feature)
       );
     }
 
