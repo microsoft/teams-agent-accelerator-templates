@@ -72,21 +72,7 @@ namespace DexAgent
                 config.AUTH_TOKEN = token;
 
                 await orchestrator.CreateChatHistory(turnContext);
-
-                // Check for pull requests
-                if (turnContext.Activity.Text.IndexOf("pull requests", StringComparison.OrdinalIgnoreCase) >= 0 ||
-                    turnContext.Activity.Text.IndexOf("PR", StringComparison.OrdinalIgnoreCase) >= 0)
-                {
-                    KernelArguments args = new KernelArguments();
-                    args.Add("context", turnContext);
-                    var result = await kernel.InvokeAsync("GitHubPlugin", "ListPRs", args, cancellationToken);
-                    string activity = result.GetValue<string>();
-                    await orchestrator.SaveActivityToChatHistory(turnContext, activity);
-                }
-                else
-                {
                     await orchestrator.GetChatMessageContentAsync(turnContext);
-                }
             });
 
             app.Authentication.Get(config.OAUTH_CONNECTION_NAME).OnUserSignInSuccess(async (context, state) =>

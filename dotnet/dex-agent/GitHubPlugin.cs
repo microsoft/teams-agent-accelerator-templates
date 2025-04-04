@@ -31,9 +31,11 @@ namespace DexAgent
         /// <returns>Serialized adaptive card activity</returns>
         /// <exception cref="Exception"></exception>
         [KernelFunction, Description("Lists the pull requests")]
-        public override async Task<string> ListPRs(
-            [Description("The turn context")] TurnContext context)
+        public override async Task<string> ListPRs(Kernel kernel)
         {
+            kernel.Data.TryGetValue("context", out object turnContext);
+            TurnContext context = turnContext as TurnContext;
+
             try
             {
                 string owner = Config.GITHUB_OWNER;

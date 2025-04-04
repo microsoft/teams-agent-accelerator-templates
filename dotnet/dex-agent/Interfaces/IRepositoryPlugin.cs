@@ -1,4 +1,5 @@
 ﻿using Microsoft.Bot.Builder;
+using Microsoft.Bot.Schema;
 using Microsoft.SemanticKernel;
 using System.ComponentModel;
 
@@ -25,7 +26,6 @@ namespace DexAgent.Interfaces
         /// <param name="context">The turn context</param>
         /// <returns>A serialized adaptive card string of the pull requests.</returns>
         [KernelFunction, Description("Lists the pull requests")]
-        public abstract Task<string> ListPRs(
-           [Description("The turn context")] TurnContext context);
+        public abstract Task<string> ListPRs(Kernel kernel);
     }
 }
