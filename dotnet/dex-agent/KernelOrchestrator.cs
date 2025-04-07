@@ -1,7 +1,4 @@
-﻿using System.Net.Http.Json;
-using System.Text.Json;
-using DexAgent.GitHubModels;
-using DexAgent.Interfaces;
+﻿using System.Text.Json;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Teams;
 using Microsoft.Bot.Schema;
@@ -9,9 +6,6 @@ using Microsoft.Bot.Schema.Teams;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
-using Microsoft.Teams.AI.Application;
-using Newtonsoft.Json;
-using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace DexAgent
 {
@@ -37,7 +31,6 @@ namespace DexAgent
 #pragma warning disable SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             _openAIPromptExecutionSettings = new()
             {
-                // Current plugins are invoked directly in Program.cs
                 ResponseFormat = "json_object",
                 FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
                 Temperature = 0,
@@ -74,7 +67,7 @@ namespace DexAgent
         }
 
         /// <summary>
-        /// Used for non-plugin scenarios, calls completion with streaming
+        /// Calls completions
         /// </summary>
         /// <param name="turnContext">The turn context</param>
         /// <returns></returns>
@@ -87,69 +80,41 @@ namespace DexAgent
 
             _kernel.Data.Add("context", turnContext);
 
-            var result = await _chatCompletionService.GetChatMessageContentAsync(
+            var result = (OpenAIChatMessageContent)await _chatCompletionService.GetChatMessageContentAsync(
                history,
                executionSettings: _openAIPromptExecutionSettings,
                kernel: _kernel);
 
-            history.Add(result);
-            await SerializeAndSaveHistory(history, currConvo, prevConvos);
-            await turnContext.SendActivityAsync(result.Content);
-            return;
+            var prev_response = history.Last().Items.Last();
 
-            //if (turnContext.Activity.Conversation.IsGroup != null && turnContext.Activity.Conversation.IsGroup == true)
-            //{
-            //    List<ConversationInfo> prevConvos = await GetPreviousConvos();
-            //    ConversationInfo currConvo = prevConvos.Find(x => x.Id == turnContext.Activity.Conversation.Id);
-            //    ChatHistory history = JsonSerializer.Deserialize<ChatHistory>(currConvo.ChatHistory);
-            //    prevConvos.Remove(currConvo);
+            // Check for tool call
+            if (prev_response is FunctionResultContent)
+            {
+                FunctionResultContent function_res = (FunctionResultContent)prev_response;
+                if (function_res.FunctionName == "ListPRs")
+                {
+                    await SerializeAndSaveHistory(history, currConvo, prevConvos);
+                    return;
+                }
+            }
+            else
+            {
+                history.Add(result);
+                await SerializeAndSaveHistory(history, currConvo, prevConvos);
 
-            //    var result = await _chatCompletionService.GetChatMessageContentAsync(
-            //       history,
-            //       executionSettings: _openAIPromptExecutionSettings,
-            //       kernel: _kernel);
+                var resultJson = JsonSerializer.Deserialize<JsonElement>(result.Content);
+                string[] resultKeys = [ "message", "response", "capabilities" ];
 
-            //    history.Add(result);
-            //    await SerializeAndSaveHistory(history, currConvo, prevConvos);
-            //    await turnContext.SendActivityAsync(result.Content);
-            //    return;
-            //}
-            //else
-            //{
-            //    StreamingResponse streamer = new StreamingResponse(turnContext);
-            //    streamer.EnableGeneratedByAILabel = true;
-            //    streamer.QueueInformativeUpdate("Generating response...");
-
-            //    List<ConversationInfo> prevConvos = await GetPreviousConvos();
-            //    ConversationInfo currConvo = prevConvos.Find(x => x.Id == turnContext.Activity.Conversation.Id);
-            //    ChatHistory history = JsonSerializer.Deserialize<ChatHistory>(currConvo.ChatHistory);
-            //    prevConvos.Remove(currConvo);
-
-            //    var result = _chatCompletionService.GetStreamingChatMessageContentsAsync(
-            //       history,
-            //       executionSettings: _openAIPromptExecutionSettings,
-            //       kernel: _kernel);
-
-            //    ChatMessageContent complete_result = new()
-            //    {
-            //        Role = AuthorRole.Assistant,
-            //        Content = ""
-            //    };
-
-            //    await foreach (var chunk in result)
-            //    {
-            //        if (!string.IsNullOrEmpty(chunk.Content))
-            //        {
-            //            await Task.Delay(TimeSpan.FromSeconds(0.03));
-            //            complete_result.Content += chunk.Content;
-            //            streamer.QueueTextChunk(chunk.Content);
-            //        }
-            //    }
-
-            //    await streamer.EndStream();
-            //    history.Add(complete_result);
-            //    await SerializeAndSaveHistory(history, currConvo, prevConvos);
-            //}
+                foreach (var key in resultKeys)
+                {
+                    if (resultJson.TryGetProperty(key, out JsonElement val))
+                    {
+                        string resultStr = val.ToString();
+                        await turnContext.SendActivityAsync(resultStr);
+                        break;
+                    }
+                }
+            }
         }
 
         /// <summary>
@@ -161,7 +126,6 @@ namespace DexAgent
         public async Task SaveActivityToChatHistory(ITurnContext turnContext, string activity)
         {
             List<ConversationInfo> prevConvos = await GetPreviousConvos();
-
             ConversationInfo currConvo = prevConvos.Find(x => x.Id == turnContext.Activity.Conversation.Id);
             ChatHistory history = JsonSerializer.Deserialize<ChatHistory>(currConvo.ChatHistory);
             prevConvos.Remove(currConvo);
@@ -188,9 +152,9 @@ namespace DexAgent
             chatHistory.AddSystemMessage(
                     "You are a GitHub Assistant. " +
                     "All responses must be in JSON format. " +
-                    "- You can list pull requests. " +
-                    "- You send an adaptive card whenever there is a new assignee on a pull request. " +
-                    "- You send an adaptive card whenever there is a status update on a pull request. " +
+                    "You can list pull requests. " +
+                    "You send an adaptive card whenever there is a new assignee on a pull request. " +
+                    "You send an adaptive card whenever there is a status update on a pull request. " +
                     "All of the pull requests are in the Teams AI SDK repository. " +
                     "The purpose of GitHub Assistant is to help boost the team's productivity and quality of their engineering lifecycle.");
 

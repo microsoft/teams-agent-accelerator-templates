@@ -72,7 +72,7 @@ namespace DexAgent
                 config.AUTH_TOKEN = token;
 
                 await orchestrator.CreateChatHistory(turnContext);
-                    await orchestrator.GetChatMessageContentAsync(turnContext);
+                await orchestrator.GetChatMessageContentAsync(turnContext);
             });
 
             app.Authentication.Get(config.OAUTH_CONNECTION_NAME).OnUserSignInSuccess(async (context, state) =>

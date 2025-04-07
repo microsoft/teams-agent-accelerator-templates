@@ -1,6 +1,4 @@
-﻿using Microsoft.Bot.Builder;
-using Microsoft.Bot.Schema;
-using Microsoft.SemanticKernel;
+﻿using Microsoft.SemanticKernel;
 using System.ComponentModel;
 
 namespace DexAgent.Interfaces
@@ -15,6 +13,7 @@ namespace DexAgent.Interfaces
         /// The HTTP client used for making API requests.
         /// </summary>
         public HttpClient HttpClient { get; set; }
+
         /// <summary>
         /// Provides access to keys for auth.
         /// </summary>
@@ -23,7 +22,7 @@ namespace DexAgent.Interfaces
         /// <summary>
         /// Lists the pull requests for the repository.
         /// </summary>
-        /// <param name="context">The turn context</param>
+        /// <param name="kernel">The associated kernel instance.</param>
         /// <returns>A serialized adaptive card string of the pull requests.</returns>
         [KernelFunction, Description("Lists the pull requests")]
         public abstract Task<string> ListPRs(Kernel kernel);

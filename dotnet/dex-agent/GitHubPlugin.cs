@@ -25,10 +25,11 @@ namespace DexAgent
         }
 
         /// <summary>
-        /// Lists the pull requests for the repository
+        /// Lists the pull requests for GitHub.
+        /// Note that the activity is auto saved to history.
         /// </summary>
-        /// <param name="context">The turn context</param>
-        /// <returns>Serialized adaptive card activity</returns>
+        /// <param name="kernel">The associated kernel instance.</param>
+        /// <returns>A serialized adaptive card string of the pull requests.</returns>
         /// <exception cref="Exception"></exception>
         [KernelFunction, Description("Lists the pull requests")]
         public override async Task<string> ListPRs(Kernel kernel)
@@ -140,9 +141,9 @@ namespace DexAgent
            [Description("The turn context")] TurnContext context,
            [Description("The pull requests")] IList<GitHubPR> pullRequests)
         {
-            var labelsArr = string.IsNullOrEmpty(labels) ? new string[0] : labels.Split(',');
-            var assigneesArr = string.IsNullOrEmpty(assignees) ? new string[0] : assignees.Split(',');
-            var authorsArr = string.IsNullOrEmpty(authors) ? new string[0] : authors.Split(',');
+            var labelsArr = string.IsNullOrEmpty(labels) ? Array.Empty<string>() : labels.Split(',');
+            var assigneesArr = string.IsNullOrEmpty(assignees) ? Array.Empty<string>() : assignees.Split(',');
+            var authorsArr = string.IsNullOrEmpty(authors) ? Array.Empty<string>() : authors.Split(',');
 
             var filteredPullRequests = pullRequests.Where(pr =>
                 (labelsArr.Length == 0 || pr.Labels.Any(label => labelsArr.Contains(label.Name))) &&
