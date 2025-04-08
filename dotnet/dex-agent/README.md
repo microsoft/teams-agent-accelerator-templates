@@ -135,5 +135,7 @@ Then, update the plugin provided during the Semantic Kernel registration.
 
 Please use the methods inside `KernelOrchestrator` to manage conversation history. 
 
+Update the string comparison of `GitHubPlugin-ListPRs` in `GetChatMessageContentAsyncForOneToOneScenarios`.
+
 Be sure to also update the prompt
 in `KernelOrchestrator.InitiateChat`.
