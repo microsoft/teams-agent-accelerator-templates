@@ -183,6 +183,9 @@ Anything along these lines should produce a decent looking image that will fit t
 
 ## Appendix
 
+### Design Decisions
+- If the `demoYoutubeVideoId` is provided then a youtube video will be shown in the "Demo" sections. Otherwise the `demoUrlGif` will be used. If you have a demo video then feel free to omit the `demoUrlGif` all together.
+
 ### Caveats
 
 - When using `Image` component, make sure the prefix the `src` with the `basePath` from `next.config.ts` so that the images are served from the correct path.
