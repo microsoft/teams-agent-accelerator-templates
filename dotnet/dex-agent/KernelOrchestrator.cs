@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using System.Text;
+using System.Text.Json;
 using Microsoft.Bot.Builder;
 using Microsoft.Bot.Builder.Teams;
 using Microsoft.Bot.Schema;
@@ -6,6 +7,7 @@ using Microsoft.Bot.Schema.Teams;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 using Microsoft.SemanticKernel.Connectors.OpenAI;
+using Microsoft.Teams.AI.Application;
 
 namespace DexAgent
 {
@@ -67,7 +69,7 @@ namespace DexAgent
         }
 
         /// <summary>
-        /// Calls completions
+        /// Calls chat completions where plugins are auto-invoked
         /// </summary>
         /// <param name="turnContext">The turn context</param>
         /// <returns></returns>
@@ -77,22 +79,33 @@ namespace DexAgent
             ConversationInfo currConvo = prevConvos.Find(x => x.Id == turnContext.Activity.Conversation.Id);
             ChatHistory history = JsonSerializer.Deserialize<ChatHistory>(currConvo.ChatHistory);
             prevConvos.Remove(currConvo);
-
             _kernel.Data.Add("context", turnContext);
 
-            var result = (OpenAIChatMessageContent)await _chatCompletionService.GetChatMessageContentAsync(
-               history,
-               executionSettings: _openAIPromptExecutionSettings,
-               kernel: _kernel);
+            if (turnContext.Activity.Conversation.IsGroup != null && turnContext.Activity.Conversation.IsGroup == true)
+            {
+                await GetChatMessageContentAsyncForNonStreamingGroupScenarios(history, currConvo, prevConvos, turnContext);
+            }
+            else
+            {
+                await GetChatMessageContentAsyncForOneToOneScenarios(history, currConvo, prevConvos, turnContext);
+            }
+        }
 
-            var prev_response = history.Last().Items.Last();
+        private async Task GetChatMessageContentAsyncForNonStreamingGroupScenarios(ChatHistory history, ConversationInfo currConvo, List<ConversationInfo> prevConvos, ITurnContext turnContext)
+        {
+            var result = (OpenAIChatMessageContent)await _chatCompletionService.GetChatMessageContentAsync(
+                   history,
+                   executionSettings: _openAIPromptExecutionSettings,
+                   kernel: _kernel);
 
             // Check for tool call
-            if (prev_response is FunctionResultContent)
+            var latestResult = history.Last().Items.Last();
+            if (latestResult is FunctionResultContent)
             {
-                FunctionResultContent function_res = (FunctionResultContent)prev_response;
+                FunctionResultContent function_res = (FunctionResultContent)latestResult;
                 if (function_res.FunctionName == "ListPRs")
                 {
+                    // Adaptive card was already sent
                     await SerializeAndSaveHistory(history, currConvo, prevConvos);
                     return;
                 }
@@ -103,18 +116,82 @@ namespace DexAgent
                 await SerializeAndSaveHistory(history, currConvo, prevConvos);
 
                 var resultJson = JsonSerializer.Deserialize<JsonElement>(result.Content);
-                string[] resultKeys = [ "message", "response", "capabilities" ];
+                // Responses from LLM may vary by key
+                string[] resultKeys = ["message", "response", "capabilities"];
 
                 foreach (var key in resultKeys)
                 {
+                    string finalStr = "";
                     if (resultJson.TryGetProperty(key, out JsonElement val))
                     {
-                        string resultStr = val.ToString();
-                        await turnContext.SendActivityAsync(resultStr);
-                        break;
+                        finalStr += val.ToString();
                     }
+                    await turnContext.SendActivityAsync(finalStr);
                 }
             }
+        }
+
+        private async Task GetChatMessageContentAsyncForOneToOneScenarios(ChatHistory history, ConversationInfo currConvo, List<ConversationInfo> prevConvos, ITurnContext turnContext)
+        {
+            var result = _chatCompletionService.GetStreamingChatMessageContentsAsync(
+               history,
+               executionSettings: _openAIPromptExecutionSettings,
+               kernel: _kernel);
+
+            var chunkBuilder = new StringBuilder();
+
+            // Flag is used as plugin info is only returned in second chunk
+            bool hasInvokedListPRs = false;
+
+            await foreach (var chunk in result)
+            {
+                var streamingFunctionCallUpdates = chunk.Items.OfType<StreamingFunctionCallUpdateContent>();
+                if (streamingFunctionCallUpdates.Any() && string.Equals(streamingFunctionCallUpdates.First().Name, "GitHubPlugin-ListPRs"))
+                {
+                    hasInvokedListPRs = true;
+                    continue;
+                }
+                else if (!hasInvokedListPRs)
+                {
+                    chunkBuilder.Append(chunk.Content);
+                }
+            }
+
+            // Handle non-plugin scenarios
+            if (chunkBuilder.Length > 0)
+            {
+                ChatMessageContent completeMessage = new()
+                {
+                    Role = AuthorRole.Assistant,
+                    Content = ""
+                };
+                StreamingResponse streamer = new StreamingResponse(turnContext);
+                streamer.EnableGeneratedByAILabel = true;
+                streamer.QueueInformativeUpdate("Generating response...");
+
+                // Responses from LLM may vary by key
+                var chunkJson = JsonSerializer.Deserialize<JsonElement>(chunkBuilder.ToString());
+                string[] resultKeys = ["message", "response", "capabilities"];
+
+                foreach (var key in resultKeys)
+                {
+                    if (chunkJson.TryGetProperty(key, out JsonElement val))
+                    {
+                        StringBuilder finalStringBuilder = new StringBuilder(val.ToString());
+                        completeMessage.Content += val.ToString();
+
+                        for (var i = 0; i < finalStringBuilder.Length; i++)
+                        {
+                            await Task.Delay(TimeSpan.FromSeconds(0.01));
+                            streamer.QueueTextChunk(finalStringBuilder[i].ToString());
+                        }
+                    }
+                }
+                history.Add(completeMessage);
+                await streamer.EndStream();
+            }
+
+            await SerializeAndSaveHistory(history, currConvo, prevConvos);
         }
 
         /// <summary>
