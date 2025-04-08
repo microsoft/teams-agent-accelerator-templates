@@ -117,8 +117,7 @@ namespace DexAgent
 
                 var resultJson = JsonSerializer.Deserialize<JsonElement>(result.Content);
                 // Responses from LLM may vary by key
-                string[] resultKeys = ["message", "response", "capabilities"];
-
+                string[] resultKeys = new string[] { "message", "response", "capabilities" };
                 foreach (var key in resultKeys)
                 {
                     string finalStr = "";
