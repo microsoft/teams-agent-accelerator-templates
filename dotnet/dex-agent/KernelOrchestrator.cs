@@ -125,7 +125,11 @@ namespace DexAgent
                     {
                         finalStr += val.ToString();
                     }
-                    await turnContext.SendActivityAsync(finalStr);
+
+                    if (!string.IsNullOrEmpty(finalStr))
+                    {
+                        await turnContext.SendActivityAsync(finalStr);
+                    }
                 }
             }
         }
