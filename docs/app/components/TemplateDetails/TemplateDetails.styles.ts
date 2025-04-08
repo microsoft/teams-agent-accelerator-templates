@@ -170,7 +170,8 @@ export default makeStyles({
     },
   },
   demoContainer: {
-    width: 'fit-content',
+    width: '100%',
+    maxWidth: '800px',
     borderRadius: tokens.borderRadiusLarge,
     overflow: 'hidden',
     border: `1px solid ${tokens.colorNeutralStroke1}`,

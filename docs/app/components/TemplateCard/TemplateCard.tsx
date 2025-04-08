@@ -8,7 +8,7 @@ import config from '../../../next.config';
 import type { Template } from '@/app/page';
 import Link from 'next/link';
 import Modal from '../Modal/Modal';
-import YouTube from 'react-youtube';
+import MediaViewer from '../MediaViewer/MediaViewer';
 
 export type TemplateCardProps = Template;
 
@@ -51,8 +51,7 @@ const TemplateCard: FC<TemplateCardProps> = ({
     setIsModalOpen(false);
   };
 
-  const videoId = demoYoutubeVideoId;
-  const hasDemo = !!(videoId || demoUrlGif);
+  const hasDemo = !!(demoYoutubeVideoId || demoUrlGif);
 
   return (
     <>
@@ -118,32 +117,15 @@ const TemplateCard: FC<TemplateCardProps> = ({
       </Link>
 
       <Modal isOpen={isModalOpen} onClose={closeModal} title={title}>
-        {videoId ? (
-          <YouTube
-            videoId={videoId}
-            opts={{
-              height: Math.min(548, window.innerWidth * 0.8 / 1.64),
-              width: Math.min(900, window.innerWidth * 0.8),
-              playerVars: {
-                autoplay: 1,
-              },
-            }}
-            className={classes.youtubePlayer}
-          />
-        ) : demoUrlGif ? (
-          <img 
-            src={demoUrlGif} 
-            alt={`${title} demo GIF`} 
-            className={classes.gifImage} 
-          />
-        ) : (
-          <p>No demo content available.</p>
-        )}
+        <MediaViewer 
+          youtubeVideoId={demoYoutubeVideoId}
+          gifUrl={demoUrlGif}
+          title={title}
+        />
       </Modal>
     </>
   );
 };
 
 TemplateCard.displayName = 'TemplateCard';
-
 export default TemplateCard;

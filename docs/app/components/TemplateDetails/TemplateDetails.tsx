@@ -1,11 +1,12 @@
 'use client';
 
-import { FC, useState } from 'react';
-import { Button, Text, tokens, Skeleton } from '@fluentui/react-components';
+import { FC } from 'react';
+import { Button, Text, tokens } from '@fluentui/react-components';
 import { ArrowLeft24Regular, Open16Regular } from '@fluentui/react-icons';
 import useStyles from './TemplateDetails.styles';
 import type { Template } from '@/app/page';
 import NextLink from 'next/link';
+import MediaViewer from '../MediaViewer/MediaViewer';
 
 export interface TemplateDetailsProps extends Template {}
 
@@ -23,32 +24,6 @@ const Markdown: FC<MarkdownProps> = ({ markdownHtml, classes }) => {
   );
 };
 
-const DemoImage = ({
-  src,
-  alt,
-  classes,
-}: {
-  src: string;
-  alt: string;
-  classes: Record<string, string>;
-}) => {
-  const [isLoading, setIsLoading] = useState(true);
-
-  return (
-    <>
-      {isLoading && <Skeleton className={classes.loadingSkeleton} />}
-      <img
-        src={src}
-        alt={alt}
-        className={`${classes.demo} ${isLoading ? 'hidden' : ''}`}
-        loading="lazy"
-        onLoad={() => setIsLoading(false)}
-        onError={() => setIsLoading(false)}
-      />
-    </>
-  );
-};
-
 const TemplateDetails: FC<TemplateDetailsProps> = ({
   title,
   description,
@@ -59,6 +34,7 @@ const TemplateDetails: FC<TemplateDetailsProps> = ({
   tags,
   imageUrl,
   demoUrlGif,
+  demoYoutubeVideoId,
 }) => {
   const classes = useStyles();
 
@@ -159,10 +135,10 @@ const TemplateDetails: FC<TemplateDetailsProps> = ({
           <div className={classes.section}>
             <Text className={classes.sectionTitle}>Demo</Text>
             <div className={classes.demoContainer}>
-              <DemoImage
-                src={demoUrlGif}
-                alt={`${title} demo`}
-                classes={classes}
+              <MediaViewer
+                youtubeVideoId={demoYoutubeVideoId}
+                gifUrl={demoUrlGif}
+                title={title}
               />
             </div>
           </div>
