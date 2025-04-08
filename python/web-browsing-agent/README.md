@@ -21,6 +21,7 @@ imageUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main
 author: "Microsoft"
 language: "Python"
 demoUrlGif: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/python/web-browsing-agent/docs/news-example.gif"
+demoYoutubeVideoId: ""
 ---
 ---->
 # Web Browsing Agent for Microsoft Teams

@@ -21,6 +21,7 @@ imageUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main
 author: "Microsoft"
 language: "Python"
 demoUrlGif: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/python/memory-sample-agent/docs/images/Tech-Assistant-Starting.gif"
+demoYoutubeVideoId: "urqUHlGK82Y"
 ---
 -->
 # 🧠 Tech Support Assistant with Memory

@@ -38,6 +38,7 @@ function loadTemplates() {
         author: data.author,
         language: data.language,
         demoUrlGif: data.demoUrlGif,
+        demoYoutubeVideoId: data.demoYoutubeVideoId,
       };
 
       templates.push(template);

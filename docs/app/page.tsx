@@ -20,6 +20,7 @@ export interface Template {
   author: string;
   language: string;
   demoUrlGif: string;
+  demoYoutubeVideoId: string;
   longDescription: string; // html string (rendered markdown)
   featuresList: string[]; // html strings (rendered markdown)
 }

@@ -72,6 +72,7 @@ const TemplateGallery: FC<TemplateGalleryProps> = ({ templates }) => {
                 language={template.language}
                 tags={template.tags}
                 demoUrlGif={template.demoUrlGif}
+                demoYoutubeVideoId={template.demoYoutubeVideoId}
                 longDescription={template.longDescription}
                 featuresList={template.featuresList}
               />

@@ -21,6 +21,7 @@
     "react-dom": "^18.3.1",
     "react-icons": "^5.5.0",
     "react-markdown": "^10.1.0",
+    "react-youtube": "^10.1.0",
     "rehype-stringify": "^10.0.1",
     "remark": "^15.0.1",
     "remark-breaks": "^4.0.0",

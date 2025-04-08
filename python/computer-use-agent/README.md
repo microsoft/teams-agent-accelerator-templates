@@ -27,6 +27,7 @@ imageUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main
 author: "Microsoft"
 language: "Python"
 demoUrlGif: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/python/computer-use-agent/docs/VNCExample.gif"
+demoYoutubeVideoId: "Lf1ygN_41tM"
 ---
 -->
 
