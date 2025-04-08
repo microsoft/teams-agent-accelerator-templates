@@ -21,8 +21,7 @@ const NavBar: FC = () => {
         />
       </div>
       <p className={classes.subtitle}>
-        Ready-to-use templates showcasing AI agent integration with Microsoft
-        Teams to enhance collaboration and productivity. ✨
+        Ready-to-use templates of collaborative agents in Microsoft Teams ✨
       </p>
     </div>
   );

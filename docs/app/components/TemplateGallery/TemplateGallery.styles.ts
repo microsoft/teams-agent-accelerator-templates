@@ -8,6 +8,7 @@ export default makeStyles({
   },
   container: {
     display: 'flex',
+    flexDirection: 'column',
     gap: tokens.spacingHorizontalXL,
     maxWidth: '1200px',
     margin: '0 auto',
@@ -22,7 +23,15 @@ export default makeStyles({
     marginBottom: tokens.spacingVerticalM,
   },
   searchContainer: {
-    marginBottom: tokens.spacingVerticalL,
+    display: 'flex',
+    justifyContent: 'flex-start',
+    width: '100%',
+  },
+  searchInput: {
+    width: '50%',
+    maxWidth: '500px',
+    borderRadius: tokens.borderRadiusLarge,
+    border: `1px solid ${tokens.colorNeutralStroke1}`
   },
   filterSection: {
     marginBottom: tokens.spacingVerticalL,
@@ -33,16 +42,29 @@ export default makeStyles({
     marginBottom: tokens.spacingVerticalS,
   },
   grid: {
-    flex: 1,
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+    gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
     gap: tokens.spacingHorizontalL,
     alignItems: 'start',
-    justifyItems: 'center',
-    '& > *:first-child:last-child': {
-      gridColumn: '1 / -1',
+    justifyItems: 'start',
+    '& > *:first-child': {
+      gridColumn: '1',
+      gridRow: '1',
       maxWidth: '330px',
-      justifySelf: 'center',
     },
+  },
+  noResults: {
+    width: '100%',
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    minHeight: '200px',
+    textAlign: 'center',
+    padding: tokens.spacingVerticalXXL,
+    color: tokens.colorNeutralForeground2,
+    fontSize: tokens.fontSizeBase400,
+    backgroundColor: tokens.colorNeutralBackground2,
+    borderRadius: tokens.borderRadiusLarge,
+    border: `1px solid ${tokens.colorNeutralStroke1}`,
   },
 });
