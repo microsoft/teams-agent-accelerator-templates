@@ -171,8 +171,7 @@ namespace DexAgent
 
                 // Responses from LLM may vary by key
                 var chunkJson = JsonSerializer.Deserialize<JsonElement>(chunkBuilder.ToString());
-                string[] resultKeys = ["message", "response", "capabilities"];
-
+                string[] resultKeys = new string[] { "message", "response", "capabilities" };
                 foreach (var key in resultKeys)
                 {
                     if (chunkJson.TryGetProperty(key, out JsonElement val))
