@@ -1,4 +1,5 @@
 import { makeStyles } from '@griffel/react';
+import { tokens } from '@fluentui/react-components';
 
 const useStyles = makeStyles({
   overlay: {
@@ -14,7 +15,7 @@ const useStyles = makeStyles({
     zIndex: 1000,
   },
   modal: {
-    backgroundColor: 'white',
+    backgroundColor: tokens.colorNeutralBackground1,
     borderRadius: '8px',
     padding: '20px',
     maxWidth: '90vw',
@@ -30,12 +31,13 @@ const useStyles = makeStyles({
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingBottom: '10px',
-    borderBottom: '1px solid #e0e0e0',
+    borderBottom: `1px solid ${tokens.colorNeutralStroke1}`,
     minHeight: '40px',
   },
   title: {
     margin: 0,
     fontSize: '1.25rem',
+    color: tokens.colorNeutralForeground1,
     fontWeight: 600,
   },
   closeButton: {},

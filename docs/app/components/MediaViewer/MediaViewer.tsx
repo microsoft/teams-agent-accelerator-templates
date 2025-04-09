@@ -22,7 +22,7 @@ const MediaViewer: FC<MediaViewerProps> = ({ youtubeVideoId, gifUrl, title }) =>
             width: '640',
             height: '390',
             playerVars: {
-              autoplay: 1,
+              autoplay: 0,
             },
           }}
           className={classes.player}

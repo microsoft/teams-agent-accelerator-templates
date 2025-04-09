@@ -173,8 +173,7 @@ export default makeStyles({
     opacity: 1,
     pointerEvents: 'auto',
   },
-  playIcon: {
-    fontSize: '48px',
+  playText: {
     color: 'white',
   },
   youtubePlayer: {

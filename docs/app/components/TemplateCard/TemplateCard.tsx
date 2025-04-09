@@ -83,7 +83,7 @@ const TemplateCard: FC<TemplateCardProps> = ({
               />
               {hasDemo && isImageHovered && !isLoading && (
                 <div className={classes.playOverlay}>
-                  <PlayCircle24Regular className={classes.playIcon} />
+                  <Text className={classes.playText}>View Demo</Text>
                 </div>
               )}
             </div>
