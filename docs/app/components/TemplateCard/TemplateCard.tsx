@@ -67,6 +67,15 @@ const TemplateCard: FC<TemplateCardProps> = ({
             onMouseEnter={hasDemo ? () => setIsImageHovered(true) : undefined}
             onMouseLeave={hasDemo ? () => setIsImageHovered(false) : undefined}
             style={{ cursor: hasDemo ? 'pointer' : 'default' }}
+            role="region"
+            aria-label={`${title} preview`}
+            tabIndex={hasDemo ? 0 : -1}
+            onKeyDown={(e) => {
+              if (hasDemo && (e.key === 'Enter' || e.key === ' ')) {
+                e.preventDefault();
+                handlePreviewClick(e as any);
+              }
+            }}
           >
             <div className={classes.imageContainer}>
               {isLoading && (
