@@ -1,4 +1,30 @@
-﻿# DEX Agent for Microsoft Teams
+﻿<!--
+---
+id: dex-agent
+title: "Developer Experience Agent"
+description: "A customizable agent that enhances developer experience and team productivity."
+longDescription: |
+  This sample showcases how an agent can enhance the Developer Experience (DEX) on Microsoft Teams using Semantic Kernel, Azure Open AI, and GitHub Apps. 
+
+featuresList:
+  - "📄 Displays a list of your repository's pull requests"
+  - "🔍 Filter PRs based on labels, assignees, and/or authors"
+  - "🔔 Be notified in group chats and channels when there is a new assignee on a PR"
+  - "🔔 Be notified in group chats and channels when there is a status update on a PR"
+tags:
+  - "semantic-kernel"
+  - "github"
+  - "azure-openai"
+githubUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/blob/main/dotnet/dex-agent"
+imageUrl: ""
+author: "Microsoft"
+language: "Dotnet"
+demoUrlGif: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/dotnet/dex-agent/assets/listPRs.gif"
+demoYoutubeVideoId: ""
+---
+-->
+
+# DEX Agent for Microsoft Teams
 
 This sample showcases how an agent can enhance the Developer Experience (DEX) on Microsoft Teams. 
 Built using Semantic Kernel, Azure Open AI, and [GitHub Apps](https://docs.github.com/en/apps), you can easily customize and deploy a solution for your developers.

@@ -81,6 +81,10 @@
     {
       "path": "[[workspace]]/python/memory-sample-agent",
       "title": "memory-sample-agent"
+    },
+    {
+      "path": "[[workspace]]/dotnet/dex-agent",
+      "title": "dex-agent"
     }
   ]
 }
