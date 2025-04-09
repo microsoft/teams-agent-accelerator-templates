@@ -117,13 +117,25 @@ namespace DexAgent
 
                 var resultJson = JsonSerializer.Deserialize<JsonElement>(result.Content);
                 // Responses from LLM may vary by key
-                string[] resultKeys = new string[] { "message", "response", "capabilities" };
+                string[] resultKeys = new string[] { "message", "response", "capabilities", "features" };
                 foreach (var key in resultKeys)
                 {
                     string finalStr = "";
                     if (resultJson.TryGetProperty(key, out JsonElement val))
                     {
-                        finalStr += val.ToString();
+                        if (key == "capabilities" || key == "features")
+                        {
+                            foreach (var item in val.EnumerateArray())
+                            {
+                                var desc = " ";
+                                desc += item.GetProperty("description").ToString();
+                                finalStr += desc;
+                            }
+                        }
+                        else
+                        {
+                            finalStr += val.ToString();
+                        }
                     }
 
                     if (!string.IsNullOrEmpty(finalStr))
@@ -174,18 +186,38 @@ namespace DexAgent
 
                 // Responses from LLM may vary by key
                 var chunkJson = JsonSerializer.Deserialize<JsonElement>(chunkBuilder.ToString());
-                string[] resultKeys = new string[] { "message", "response", "capabilities" };
+                string[] resultKeys = new string[] { "message", "response", "capabilities", "features" };
                 foreach (var key in resultKeys)
                 {
                     if (chunkJson.TryGetProperty(key, out JsonElement val))
                     {
-                        StringBuilder finalStringBuilder = new StringBuilder(val.ToString());
-                        completeMessage.Content += val.ToString();
-
-                        for (var i = 0; i < finalStringBuilder.Length; i++)
+                        if (key == "capabilities" || key == "features")
                         {
-                            await Task.Delay(TimeSpan.FromSeconds(0.01));
-                            streamer.QueueTextChunk(finalStringBuilder[i].ToString());
+                            foreach (var item in val.EnumerateArray())
+                            {
+                                var desc = " ";
+                                desc += item.GetProperty("description").ToString();
+
+                                StringBuilder finalStringBuilder = new StringBuilder(desc);
+                                completeMessage.Content += desc;
+
+                                for (var i = 0; i < finalStringBuilder.Length; i++)
+                                {
+                                    await Task.Delay(TimeSpan.FromSeconds(0.01));
+                                    streamer.QueueTextChunk(finalStringBuilder[i].ToString());
+                                }
+                            }
+                        }
+                        else
+                        {
+                            StringBuilder finalStringBuilder = new StringBuilder(val.ToString());
+                            completeMessage.Content += val.ToString();
+
+                            for (var i = 0; i < finalStringBuilder.Length; i++)
+                            {
+                                await Task.Delay(TimeSpan.FromSeconds(0.01));
+                                streamer.QueueTextChunk(finalStringBuilder[i].ToString());
+                            }
                         }
                     }
                 }
