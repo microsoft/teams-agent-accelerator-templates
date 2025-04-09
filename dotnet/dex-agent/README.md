@@ -18,7 +18,7 @@ tags:
 githubUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/blob/main/dotnet/dex-agent"
 imageUrl: ""
 author: "Microsoft"
-language: "Dotnet"
+language: "C#"
 demoUrlGif: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/dotnet/dex-agent/assets/listPRs.gif"
 demoYoutubeVideoId: ""
 ---
