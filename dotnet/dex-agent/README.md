@@ -1,4 +1,30 @@
-﻿# DEX Agent for Microsoft Teams
+﻿<!--
+---
+id: dex-agent
+title: "Developer Experience Agent"
+description: "A customizable agent that enhances developer experience and team productivity."
+longDescription: |
+  This sample showcases how an agent can enhance the Developer Experience (DEX) on Microsoft Teams using Semantic Kernel, Azure Open AI, and GitHub Apps. 
+
+featuresList:
+  - "📄 Displays a list of your repository's pull requests"
+  - "🔍 Filter PRs based on labels, assignees, and/or authors"
+  - "🔔 Be notified in group chats and channels when there is a new assignee on a PR"
+  - "🔔 Be notified in group chats and channels when there is a status update on a PR"
+tags:
+  - "semantic-kernel"
+  - "github"
+  - "azure-openai"
+githubUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/blob/main/dotnet/dex-agent"
+imageUrl: ""
+author: "Microsoft"
+language: "C#"
+demoUrlGif: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/dotnet/dex-agent/assets/listPRs.gif"
+demoYoutubeVideoId: ""
+---
+-->
+
+# DEX Agent for Microsoft Teams
 
 This sample showcases how an agent can enhance the Developer Experience (DEX) on Microsoft Teams. 
 Built using Semantic Kernel, Azure Open AI, and [GitHub Apps](https://docs.github.com/en/apps), you can easily customize and deploy a solution for your developers.
@@ -6,7 +32,7 @@ The agent is designed to reduce time-consuming tasks, enhance efficiency, and el
 
 ## Key Features
 - 📄 **List Pull Requests**: Displays a list of your repository's pull requests
-- 🔍 **Filter Pull Requests**: Find PRs based on labels, assignees, and/or authors
+- 🔍 **Filter Pull Requests**: Filter PRs based on labels, assignees, and/or authors
 - 🔔 **Proactive Alerts on PR Assignments**: Be notified in group chats and channels when there is a new assignee on a PR
 - 🔔 **Proactive Alerts on PR Status Changes**: Be notified in group chats and channels when there is a status update on a PR
 
@@ -81,8 +107,8 @@ More information is available [here](https://docs.github.com/en/apps/creating-gi
 Although this agent is currently configured to use GitHub, you can easily swap for another repository tool.
 
 Note the restrictions:
-- Only one tool can be configured at a time, due to the Azure Bicep file deployments.
-- Different tools require different API keys, hence these will need to be added manually.
+- Only one repository tool can be configured at a time, due to the Azure Bicep file deployments.
+- Different repository tools require different API keys, hence these will need to be added manually.
 - Authentication is restricted to `Oauth Azure Bot Service Providers`.
 
 There are a few components. You may define your own structs similar to those in `GitHubModels`
@@ -94,12 +120,11 @@ There are a few components. You may define your own structs similar to those in 
 Replace the GitHub values with your new tool.
 
 ### 2) Activity Handlers
-All handlers are registered in `Program.cs`. These can be easily updated and customized. 
+All handlers are registered in `DexBot.cs`. These can be easily updated and customized. 
 
-The two to update for `ListPRs` are:
- `app.AdaptiveCards.OnActionSubmit(...)` and `app.OnActivity(ActivityTypes.Message...)`
+`ListPRs` is auto-invoked by the kernel via `app.OnActivity(ActivityTypes.Message...)`
 
- The latter generic message handler is used to route messages to Semantic Kernel.
+`FilterPRs` is manually invoked via `app.AdaptiveCards.OnActionSubmit(...)`
 
 ### 3) Webhooks
 All webhook URLs must start with `api/webhook`.
@@ -132,11 +157,11 @@ Then, update the plugin provided during the Semantic Kernel registration.
  kernelBuilder.Plugins.AddFromObject(plugin, "GitHubPlugin");
 ```
 
-Both ListPRs and FilterPRs are manually invoked via the activity handlers, to allow the rendering of adaptive cards. 
-
 ### 5) Conversation Management
 
 Please use the methods inside `KernelOrchestrator` to manage conversation history. 
+
+Update the string comparison of `GitHubPlugin-ListPRs` in `GetChatMessageContentAsyncForOneToOneScenarios`.
 
 Be sure to also update the prompt
 in `KernelOrchestrator.InitiateChat`.

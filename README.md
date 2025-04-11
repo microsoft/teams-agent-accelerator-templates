@@ -10,7 +10,7 @@ This repository contains a collection of templates that demonstrate the integrat
 | 💻 [Computer Use Agent](python/computer-use-agent)   | `Python`     | AI-powered automation of computer tasks through Teams interface.                                 | `#computer-use` `#human-in-the-loop` `#stateful` `#visual-feedback` |
 | 💻 [Web Browsing Agent](python/web-browsing-agent)   | `Python`     | Autonomous web navigation and interaction capabilities.                                          | `#browser-automation` `#visual-feedback` `#stateful`                |
 | 🧠 [Memory Template Agent](python/memory-sample-agent) | `Python`     | An agent that demonstrates the use of memory to enhance the agent's capabilities.          | `#memory` `#agent` `#python`                                        |
-
+| 🤖 [Developer Experience Agent](dotnet/dex-agent)		| `Dotnet`    | A customizable agent that enhances developer experience and team productivity.							  | `#agent` `#dotnet` `#semantic-kernel` `#github` `plugins` `azure-openai`                                        |
 ## 🏁 Getting Started
 
 Each template includes its own detailed README with specific setup instructions and requirements. Navigate to the template you're interested in to learn more about its features and how to run it.
