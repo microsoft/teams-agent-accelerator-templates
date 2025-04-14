@@ -2,8 +2,8 @@
 
 import {
   FluentProvider,
-  webDarkTheme,
-  webLightTheme,
+  teamsLightTheme,
+  teamsDarkTheme,
 } from '@fluentui/react-components';
 import { useState, useEffect } from 'react';
 import useStyles from './layout.styles';
@@ -19,7 +19,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   const classes = useStyles();
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
 
   const isProduction = process.env.NEXT_PUBLIC_BASE_PATH ? true : false;
@@ -39,7 +39,7 @@ export default function RootLayout({
       <title>Teams Agent Accelerator Templates</title>
       <body className={classes.root}>
         <ThemeContext.Provider value={{ isDark, toggleTheme }}>
-          <FluentProvider theme={isDark ? webDarkTheme : webLightTheme}>
+          <FluentProvider theme={isDark ? teamsDarkTheme : teamsLightTheme}>
             {isLoading ? (
               <PageLoader />
             ) : (
