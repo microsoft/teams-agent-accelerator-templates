@@ -5,7 +5,7 @@ import TemplateCard from '../TemplateCard/TemplateCard';
 import { FC, useState, useMemo } from 'react';
 import config from '../../../next.config';
 import { TemplateGalleryData } from '@/app/page';
-import { Input } from '@fluentui/react-components';
+import { Input, Switch, SwitchOnChangeData } from '@fluentui/react-components';
 import { Search24Regular } from '@fluentui/react-icons';
 
 type TemplateGalleryProps = { templates: TemplateGalleryData };
@@ -60,7 +60,7 @@ const TemplateGallery: FC<TemplateGalleryProps> = ({ templates }) => {
       </div>
       <div className={classes.container}>
         {filteredTemplates.length > 0 ? (
-          <div className={classes.grid}>
+          <div className={classes.list}>
             {filteredTemplates.map((template, index) => (
               <TemplateCard
                 key={index}

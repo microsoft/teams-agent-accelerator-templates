@@ -31,7 +31,9 @@ export default makeStyles({
   searchContainer: {
     display: 'flex',
     justifyContent: 'center',
+    alignItems: 'center',
     width: '100%',
+    gap: tokens.spacingHorizontalL,
   },
   searchInput: {
     width: '70%',
@@ -50,16 +52,20 @@ export default makeStyles({
     fontWeight: tokens.fontWeightSemibold,
     marginBottom: tokens.spacingVerticalS,
   },
-  grid: {
+  list: {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-    gap: tokens.spacingHorizontalL,
-    alignItems: 'start',
-    justifyItems: 'start',
-    '& > *:first-child': {
-      gridColumn: '1',
-      gridRow: '1',
-      maxWidth: '330px',
+    gridTemplateColumns: 'repeat(3, 1fr)',
+    gap: tokens.spacingHorizontalXL + ' ' + tokens.spacingVerticalXL,
+    alignItems: 'stretch',
+    '& > *': {
+      width: '100%',
+      height: '100%',
+    },
+    '@media (max-width: 1300px)': {
+      gridTemplateColumns: 'repeat(2, 1fr)',
+    },
+    '@media (max-width: 800px)': {
+      gridTemplateColumns: '1fr',
     },
   },
   noResults: {

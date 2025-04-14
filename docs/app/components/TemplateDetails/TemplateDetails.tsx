@@ -7,21 +7,23 @@ import useStyles from './TemplateDetails.styles';
 import type { Template } from '@/app/page';
 import NextLink from 'next/link';
 import MediaViewer from '../MediaViewer/MediaViewer';
+import Markdown from '../Markdown/Markdown';
 
 export interface TemplateDetailsProps extends Template {}
 
-interface MarkdownProps {
-  markdownHtml: string;
-  classes: Record<string, string>;
-}
-
-const Markdown: FC<MarkdownProps> = ({ markdownHtml, classes }) => {
-  return (
-    <span
-      dangerouslySetInnerHTML={{ __html: markdownHtml }}
-      className={classes.markdown}
-    />
-  );
+export const getLanguageColor = (language: string) => {
+  switch (language) {
+    case 'JavaScript':
+      return '#f1e05a';
+    case 'Python':
+      return '#3572A5';
+    case 'TypeScript':
+      return '#2b7489';
+    case 'C#':
+      return '#178600';
+    default:
+      return tokens.colorBrandBackground;
+  }
 };
 
 const TemplateDetails: FC<TemplateDetailsProps> = ({
@@ -37,21 +39,6 @@ const TemplateDetails: FC<TemplateDetailsProps> = ({
   demoYoutubeVideoId,
 }) => {
   const classes = useStyles();
-
-  const getLanguageColor = (language: string) => {
-    switch (language) {
-      case 'JavaScript':
-        return '#f1e05a';
-      case 'Python':
-        return '#3572A5';
-      case 'TypeScript':
-        return '#2b7489';
-      case 'C#':
-        return '#178600';
-      default:
-        return tokens.colorBrandBackground;
-    }
-  };
 
   return (
     <div className={classes.container}>
@@ -114,7 +101,7 @@ const TemplateDetails: FC<TemplateDetailsProps> = ({
             <Text className={classes.sectionTitle}>Description</Text>
             <div className={classes.contentBox}>
               <div className={classes.description}>
-                <Markdown markdownHtml={longDescription} classes={classes} />
+                <Markdown markdownHtml={longDescription} className={classes.markdown} />
               </div>
             </div>
           </div>
@@ -125,7 +112,7 @@ const TemplateDetails: FC<TemplateDetailsProps> = ({
               <ul className={classes.featuresList}>
                 {featuresList.map((feature, index) => (
                   <li key={index} className={classes.featureItem}>
-                    <Markdown markdownHtml={feature} classes={classes} />
+                    <Markdown markdownHtml={feature} className={classes.markdown} />
                   </li>
                 ))}
               </ul>
