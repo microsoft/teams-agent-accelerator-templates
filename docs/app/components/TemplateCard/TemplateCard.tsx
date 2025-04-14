@@ -2,7 +2,7 @@
 
 import { FC, useState } from 'react';
 import { Card, CardPreview, Text } from '@fluentui/react-components';
-import { Open16Regular, Open16Filled, PlayCircle24Regular } from '@fluentui/react-icons';
+import { Open16Regular, Open16Filled } from '@fluentui/react-icons';
 import useStyles from './TemplateCard.styles';
 import config from '../../../next.config';
 import type { Template } from '@/app/page';

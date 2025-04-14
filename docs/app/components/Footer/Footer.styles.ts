@@ -18,10 +18,15 @@ export default makeStyles({
     gap: tokens.spacingHorizontalS,
   },
   requestText: {
-    fontSize: tokens.fontSizeBase300,
+    fontSize: tokens.fontSizeBase400,
     color: tokens.colorNeutralForeground2,
   },
   requestButton: {
-    fontSize: tokens.fontSizeBase300,
+    fontSize: tokens.fontSizeBase400,
+  },
+  buttonContainer: {
+    display: 'flex',
+    gap: tokens.spacingHorizontalS,
+    alignItems: 'center',
   },
 }); 
