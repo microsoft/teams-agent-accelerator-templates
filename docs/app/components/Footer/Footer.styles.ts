@@ -23,10 +23,11 @@ export default makeStyles({
   },
   requestButton: {
     fontSize: tokens.fontSizeBase400,
+    padding: `${tokens.spacingVerticalM} ${tokens.spacingHorizontalL}`,
   },
   buttonContainer: {
     display: 'flex',
-    gap: tokens.spacingHorizontalS,
+    gap: tokens.spacingHorizontalM,
     alignItems: 'center',
   },
 }); 
