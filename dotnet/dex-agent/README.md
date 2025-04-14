@@ -16,7 +16,7 @@ tags:
   - "github"
   - "azure-openai"
 githubUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/blob/main/dotnet/dex-agent"
-imageUrl: ""
+imageUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/dotnet/dex-agent/assets/devex-thumbnail.png"
 author: "Microsoft"
 language: "C#"
 demoUrlGif: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/dotnet/dex-agent/assets/listPRs.gif"
