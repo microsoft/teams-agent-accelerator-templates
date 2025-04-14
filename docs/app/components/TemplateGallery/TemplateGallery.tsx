@@ -45,7 +45,7 @@ const TemplateGallery: FC<TemplateGalleryProps> = ({ templates }) => {
 
   return (
     <div className={classes.root}>
-      <div className={classes.container}>
+      <div className={classes.searchSection}>
         <div className={classes.searchContainer}>
           <Input
             contentBefore={<Search24Regular />}
@@ -57,7 +57,8 @@ const TemplateGallery: FC<TemplateGalleryProps> = ({ templates }) => {
             size="large"
           />
         </div>
-        
+      </div>
+      <div className={classes.container}>
         {filteredTemplates.length > 0 ? (
           <div className={classes.grid}>
             {filteredTemplates.map((template, index) => (

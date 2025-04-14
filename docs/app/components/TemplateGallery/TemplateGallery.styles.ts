@@ -5,11 +5,17 @@ import { makeStyles, tokens } from '@fluentui/react-components';
 export default makeStyles({
   root: {
     padding: tokens.spacingHorizontalXXL,
+    paddingTop: "0",
+  },
+  searchSection: {
+    width: '100%',
+    maxWidth: '1200px',
+    margin: '0 auto',
+    marginBottom: `calc(${tokens.spacingVerticalXXL} * 2)`,
   },
   container: {
     display: 'flex',
     flexDirection: 'column',
-    gap: tokens.spacingHorizontalXL,
     maxWidth: '1200px',
     margin: '0 auto',
   },
@@ -24,14 +30,17 @@ export default makeStyles({
   },
   searchContainer: {
     display: 'flex',
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
     width: '100%',
   },
   searchInput: {
-    width: '50%',
-    maxWidth: '500px',
+    width: '70%',
+    maxWidth: '700px',
     borderRadius: tokens.borderRadiusLarge,
-    border: `1px solid ${tokens.colorNeutralStroke1}`
+    border: `1px solid ${tokens.colorNeutralStroke1}`,
+    height: '64px',
+    fontSize: tokens.fontSizeBase500,
+    padding: `${tokens.spacingVerticalL} ${tokens.spacingHorizontalL}`,
   },
   filterSection: {
     marginBottom: tokens.spacingVerticalL,
