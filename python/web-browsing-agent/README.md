@@ -16,11 +16,11 @@ tags:
   - "browser-automation"
   - "visual-feedback"
   - "stateful"
-githubUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/blob/main/python/web-browsing-agent"
-imageUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/python/web-browsing-agent/docs/web-browser-thumbnail.png"
+githubUrl: "https://github.com/singhk97/teams-agent-accelerator-samples/blob/main/python/web-browsing-agent"
+imageUrl: "https://github.com/singhk97/teams-agent-accelerator-samples/raw/main/python/web-browsing-agent/docs/web-browser-thumbnail.png"
 author: "Microsoft"
 language: "Python"
-demoUrlGif: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/python/web-browsing-agent/docs/news-example.gif"
+demoUrlGif: "https://github.com/singhk97/teams-agent-accelerator-samples/raw/main/python/web-browsing-agent/docs/news-example.gif"
 demoYoutubeVideoId: ""
 ---
 ---->
@@ -62,7 +62,7 @@ Check out the [LinkedIn post](https://www.linkedin.com/feed/update/urn:li:activi
 3. Run `playwright install` to install the browser
 4. Copy the samples.env file and rename it to .env
 5. Update the .env file with your own values. You only really need to update either Azure Open AI or Open AI values.
-6. Use [Teams-Toolkit](https://github.com/Office-Dev/Teams-Toolkit) to run the app locally - Check out [these](https://github.com/microsoft/teams-ai/tree/main/python/samples#appendix) on how to run the sample using teams-toolkit.
+6. Use [Teams-Toolkit](https://github.com/Office-Dev/Teams-Toolkit) to run the app locally - Check out [these](https://github.com/singhk97/teams-ai/tree/main/python/samples#appendix) on how to run the sample using teams-toolkit.
 
 ### Using the agent
 
@@ -103,7 +103,7 @@ Teams Toolkit isn't built to run Docker, so we'll need to do this manually. Roug
 
 #### Setting up dev tunnels
 
-1. Make sure [devtunnel](https://github.com/microsoft/devtunnel) is installed.
+1. Make sure [devtunnel](https://github.com/singhk97/devtunnel) is installed.
 2. Run `devtunnel create <tunnel-name>` to create a new tunnel.
 3. Run `devtunnel port create <tunnel-name> -p <port-number>` to create a new port for the tunnel.
 4. Run `devtunnel access create <tunnel-name> -p <port-number> --anonymous` to set up anonymous access to the tunnel.
