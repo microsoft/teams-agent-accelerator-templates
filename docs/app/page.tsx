@@ -30,10 +30,10 @@ export type TemplateGalleryData = Template[];
 
 const UNIFIED_PROCESSOR = unified()
   .use(remarkParse)
-  .use(rehypeSanitize)
   .use(remarkBreaks)
   .use(remarkGfm)
   .use(remarkRehype)
+  .use(rehypeSanitize)
   .use(rehypeStringify)
 
 function markdownToHtml(text: string): string {
