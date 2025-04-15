@@ -4,7 +4,7 @@ id: memory-sample-agent
 title: "Tech Support Agent"
 description: "AI Agent demonstrating the use of memory to enhance capabilities."
 longDescription: |
-  This sample showcases a powerful Tech Support Assistant that remembers your device details and past issues, eliminating the frustration of repeating yourself. By leveraging Semantic Memories, this agent delivers a more personalized and efficient support experience. It shocases using the [Memory Module](https://github.com/singhk97/teams-agent-accelerator-libs-py/tree/main/packages/teams_memory) to extract semantic memories from the user's messages and use them to answer questions more efficiently.
+  This sample showcases a powerful Tech Support Assistant that remembers your device details and past issues, eliminating the frustration of repeating yourself. By leveraging Semantic Memories, this agent delivers a more personalized and efficient support experience. It shocases using the [Memory Module](https://github.com/microsoft/teams-agent-accelerator-libs-py/tree/main/packages/teams_memory) to extract semantic memories from the user's messages and use them to answer questions more efficiently.
   
   Check out the [LinkedIn post](https://www.linkedin.com/feed/update/urn:li:activity:7303208304627826688/) for a video of the sample in action.
 featuresList:
@@ -16,17 +16,17 @@ tags:
   - "memory"
   - "agent"
   - "python"
-githubUrl: "https://github.com/singhk97/teams-agent-accelerator-samples/blob/main/python/memory-sample-agent"
-imageUrl: "https://github.com/singhk97/teams-agent-accelerator-samples/raw/main/python/memory-sample-agent/docs/images/memory-thumbnail.png"
+githubUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/blob/main/python/memory-sample-agent"
+imageUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/python/memory-sample-agent/docs/images/memory-thumbnail.png"
 author: "Microsoft"
 language: "Python"
-demoUrlGif: "https://github.com/singhk97/teams-agent-accelerator-samples/raw/main/python/memory-sample-agent/docs/images/Tech-Assistant-Starting.gif"
+demoUrlGif: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/python/memory-sample-agent/docs/images/Tech-Assistant-Starting.gif"
 demoYoutubeVideoId: "urqUHlGK82Y"
 ---
 -->
 # 🧠 Tech Support Assistant with Memory
 
-This sample showcases a powerful Tech Support Assistant that remembers your device details and past issues, eliminating the frustration of repeating yourself. By leveraging Semantic Memories, this agent delivers a more personalized and efficient support experience. It shocases using the [Memory Module](https://github.com/singhk97/teams-agent-accelerator-libs-py/tree/main/packages/teams_memory) to extract semantic memories from the user's messages and use them to answer questions more efficiently.
+This sample showcases a powerful Tech Support Assistant that remembers your device details and past issues, eliminating the frustration of repeating yourself. By leveraging Semantic Memories, this agent delivers a more personalized and efficient support experience. It shocases using the [Memory Module](https://github.com/microsoft/teams-agent-accelerator-libs-py/tree/main/packages/teams_memory) to extract semantic memories from the user's messages and use them to answer questions more efficiently.
 
 Check out the [LinkedIn post](https://www.linkedin.com/feed/update/urn:li:activity:7303208304627826688/) for a video of the sample in action.
 
@@ -94,7 +94,7 @@ The Memory Module can be set up to automatically extract long term memories from
 See [app.py](./app.py) for the initialization of the `MemoryMiddleware`. Note that when `listen` is called, you also should call `shutdown` when the application is shutting down.
 
 > [!NOTE]
-> The alternative to automatic extraction is explicit extraction. This can be accomplished by calling `memory_module.process_messages` which will process all the messages that are in the message buffer. Check out the [Memory Module](https://github.com/singhk97/teams-agent-accelerator-libs-py/tree/main/packages/teams_memory) for more details.
+> The alternative to automatic extraction is explicit extraction. This can be accomplished by calling `memory_module.process_messages` which will process all the messages that are in the message buffer. Check out the [Memory Module](https://github.com/microsoft/teams-agent-accelerator-libs-py/tree/main/packages/teams_memory) for more details.
 
 ![An example of automatic extraction](./docs/images/example-extraction.png)
 

@@ -16,11 +16,11 @@ tags:
   - "llm-sql"
   - "adaptive-cards"
   - "data-viz"
-githubUrl: "https://github.com/singhk97/teams-agent-accelerator-samples/blob/main/js/data-analyst-agent"
-imageUrl: "https://github.com/singhk97/teams-agent-accelerator-samples/raw/main/js/data-analyst-agent/assets/data-analyst-thumbnail.png"
+githubUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/blob/main/js/data-analyst-agent"
+imageUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/js/data-analyst-agent/assets/data-analyst-thumbnail.png"
 author: "Microsoft"
 language: "JavaScript"
-demoUrlGif: "https://github.com/singhk97/teams-agent-accelerator-samples/raw/main/js/data-analyst-agent/assets/demo.gif"
+demoUrlGif: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/js/data-analyst-agent/assets/demo.gif"
 demoYoutubeVideoId: "HQDvwoJbhRE"
 ---
 -->
@@ -58,7 +58,7 @@ Check out the [LinkedIn post](https://www.linkedin.com/feed/update/urn:li:activi
 1. Clone this repository:
 
     ```bash
-    git clone https://github.com/singhk97/teams-agent-accelerator-samples
+    git clone https://github.com/microsoft/teams-agent-accelerator-samples
     cd js/data-analyst-agent
     ```
 

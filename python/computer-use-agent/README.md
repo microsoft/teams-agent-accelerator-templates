@@ -22,11 +22,11 @@ tags:
   - "human-in-the-loop"
   - "stateful"
   - "visual-feedback"
-githubUrl: "https://github.com/singhk97/teams-agent-accelerator-samples/blob/main/python/computer-use-agent"
-imageUrl: "https://github.com/singhk97/teams-agent-accelerator-samples/raw/main/python/computer-use-agent/docs/cua-thumbnail.png"
+githubUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/blob/main/python/computer-use-agent"
+imageUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/python/computer-use-agent/docs/cua-thumbnail.png"
 author: "Microsoft"
 language: "Python"
-demoUrlGif: "https://github.com/singhk97/teams-agent-accelerator-samples/raw/main/python/computer-use-agent/docs/VNCExample.gif"
+demoUrlGif: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/python/computer-use-agent/docs/VNCExample.gif"
 demoYoutubeVideoId: "Lf1ygN_41tM"
 ---
 -->
@@ -74,7 +74,7 @@ In this example, the agent is using a VNC connection to control a computer. The 
    - Set either Azure Open AI or Open AI credentials
      - For Azure Open AI, make sure your model has computer-use capabilities
 5. Set up [Local computer](#local-computer) or [Local browser](#local-browser)
-6. Use [Teams-Toolkit](https://github.com/Office-Dev/Teams-Toolkit) to run the app locally - Check out [these](https://github.com/singhk97/teams-ai/tree/main/python/samples#appendix) on how to run the sample using teams-toolkit.
+6. Use [Teams-Toolkit](https://github.com/Office-Dev/Teams-Toolkit) to run the app locally - Check out [these](https://github.com/microsoft/teams-ai/tree/main/python/samples#appendix) on how to run the sample using teams-toolkit.
 
 ### Local computer
 
@@ -134,7 +134,7 @@ This mode will use Playwright to open a browser and interact with it. This is no
 
 #### Setting up dev tunnels
 
-1. Make sure [devtunnel](https://github.com/singhk97/devtunnel) is installed.
+1. Make sure [devtunnel](https://github.com/microsoft/devtunnel) is installed.
 2. Run `devtunnel create <tunnel-name>` to create a new tunnel.
 3. Run `devtunnel port create <tunnel-name> -p <port-number>` to create a new port for the tunnel.
 4. Run `devtunnel access create <tunnel-name> -p <port-number> --anonymous` to set up anonymous access to the tunnel.

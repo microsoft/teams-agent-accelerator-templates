@@ -15,11 +15,11 @@ tags:
   - "semantic-kernel"
   - "github"
   - "azure-openai"
-githubUrl: "https://github.com/singhk97/teams-agent-accelerator-samples/blob/main/dotnet/dex-agent"
-imageUrl: "https://github.com/singhk97/teams-agent-accelerator-samples/raw/main/dotnet/dex-agent/assets/devex-thumbnail.png"
+githubUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/blob/main/dotnet/dex-agent"
+imageUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/dotnet/dex-agent/assets/devex-thumbnail.png"
 author: "Microsoft"
 language: "C#"
-demoUrlGif: "https://github.com/singhk97/teams-agent-accelerator-samples/raw/main/dotnet/dex-agent/assets/listPRs.gif"
+demoUrlGif: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/dotnet/dex-agent/assets/listPRs.gif"
 demoYoutubeVideoId: ""
 ---
 -->
