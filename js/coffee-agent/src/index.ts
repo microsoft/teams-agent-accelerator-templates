@@ -17,11 +17,12 @@ const app = new App({
   plugins: [new DevtoolsPlugin()],
 });
 
-app.on("install.add", async ({ send }) => {
-  // TODO: Add logic to check if this is a group install
-  await send("Yawwn... Oh, hi there 👋, I'm your team's designated Coffee Bot! Let's start brewing... I have randomly selected the cafe for today!");
-  const card = generateOrderCard(initialOrder)
-  await send(card);
+app.on("install.add", async ({ send, activity }) => {
+  if (activity.conversation.isGroup) {
+    await send("Yawwn... Oh, hi there 👋, I'm your team's designated Coffee Bot! Let's start brewing... I have randomly selected the cafe for today!");
+    const card = generateOrderCard(initialOrder)
+    await send(card);
+  }
 });
 
 app.on("dialog.open", async () => {
