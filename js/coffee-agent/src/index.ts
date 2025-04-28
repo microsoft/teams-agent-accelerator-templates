@@ -87,7 +87,7 @@ const prompt = new ChatPrompt({
     model: process.env.AOAI_MODEL,
     apiKey: process.env.AOAI_API_KEY,
     endpoint: process.env.AOAI_ENDPOINT,
-    apiVersion: "2024-05-01-preview",
+    apiVersion: "2025-04-01-preview",
   } as AzureOpenAIChatModelOptions),
 }).function("choose_orderer", "chooses the person assigned to get the coffee", () => {
   const state = storage.get("local");
