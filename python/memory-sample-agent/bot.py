@@ -14,7 +14,7 @@ from teams_memory import (
     LLMConfig,
     MemoryMiddleware,
     MemoryModuleConfig,
-    StorageConfig,
+    SQLiteStorageConfig,
     configure_logging,
 )
 
@@ -67,7 +67,7 @@ bot_app = Application[TurnState](
 memory_middleware = MemoryMiddleware(
     config=MemoryModuleConfig(
         llm=LLMConfig(**memory_llm_config),
-        storage=StorageConfig(
+        storage=SQLiteStorageConfig(
             db_path=os.path.join(os.path.dirname(__file__), "data", "memory.db")
         ),
         timeout_seconds=60,

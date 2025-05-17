@@ -26,3 +26,7 @@ class Config:
     )
     AZURE_OPENAI_API_BASE = os.environ.get("AZURE_OPENAI_API_BASE", None)
     AZURE_OPENAI_API_VERSION = os.environ.get("AZURE_OPENAI_API_VERSION", None)
+
+    AZURE_SEARCH_ENDPOINT = os.environ.get("AZURE_SEARCH_ENDPOINT", None)
+    AZURE_SEARCH_API_KEY = os.environ.get("AZURE_SEARCH_API_KEY", None)
+    AZURE_SEARCH_INDEX_NAME = os.environ.get("AZURE_SEARCH_INDEX_NAME", None)

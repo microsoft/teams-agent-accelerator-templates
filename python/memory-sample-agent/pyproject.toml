@@ -5,14 +5,11 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "teams_memory",
     "python-dotenv",
     "aiohttp",
     "teams-ai",
     "botbuilder",
     "pydantic>=2.10.3",
-    "litellm==1.54.1",
+    "litellm>=1.54.1",
+    "teams-memory[azure-search]>=0.1.4a0",
 ]
-
-[tool.uv.sources]
-teams_memory = { workspace = true }
