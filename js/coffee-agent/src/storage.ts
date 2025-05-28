@@ -1,38 +1,43 @@
-import { Member, Drink, CoffeeOrder } from "./interfaces";
+import { Member, Drink, CoffeeOrder } from './interfaces';
 
-// For the purpose of the lab, setup example data
-const initialCafes = [{
-    name: "Starbucks",
-    drinks: [
-      { name: "Vanilla Latte", size: "medium" },
-      { name: "Espresso", size: "small" },
-    ]},
+const initialCafes = [
     {
-      name: "Dunkin'",
-      drinks: [
-        { name: "Cold Brew", size: "large" },
-        { name: "Iced Coffee", size: "medium" },
-      ],
+        name: 'Starbucks',
+        drinks: [
+            { name: 'Vanilla Latte', size: 'medium' },
+            { name: 'Espresso', size: 'small' },
+        ],
     },
     {
-      name: "Peet's Coffee",
-      drinks: [
-        { name: "Decaf", size: "large" },
-        { name: "Mocha", size: "medium" },
-      ],
-    }];
-  
+        name: "Dunkin'",
+        drinks: [
+            { name: 'Cold Brew', size: 'large' },
+            { name: 'Iced Coffee', size: 'medium' },
+        ],
+    },
+    {
+        name: "Peet's Coffee",
+        drinks: [
+            { name: 'Decaf', size: 'large' },
+            { name: 'Mocha', size: 'medium' },
+        ],
+    },
+];
+
 const selectedCafe = initialCafes[Math.floor(Math.random() * initialCafes.length)];
 const drinksAvailable = selectedCafe.drinks;
-const memberOne = { name: "Corina" } as Member;
-const memberTwo = { name: "Lily" } as Member;
-  
+const memberOne = { name: 'Corina' } as Member;
+const memberTwo = { name: 'Lily' } as Member;
+
 const initialOrder = {
-      id:  1,
-      date: new Date(),
-      drinks: new Map<Member, Drink>([[memberOne, drinksAvailable[0] as Drink],[memberTwo, drinksAvailable[1] as Drink]]), 
-      coffeeShop: selectedCafe,
-      status: "pending",
-  } as CoffeeOrder;
+    id: 1,
+    date: new Date(),
+    drinks: new Map<Member, Drink>([
+        [memberOne, drinksAvailable[0] as Drink],
+        [memberTwo, drinksAvailable[1] as Drink],
+    ]),
+    coffeeShop: selectedCafe,
+    status: 'pending',
+} as CoffeeOrder;
 
 export { initialCafes, initialOrder };
