@@ -16,7 +16,7 @@ tags:
   - "adaptive-cards"
   - "ai"
 githubUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/blob/main/js/coffee-agent"
-imageUrl: ""
+imageUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/js/coffee-agent/assets/coffee-thumbnail.png"
 author: "Microsoft"
 language: "JavaScript"
 demoUrlGif: ""
@@ -51,7 +51,7 @@ Originally from our Build 2025 Lab, this sample is built with the [Teams AI Libr
 1. Clone this repository:
 
     ```bash
-    git clone https://github.com/microsoft/teams-agent-accelerator-samples
+    git clone https://github.com/microsoft/teams-agent-accelerator-templates
     cd js/coffee-agent
     ```
 
