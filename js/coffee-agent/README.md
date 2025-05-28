@@ -16,7 +16,7 @@ tags:
   - "adaptive-cards"
   - "ai"
 githubUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/blob/main/js/coffee-agent"
-imageUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/js/coffee-agent/assets/coffee-thumbnail.png"
+imageUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/js/coffee-agent/assets/coffee-agent-thumbnail.png"
 author: "Microsoft"
 language: "JavaScript"
 demoUrlGif: ""
