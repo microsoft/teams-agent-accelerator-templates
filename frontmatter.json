@@ -85,6 +85,10 @@
     {
       "path": "[[workspace]]/dotnet/dex-agent",
       "title": "dex-agent"
+    },
+    {
+      "path": "[[workspace]]/js/coffee-agent",
+      "title": "coffee-agent"
     }
   ]
 }
