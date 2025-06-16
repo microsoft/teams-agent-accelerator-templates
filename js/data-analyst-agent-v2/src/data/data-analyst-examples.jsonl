@@ -250,5 +250,26 @@
                 }
             ]
         }
+    },
+    {
+        "user_message": "Show a table of the top 3 products by sales.",
+        "data_analyst_response": {
+            "parseable": [
+                {
+                    "shouldChart": true,
+                    "chartType": "table",
+                    "columns": ["Product Name", "Category", "Sales"],
+                    "rows": [
+                        ["Road-150 Red, 62", "Bikes", 3578],
+                        ["Mountain-200 Black, 46", "Bikes", 2890],
+                        ["Sport-100 Helmet, Blue", "Accessories", 1500]
+                    ],
+                    "options": {
+                        "title": "Top 3 Products by Sales"
+                    }
+                }
+            ],
+            "text": "Here is a table showing the top 3 products by sales, including their category and sales amount."
+        }
     }
 ]

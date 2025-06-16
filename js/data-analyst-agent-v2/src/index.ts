@@ -21,7 +21,6 @@ app.on('message', async ({ send, activity }) => {
     const res = await prompt.send(activity.text);
     console.log('Response from prompt:', res);
 
-  
     let resObj: any = res;
     if (typeof res.content === 'string') {
         try {
@@ -39,7 +38,6 @@ app.on('message', async ({ send, activity }) => {
             parseable.chartType,
             parseable.options
         );
-        // Send the text first, then the card, as a single message with both
         const chartAndInsightsMsg = new MessageActivity(resObj.text || '').addAiGenerated();
         chartAndInsightsMsg.attachments = [{
             contentType: 'application/vnd.microsoft.card.adaptive',
@@ -47,7 +45,9 @@ app.on('message', async ({ send, activity }) => {
         }];
         await send(chartAndInsightsMsg);
     } else {
-        const messageActivity = new MessageActivity(resObj.text || (typeof res.content === 'string' ? res.content : 'No chart or text response available.')).addAiGenerated();
+        const messageActivity = new MessageActivity(
+            resObj.text || (typeof res.content === 'string' ? res.content : 'No chart or text response available.')
+        ).addAiGenerated();
         await send(messageActivity);
     }
 });

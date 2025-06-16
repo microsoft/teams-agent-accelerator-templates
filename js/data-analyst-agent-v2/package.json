@@ -16,7 +16,9 @@
     "dev": "npx nodemon -w \"./src/**\" -e ts --exec \"node -r ts-node/register -r dotenv/config ./src/index.ts\"",
     "dev:teamsfx": "npx env-cmd --silent -f .env npm run dev",
     "dev:teamsfx:testtool": "npx env-cmd --silent -f .env npm run dev",
-    "dev:teamsfx:launch-testtool": "npx env-cmd --silent -f env/.env.testtool teamsapptester start"
+    "dev:teamsfx:launch-testtool": "npx env-cmd --silent -f env/.env.testtool teamsapptester start",
+    "eval:sql": "ts-node -r dotenv/config evals/skills/sql-generation.ts",
+    "eval:ac": "ts-node -r dotenv/config evals/skills/adaptive-card-generation.ts"
   },
   "dependencies": {
     "@microsoft/teams.ai": "^2.0.0-preview.4",

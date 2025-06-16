@@ -5,3 +5,5 @@ env/
 
 # Ignore build output
 dist/
+
+evals/logs/

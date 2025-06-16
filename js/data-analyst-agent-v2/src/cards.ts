@@ -4,13 +4,14 @@ import {
   LineChart,
   HorizontalBarChart,
   PieChart,
-  TextBlock
+  TextBlock,
+  Table
 } from '@microsoft/teams.cards';
 import { QueryResult } from './interfaces';
 
 export function generateChartCard(
   queryResult: QueryResult,
-  chartType: 'line' | 'verticalBar' | 'horizontalBar' | 'pie',
+  chartType: 'line' | 'verticalBar' | 'horizontalBar' | 'pie' | 'table',
   options?: {
     title?: string;
     xAxisTitle?: string;
@@ -75,6 +76,24 @@ export function generateChartCard(
         value: row[1],
       })),
       colorSet: "categorical"
+    });
+  } else if (chartType === 'table') {
+    // Insert columns as the first row for table header
+    const tableRows = [
+      queryResult.columns,
+      ...queryResult.rows
+    ];
+    console.log('Table rows:', tableRows);
+    chart = new Table({
+      firstRowAsHeaders: true,
+      columns: queryResult.columns.map(col => ({})), // let autoformatting handle column widths
+      rows: tableRows.map(row => ({
+        type: 'TableRow',
+        cells: row.map((cell: any) => ({
+          type: 'TableCell',
+          items: [{ type: 'TextBlock', text: String(cell) }]
+        }))
+      }))
     });
   } else {
     throw new Error('Unsupported chart type');
