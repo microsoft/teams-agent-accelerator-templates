@@ -29,6 +29,7 @@ app.on('message', async ({ send, activity, stream }) => {
     await send({ type: 'message', text: res.content });
 
     if (shared.attachments.length > 0) {
+        console.log('Sending attachments:', shared.attachments);
         const msgWithCards = new MessageActivity('').addAiGenerated();
         msgWithCards.attachments = shared.attachments.map(card => ({
             contentType: 'application/vnd.microsoft.card.adaptive',
