@@ -7,11 +7,10 @@ import {
   TextBlock,
   Table
 } from '@microsoft/teams.cards';
-import { QueryResult } from './interfaces';
 
 export function generateChartCard(
-  queryResult: QueryResult,
   chartType: 'line' | 'verticalBar' | 'horizontalBar' | 'pie' | 'table',
+  rows: any[][],
   options?: {
     title?: string;
     xAxisTitle?: string;
@@ -24,10 +23,11 @@ export function generateChartCard(
   const card = new AdaptiveCard();
   card.version = '1.5';
 
+  console.log('Generating chart card:', chartType, rows, options);
   const {
     title = 'Chart',
-    xAxisTitle = queryResult.columns[0],
-    yAxisTitle = queryResult.columns[1],
+    xAxisTitle = options?.xAxisTitle,
+    yAxisTitle = options?.yAxisTitle,
     showBarValues
   } = options || {};
 
@@ -38,7 +38,7 @@ export function generateChartCard(
       xAxisTitle,
       yAxisTitle,
       showBarValues,
-      data: queryResult.rows.map(row => ({
+      data: rows.map(row => ({
         x: row[0],
         y: row[1],
       }))
@@ -51,7 +51,7 @@ export function generateChartCard(
       data: [
         {
           legend: title,
-          values: queryResult.rows.map(row => ({
+          values: rows.map(row => ({
             x: row[0],
             y: row[1]
           })),
@@ -63,7 +63,7 @@ export function generateChartCard(
       title,
       xAxisTitle,
       yAxisTitle,
-      data: queryResult.rows.map(row => ({
+      data: rows.map(row => ({
         x: String(row[0]), // ensure x is always a string
         y: row[1],
       }))
@@ -71,23 +71,17 @@ export function generateChartCard(
   } else if (chartType === 'pie') {
     chart = new PieChart({
       title,
-      data: queryResult.rows.map(row => ({
+      data: rows.map(row => ({
         legend: row[0],
         value: row[1],
       })),
       colorSet: "categorical"
     });
   } else if (chartType === 'table') {
-    // Insert columns as the first row for table header
-    const tableRows = [
-      queryResult.columns,
-      ...queryResult.rows
-    ];
-    console.log('Table rows:', tableRows);
     chart = new Table({
       firstRowAsHeaders: true,
-      columns: queryResult.columns.map(col => ({})), // let autoformatting handle column widths
-      rows: tableRows.map(row => ({
+      // columns: queryResult.columns.map(col => ({})), // let autoformatting handle column widths
+      rows: rows.map(row => ({
         type: 'TableRow',
         cells: row.map((cell: any) => ({
           type: 'TableCell',

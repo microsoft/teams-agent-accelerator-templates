@@ -1,10 +1,7 @@
 import { App } from '@microsoft/teams.apps';
 import { ConsoleLogger } from '@microsoft/teams.common';
 import { DevtoolsPlugin } from '@microsoft/teams.dev';
-import { prompt } from './prompt';
-import { generateChartCard } from './cards';
-import { MessageActivity } from '@microsoft/teams.api';
-import { shared } from './utils';
+import { dataAnalystPrompt } from './prompt';
 
 const app = new App({
     logger: new ConsoleLogger('adventureworks-data-analyst', { level: 'debug' }),
@@ -19,47 +16,7 @@ app.on('install.add', async ({ send }) => {
 
 app.on('message', async ({ send, activity, stream }) => {
     await send({ type: 'typing' });
-    const res = await prompt.send(activity.text, {
-        onChunk: (chunk) => {
-            if (shared.shouldStream) {
-                stream.emit(chunk);
-            }
-        }
-    });
-
-    if (!shared.shouldStream) {
-        let resObj: any = res;
-        if (typeof res.content === 'string') {
-            try {
-                resObj = JSON.parse(res.content);
-            } catch {
-                await send({ type: 'message', text: res.content });
-                return;
-            }
-        }
-
-        const parseable = resObj.parseable?.[0];
-
-        if (parseable && parseable.shouldChart) {
-            const card = generateChartCard(
-                { columns: parseable.columns, rows: parseable.rows },
-                parseable.chartType,
-                parseable.options
-            );
-            const chartAndInsightsMsg = new MessageActivity(resObj.text || '').addAiGenerated();
-            chartAndInsightsMsg.attachments = [{
-                contentType: 'application/vnd.microsoft.card.adaptive',
-                content: card
-            }];
-            await send(chartAndInsightsMsg);
-        } else {
-            const messageActivity = new MessageActivity(
-                resObj.text || (typeof res.content === 'string' ? res.content : 'No chart or text response available.')
-            ).addAiGenerated();
-            await send(messageActivity);
-        }
-    }
-    shared.shouldStream = false; // Reset for next message
+    await dataAnalystPrompt.send(activity.text);
 });
 
 (async () => {
