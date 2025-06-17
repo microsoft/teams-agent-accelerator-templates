@@ -37,7 +37,7 @@ const systemMessage = [
   ),
   '',
   'For your final response to the user, return a single Adaptive Card with a chart or table, or multiple cards if needed. If you need to return multiple cards, ensure they are all wrapped in a single Adaptive Card response.',
-  'Also provide a text response that summarizes the insights or findings from the data.',
+  'Also provide a text response that summarizes the insights or findings from the data. Keep it brief and do not repeat the chart data.',
   'You can also return a simple text response chart is needed.',
 ].join('\n');
 

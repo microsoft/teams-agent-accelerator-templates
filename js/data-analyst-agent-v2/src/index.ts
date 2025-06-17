@@ -17,20 +17,26 @@ app.on('install.add', async ({ send }) => {
 
 app.on('message', async ({ send, activity, stream }) => {
     await send({ type: 'typing' });
-    const res = await dataAnalystPrompt.send(activity.text)
+    const res = await dataAnalystPrompt.send(activity.text
+        // , {
+        // onChunk: (chunk) => {
+        //     stream.emit(chunk);
+        // }}
+    );
 
     console.log('Response:', res);
     await send({ type: 'message', text: res.content });
 
-    // for (const attachment of shared.attachments) {
-    //     await send({
-    //         type: 'attachment',
-    //         attachment: {
-    //             contentType: 'application/vnd.microsoft.card.adaptive',
-    //             content: attachment,
-    //         },
-    //     });
-    // }
+    if (shared.attachments.length > 0) {
+        const card: any = { type: 'message' };
+        card.attachments = shared.attachments.map(card => ({
+            contentType: 'application/vnd.microsoft.card.adaptive',
+            content: card,
+        }));
+        await send(card);
+        
+        shared.attachments = [];
+    }
 });
 
 (async () => {
