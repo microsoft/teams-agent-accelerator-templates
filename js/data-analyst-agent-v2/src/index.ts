@@ -3,7 +3,7 @@ import { ConsoleLogger } from '@microsoft/teams.common';
 import { DevtoolsPlugin } from '@microsoft/teams.dev';
 import { dataAnalystPrompt } from './prompt';
 import { shared } from './utils';
-import { MessageActivity } from '@microsoft/teams';
+import { MessageActivity } from '@microsoft/teams.api';
 
 const app = new App({
     logger: new ConsoleLogger('adventureworks-data-analyst', { level: 'debug' }),
@@ -29,12 +29,12 @@ app.on('message', async ({ send, activity, stream }) => {
     await send({ type: 'message', text: res.content });
 
     if (shared.attachments.length > 0) {
-        const card = new MessageActivity('').addAiGenerated();
-        card.attachments = shared.attachments.map(card => ({
+        const msgWithCards = new MessageActivity('').addAiGenerated();
+        msgWithCards.attachments = shared.attachments.map(card => ({
             contentType: 'application/vnd.microsoft.card.adaptive',
             content: card,
         }));
-        await send(card);
+        await send(msgWithCards);
         
         shared.attachments = [];
     }
@@ -44,8 +44,8 @@ app.on('message', async ({ send, activity, stream }) => {
     await app.start(+(process.env.PORT || 3000));
 })();
 
-const chartAndInsightsMsg = new MessageActivity(resObj.text || '').addAiGenerated();
-            chartAndInsightsMsg.attachments = [{
-                contentType: 'application/vnd.microsoft.card.adaptive',
-                content: card
-            }];
+// const chartAndInsightsMsg = new MessageActivity(resObj.text || '').addAiGenerated();
+//             chartAndInsightsMsg.attachments = [{
+//                 contentType: 'application/vnd.microsoft.card.adaptive',
+//                 content: card
+//             }];
