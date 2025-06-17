@@ -21,6 +21,16 @@ app.on('message', async ({ send, activity, stream }) => {
 
     console.log('Response:', res);
     await send({ type: 'message', text: res.content });
+
+    // for (const attachment of shared.attachments) {
+    //     await send({
+    //         type: 'attachment',
+    //         attachment: {
+    //             contentType: 'application/vnd.microsoft.card.adaptive',
+    //             content: attachment,
+    //         },
+    //     });
+    // }
 });
 
 (async () => {
