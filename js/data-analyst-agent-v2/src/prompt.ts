@@ -109,7 +109,7 @@ const cardPrompt = new ChatPrompt({
   'generate_card',
   'Generates a card or chart from data',
   chartCreationSchema,
-  async ({ chartType, rows, options }) => { return generateChartCard(chartType, rows, options) }
+  async ({ chartType, rows, options }) => { shared.attachments.push(generateChartCard(chartType, rows, options)) }
 );
 
 // Main Data Analyst Prompt

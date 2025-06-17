@@ -19,5 +19,6 @@ export function getDatabasePath(): string {
     return path.join(__dirname, 'data', 'adventureworks.db');
 }
 
-// Shared object to indicate if response should be streamed
-export const shared = { shouldStream: false };
+export const shared = {
+    attachments: [] as any[]
+};

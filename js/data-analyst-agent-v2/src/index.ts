@@ -2,6 +2,7 @@ import { App } from '@microsoft/teams.apps';
 import { ConsoleLogger } from '@microsoft/teams.common';
 import { DevtoolsPlugin } from '@microsoft/teams.dev';
 import { dataAnalystPrompt } from './prompt';
+import { shared } from './utils';
 
 const app = new App({
     logger: new ConsoleLogger('adventureworks-data-analyst', { level: 'debug' }),
@@ -16,7 +17,10 @@ app.on('install.add', async ({ send }) => {
 
 app.on('message', async ({ send, activity, stream }) => {
     await send({ type: 'typing' });
-    await dataAnalystPrompt.send(activity.text);
+    const res = await dataAnalystPrompt.send(activity.text)
+
+    console.log('Response:', res);
+    await send({ type: 'message', text: res.content });
 });
 
 (async () => {
