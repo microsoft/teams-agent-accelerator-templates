@@ -1,3 +1,4 @@
+import { Attachment } from '@microsoft/teams.api';
 import fs from 'fs';
 import path from 'path';
 
@@ -20,5 +21,5 @@ export function getDatabasePath(): string {
 }
 
 export const shared = {
-    attachments: [] as any[]
+    attachments: [] as Attachment[]
 };

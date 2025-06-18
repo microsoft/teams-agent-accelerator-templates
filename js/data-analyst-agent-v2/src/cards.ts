@@ -7,6 +7,7 @@ import {
   TextBlock,
   Table
 } from '@microsoft/teams.cards';
+import { cardAttachment, CardAttachmentTypes } from '@microsoft/teams.api';
 
 export function generateChartCard(
   chartType: 'line' | 'verticalBar' | 'horizontalBar' | 'pie' | 'table',
@@ -19,7 +20,7 @@ export function generateChartCard(
     color?: string;
     showBarValues?: boolean;
   }
-): AdaptiveCard {
+): CardAttachmentTypes['adaptive'] {
   const card = new AdaptiveCard();
   card.version = '1.5';
 
@@ -95,5 +96,6 @@ export function generateChartCard(
 
   card.body.push(new TextBlock(title, { weight: 'Bolder', size: 'Medium' }));
   card.body.push(chart);
-  return card;
+  console.log('Generated card:', card);
+  return cardAttachment('adaptive', card);
 }

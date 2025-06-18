@@ -19,22 +19,20 @@ app.on('install.add', async ({ send }) => {
 app.on('message', async ({ send, activity, stream }) => {
     await send({ type: 'typing' });
     const res = await dataAnalystPrompt.send(activity.text
-        // , {
-        // onChunk: (chunk) => {
-        //     stream.emit(chunk);
-        // }}
+        , {
+        onChunk: (chunk) => {
+            stream.emit(chunk);
+        }}
     );
 
     console.log('Response:', res);
-    await send({ type: 'message', text: res.content });
+    // await send({ type: 'message', text: res.content });
 
     if (shared.attachments.length > 0) {
         console.log('Sending attachments:', shared.attachments);
-        const msgWithCards = new MessageActivity('').addAiGenerated();
-        msgWithCards.attachments = shared.attachments.map(card => ({
-            contentType: 'application/vnd.microsoft.card.adaptive',
-            content: card,
-        }));
+        const msgWithCards = new MessageActivity('').addAiGenerated().addAttachments(...shared.attachments);
+        // stream.emit(msgWithCards);
+
         await send(msgWithCards);
         
         shared.attachments = [];
