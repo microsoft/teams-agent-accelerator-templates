@@ -4,7 +4,6 @@
         "data_analyst_response": {
             "chartType": "verticalBar",
             "rows": [
-                ["Category", "Subcategory Count"],
                 ["Accessories", 12],
                 ["Bikes", 3],
                 ["Clothing", 8],
@@ -36,7 +35,6 @@
         "data_analyst_response": {
             "chartType": "verticalBar",
             "rows": [
-                ["Year", "Sales Amount"],
                 ["2020", 6404933.5803],
                 ["2021", 9324203.7917],
                 ["2022", 9185449.4473]
@@ -69,7 +67,6 @@
             {
                 "chartType": "verticalBar",
                 "rows": [
-                    ["Category", "Value"],
                     ["Category A", 15],
                     ["Category B", 30],
                     ["Category C", 22],
@@ -85,7 +82,6 @@
             {
                 "chartType": "horizontalBar",
                 "rows": [
-                    ["Category", "Value"],
                     ["Category A", 28],
                     ["Category B", 18],
                     ["Category C", 23],
@@ -101,7 +97,6 @@
             {
                 "chartType": "line",
                 "rows": [
-                    ["Date", "Data Series 1", "Data Series 2"],
                     ["2023-01-01", 10, 12],
                     ["2023-01-02", 15, 18],
                     ["2023-01-03", 7, 20],
@@ -121,7 +116,6 @@
         "data_analyst_response": {
             "chartType": "pie",
             "rows": [
-                ["Category", "Sales"],
                 ["Bikes", 5000000],
                 ["Components", 2000000],
                 ["Clothing", 1500000],
