@@ -81,7 +81,7 @@ export function generateChartCard(
   } else if (chartType === 'table') {
     chart = new Table({
       firstRowAsHeaders: true,
-      // columns: queryResult.columns.map(col => ({})), // let autoformatting handle column widths
+      columns: rows.map(r => ({})), // let autoformatting handle column widths
       rows: rows.map(row => ({
         type: 'TableRow',
         cells: row.map((cell: any) => ({

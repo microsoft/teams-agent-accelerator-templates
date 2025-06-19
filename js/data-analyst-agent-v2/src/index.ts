@@ -19,32 +19,26 @@ app.on('install.add', async ({ send }) => {
 app.on('message', async ({ send, activity, stream }) => {
     await send({ type: 'typing' });
     const res = await dataAnalystPrompt.send(activity.text, {
-            onChunk: (chunk) => {
-                stream.emit(chunk);
-            }
+        onChunk: (chunk) => {
+            stream.emit(chunk);
         }
+    }
     );
-    
-    // console.log('Response:', res);
-    // // await send({ type: 'message', text: res.content });
 
-    // if (shared.attachments.length > 0) {
-    //     const msgWithCards = new MessageActivity('').addAttachments(...shared.attachments);
-    //     stream.emit(msgWithCards);
+    const cards = new MessageActivity().addAiGenerated();
+    if (shared.attachments.length > 0) {
+        cards.addAttachments(...shared.attachments);
+        shared.attachments = [];
+    }
 
-    //     // await send(msgWithCards);
-
-    //     shared.attachments = [];
-    // }
-
-    // if (activity.conversation.isGroup) {
-    //     const activity = new MessageActivity(res.content).addAiGenerated();
-    //     await send(activity);
-    // } else {
-    //     stream.emit(new MessageActivity().addAiGenerated());
-    // }
-
-    // stream.close();
+    if (activity.conversation.isGroup) {
+        if (res.content) {
+            cards.addText(res.content);
+        }
+        await send(activity);
+    } else {
+        stream.emit(cards);
+    }
 });
 
 (async () => {
