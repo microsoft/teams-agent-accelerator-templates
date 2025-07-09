@@ -81,7 +81,9 @@ export class SqliteKVStore {
         title TEXT NOT NULL,
         description TEXT NOT NULL,
         assigned_to TEXT NOT NULL,
+        assigned_to_id TEXT NULL,
         assigned_by TEXT NOT NULL,
+        assigned_by_id TEXT NULL,
         status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'in_progress', 'completed', 'cancelled')),
         priority TEXT NOT NULL DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'urgent')),
         due_date DATETIME NULL,
@@ -99,50 +101,13 @@ export class SqliteKVStore {
         likes INTEGER NOT NULL DEFAULT 0,
         dislikes INTEGER NOT NULL DEFAULT 0,
         feedbacks TEXT NOT NULL DEFAULT '[]',
+        delegated_agent TEXT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
     `);
 
-    // Add name column to existing tables (migration for existing databases)
-    try {
-      this.db.exec(`ALTER TABLE messages ADD COLUMN name TEXT NOT NULL DEFAULT 'Unknown'`);
-      console.log(`🔄 Added 'name' column to existing messages table`);
-    } catch (error) {
-      // Column already exists, which is fine
-      console.log(`📝 'name' column already exists in messages table`);
-    }
 
-    // Add user ID columns to existing action_items table (migration)
-    try {
-      this.db.exec(`ALTER TABLE action_items ADD COLUMN assigned_to_id TEXT NULL`);
-      console.log(`🔄 Added 'assigned_to_id' column to existing action_items table`);
-    } catch (error) {
-      console.log(`📝 'assigned_to_id' column already exists in action_items table`);
-    }
-
-    try {
-      this.db.exec(`ALTER TABLE action_items ADD COLUMN assigned_by_id TEXT NULL`);
-      console.log(`🔄 Added 'assigned_by_id' column to existing action_items table`);
-    } catch (error) {
-      console.log(`📝 'assigned_by_id' column already exists in action_items table`);
-    }
-
-    // Add activity_id column to existing messages table (migration for deep linking)
-    try {
-      this.db.exec(`ALTER TABLE messages ADD COLUMN activity_id TEXT NULL`);
-      console.log(`🔄 Added 'activity_id' column to existing messages table`);
-    } catch (error) {
-      console.log(`📝 'activity_id' column already exists in messages table`);
-    }
-
-    // Add delegated_agent column to existing feedback table (migration for agent tracking)
-    try {
-      this.db.exec(`ALTER TABLE feedback ADD COLUMN delegated_agent TEXT NULL`);
-      console.log(`🔄 Added 'delegated_agent' column to existing feedback table`);
-    } catch (error) {
-      console.log(`📝 'delegated_agent' column already exists in feedback table`);
-    }
 
     // Create indexes for better query performance
     this.db.exec(`
