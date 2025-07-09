@@ -5,6 +5,29 @@ import { promptManager } from './agent/core';
 import { validateEnvironment, logModelConfigs } from './utils/config';
 import { handleDebugCommand } from './utils/debug';
 
+/**
+ * Helper function to send a message with optional adaptive cards
+ */
+async function sendMessageWithCards(send: any, text: string, adaptiveCards?: any[]): Promise<string> {
+  const messageActivity = new MessageActivity(text)
+    .addAiGenerated()
+    .addFeedback();
+
+  // If we have adaptive cards, add them as attachments
+  if (adaptiveCards && adaptiveCards.length > 0) {
+    // Teams AI SDK v2 supports attachments on MessageActivity
+    for (const card of adaptiveCards) {
+      messageActivity.addAttachments({
+        contentType: 'application/vnd.microsoft.card.adaptive',
+        content: card
+      });
+    }
+  }
+
+  const { id: sentMessageId } = await send(messageActivity);
+  return sentMessageId;
+}
+
 const app = new App({
   plugins: [new DevtoolsPlugin()],
 });
@@ -55,9 +78,9 @@ app.on('message', async ({ send, activity, next }) => {
   const conversationKey = `${activity.conversation.id}`;
   const isPersonalChat = activity.conversation.conversationType === 'personal';
 
-  // Check for debug commands using centralized handler
   const debugResult = await handleDebugCommand(activity.text || '', conversationKey);
 
+  console.log(new Date().toISOString().split('T')[0]); // YYYY-MM-DD format);
   console.log(activity);
   if (debugResult.isDebugCommand) {
     if (debugResult.response) {
@@ -96,16 +119,12 @@ app.on('message', async ({ send, activity, next }) => {
     );
 
     if (result.response && result.response.trim() !== '') {
-      const { id: sentMessageId } = await send(
-        new MessageActivity(result.response)
-          .addAiGenerated()
-          .addFeedback()
-      );
+      const sentMessageId = await sendMessageWithCards(send, result.response, result.adaptiveCards);
       
       // Store delegated agent info for potential feedback
       feedbackStorage.storeDelegatedAgent(sentMessageId, result.delegatedAgent);
       
-      console.log(`🤖 Personal chat response sent with feedback enabled: ${sentMessageId} (delegated to: ${result.delegatedAgent || 'direct'})`);
+      console.log(`🤖 Personal chat response sent with feedback enabled: ${sentMessageId} (delegated to: ${result.delegatedAgent || 'direct'})${result.adaptiveCards ? ` with ${result.adaptiveCards.length} cards` : ''}`);
 
       // Track AI response
       promptManager.addMessageToTracking(conversationKey, 'assistant', result.response, { id: sentMessageId }, 'AI Assistant');
@@ -162,16 +181,12 @@ app.on('mention', async ({ send, activity, api }) => {
 
     // Always send a response when @mentioned
     if (result.response && result.response.trim() !== '') {
-      const { id: sentMessageId } = await send(
-        new MessageActivity(result.response)
-          .addAiGenerated()
-          .addFeedback()
-      );
+      const sentMessageId = await sendMessageWithCards(send, result.response, result.adaptiveCards);
       
       // Store delegated agent info for potential feedback
       feedbackStorage.storeDelegatedAgent(sentMessageId, result.delegatedAgent);
       
-      console.log(`🤖 AI Response sent with feedback enabled: ${sentMessageId} (delegated to: ${result.delegatedAgent || 'direct'})`);
+      console.log(`🤖 AI Response sent with feedback enabled: ${sentMessageId} (delegated to: ${result.delegatedAgent || 'direct'})${result.adaptiveCards ? ` with ${result.adaptiveCards.length} cards` : ''}`);
 
       // Track AI response
       promptManager.addMessageToTracking(conversationKey, 'assistant', result.response, { id: sentMessageId }, 'AI Assistant');
