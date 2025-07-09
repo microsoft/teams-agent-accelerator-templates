@@ -1,15 +1,14 @@
 import { SqliteKVStore, MessageRecord } from '../storage/storage';
 import { createMockDatabase } from '../mock/mockMessages';
 import { USE_MOCK_DATA, DEFAULT_MOCK_CONVERSATION } from '../utils/constants';
-import { ManagerPrompt } from './manager';
+import { ManagerPrompt, ManagerResult } from './manager';
 
 // Initialize storage
 const storage = new SqliteKVStore();
 
 export interface PromptManager {
-  processUserRequest(conversationKey: string, userRequest: string): Promise<string>;
-  processUserRequestWithAPI(conversationKey: string, userRequest: string, api: any): Promise<string>;
-  processUserRequestWithPersonalMode(conversationKey: string, userRequest: string, api: any, userId: string, userName: string): Promise<string>;
+  processUserRequest(conversationKey: string, userRequest: string, api: any, userTimezone?: string): Promise<ManagerResult>;
+  processUserRequestWithPersonalMode(conversationKey: string, userRequest: string, api: any, userId: string, userName: string, userTimezone?: string): Promise<ManagerResult>;
   clearConversation(conversationKey: string): void;
   getMessagesWithTimestamps(conversationKey: string): MessageRecord[];
   getMessagesByTimeRange(conversationKey: string, startTime?: string, endTime?: string): MessageRecord[];
@@ -28,22 +27,14 @@ export class CorePromptManager implements PromptManager {
     this.manager = new ManagerPrompt(storage);
   }
 
-  // Main entry point for processing user requests
-  async processUserRequest(conversationKey: string, userRequest: string): Promise<string> {
-    console.log(`🎯 Processing user request: "${userRequest}" for conversation: ${conversationKey}`);
-    return await this.manager.processRequest(userRequest, conversationKey);
-  }
-
   // Main entry point for processing user requests with API access
-  async processUserRequestWithAPI(conversationKey: string, userRequest: string, api: any): Promise<string> {
-    console.log(`🎯 Processing user request with API: "${userRequest}" for conversation: ${conversationKey}`);
-    return await this.manager.processRequestWithAPI(userRequest, conversationKey, api);
+  async processUserRequest(conversationKey: string, userRequest: string, api: any, userTimezone?: string): Promise<ManagerResult> {
+    return await this.manager.processRequestWithAPI(userRequest, conversationKey, api, userTimezone);
   }
 
   // Main entry point for processing user requests with personal mode (for 1:1 chats)
-  async processUserRequestWithPersonalMode(conversationKey: string, userRequest: string, api: any, userId: string, userName: string): Promise<string> {
-    console.log(`🎯 Processing user request in personal mode: "${userRequest}" for user: ${userName} (${userId})`);
-    return await this.manager.processRequestWithPersonalMode(userRequest, conversationKey, api, userId, userName);
+  async processUserRequestWithPersonalMode(conversationKey: string, userRequest: string, api: any, userId: string, userName: string, userTimezone?: string): Promise<ManagerResult> {
+    return await this.manager.processRequestWithPersonalMode(userRequest, conversationKey, api, userId, userName, userTimezone);
   }
 
   // Add a message to our tracking (called when user sends or AI responds)
@@ -52,12 +43,16 @@ export class CorePromptManager implements PromptManager {
     const newMessage = { 
       role, 
       content,
-      name: name || (role === 'user' ? 'Unknown User' : 'Assistant')
+      name: name || (role === 'user' ? 'Unknown User' : 'Assistant'),
+      activity_id: activity?.id || undefined // Store Teams activity ID for deep linking
     };
     messages.push(newMessage);
     this.conversationMessages.set(conversationKey, messages);
     
     console.log(`📝 Added ${role} message from "${newMessage.name}" to tracking for ${conversationKey} (total: ${messages.length})`);
+    if (newMessage.activity_id) {
+      console.log(`🔗 Activity ID stored for deep linking: ${newMessage.activity_id}`);
+    }
     
     // Store or update activity context for better chat type detection
     if (activity) {
@@ -115,8 +110,8 @@ export class CorePromptManager implements PromptManager {
   
   createMockDatabase(conversationId: string = 'mock-conversation'): void {
     // Use the helper function to insert messages with custom timestamps
-    const insertMessageFn = (convId: string, role: string, content: string, timestamp: string, name?: string) => {
-      storage.insertMessageWithTimestamp(convId, role, content, timestamp, name);
+    const insertMessageFn = (convId: string, role: string, content: string, timestamp: string, name?: string, activityId?: string) => {
+      storage.insertMessageWithTimestamp(convId, role, content, timestamp, name, activityId);
     };
     
     // Create mock database using the external function

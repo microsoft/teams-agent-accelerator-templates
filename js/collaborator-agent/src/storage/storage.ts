@@ -30,6 +30,18 @@ export interface ActionItem {
   source_message_ids?: string; // JSON array of message IDs that led to this action item
 }
 
+// Interface for feedback on AI responses
+export interface FeedbackRecord {
+  id: number;
+  message_id: string; // Teams message ID that was replied to
+  likes: number;
+  dislikes: number;
+  feedbacks: string; // JSON array of feedback objects like {"feedbackText":"Nice!"}
+  delegated_agent?: string; // Which sub-agent handled this response (e.g., 'summarizer', 'search', 'action_items', 'direct')
+  created_at: string;
+  updated_at: string;
+}
+
 // SQLite-based KV store implementation
 export class SqliteKVStore {
   private db: Database.Database;
@@ -79,6 +91,19 @@ export class SqliteKVStore {
       )
     `);
 
+    // Create feedback table for AI response feedback
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS feedback (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        message_id TEXT NOT NULL UNIQUE,
+        likes INTEGER NOT NULL DEFAULT 0,
+        dislikes INTEGER NOT NULL DEFAULT 0,
+        feedbacks TEXT NOT NULL DEFAULT '[]',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+      )
+    `);
+
     // Add name column to existing tables (migration for existing databases)
     try {
       this.db.exec(`ALTER TABLE messages ADD COLUMN name TEXT NOT NULL DEFAULT 'Unknown'`);
@@ -111,6 +136,14 @@ export class SqliteKVStore {
       console.log(`📝 'activity_id' column already exists in messages table`);
     }
 
+    // Add delegated_agent column to existing feedback table (migration for agent tracking)
+    try {
+      this.db.exec(`ALTER TABLE feedback ADD COLUMN delegated_agent TEXT NULL`);
+      console.log(`🔄 Added 'delegated_agent' column to existing feedback table`);
+    } catch (error) {
+      console.log(`📝 'delegated_agent' column already exists in feedback table`);
+    }
+
     // Create indexes for better query performance
     this.db.exec(`
       CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages(conversation_id)
@@ -139,6 +172,11 @@ export class SqliteKVStore {
     
     this.db.exec(`
       CREATE INDEX IF NOT EXISTS idx_action_items_due_date ON action_items(due_date)
+    `);
+
+    // Feedback indexes
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_feedback_message_id ON feedback(message_id)
     `);
 
     // Create trigger to update conversation timestamp
@@ -696,6 +734,142 @@ export class SqliteKVStore {
     } catch (error) {
       console.error(`❌ Error getting all action items:`, error);
       return [];
+    }
+  }
+
+  // ===== FEEDBACK MANAGEMENT =====
+
+  // Initialize feedback record for a message with optional delegated agent
+  initializeFeedbackRecord(messageId: string, delegatedAgent?: string): FeedbackRecord {
+    try {
+      const stmt = this.db.prepare(`
+        INSERT OR IGNORE INTO feedback (message_id, likes, dislikes, feedbacks, delegated_agent)
+        VALUES (?, 0, 0, '[]', ?)
+      `);
+      stmt.run(messageId, delegatedAgent || null);
+
+      const selectStmt = this.db.prepare('SELECT * FROM feedback WHERE message_id = ?');
+      const record = selectStmt.get(messageId) as FeedbackRecord;
+      console.log(`📝 Initialized feedback record for message: ${messageId}${delegatedAgent ? ` (agent: ${delegatedAgent})` : ''}`);
+      return record;
+    } catch (error) {
+      console.error(`❌ Error initializing feedback record for message ${messageId}:`, error);
+      throw error;
+    }
+  }
+
+  // Store delegated agent info for a message (for later feedback initialization)
+  storeDelegatedAgent(messageId: string, delegatedAgent: string | null): void {
+    try {
+      const stmt = this.db.prepare(`
+        INSERT OR IGNORE INTO feedback (message_id, likes, dislikes, feedbacks, delegated_agent)
+        VALUES (?, 0, 0, '[]', ?)
+      `);
+      stmt.run(messageId, delegatedAgent);
+      console.log(`📝 Stored delegated agent info for message ${messageId}: ${delegatedAgent || 'direct'}`);
+    } catch (error) {
+      console.error(`❌ Error storing delegated agent for message ${messageId}:`, error);
+    }
+  }
+
+  // Get feedback record by message ID
+  getFeedbackByMessageId(messageId: string): FeedbackRecord | undefined {
+    try {
+      const stmt = this.db.prepare('SELECT * FROM feedback WHERE message_id = ?');
+      const record = stmt.get(messageId) as FeedbackRecord | undefined;
+      return record;
+    } catch (error) {
+      console.error(`❌ Error getting feedback for message ${messageId}:`, error);
+      return undefined;
+    }
+  }
+
+  // Update feedback record with new reaction and feedback text
+  updateFeedback(messageId: string, reaction: 'like' | 'dislike', feedbackJson?: any): boolean {
+    try {
+      // Get existing feedback or create new one
+      let existingFeedback = this.getFeedbackByMessageId(messageId);
+      if (!existingFeedback) {
+        existingFeedback = this.initializeFeedbackRecord(messageId);
+      }
+
+      // Parse existing feedbacks array
+      let feedbacks: any[] = [];
+      try {
+        feedbacks = JSON.parse(existingFeedback.feedbacks);
+      } catch (e) {
+        feedbacks = [];
+      }
+
+      // Add new feedback if provided
+      if (feedbackJson) {
+        feedbacks.push(feedbackJson);
+      }
+
+      // Update counts
+      const newLikes = existingFeedback.likes + (reaction === 'like' ? 1 : 0);
+      const newDislikes = existingFeedback.dislikes + (reaction === 'dislike' ? 1 : 0);
+
+      // Update database
+      const stmt = this.db.prepare(`
+        UPDATE feedback 
+        SET likes = ?, dislikes = ?, feedbacks = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE message_id = ?
+      `);
+      const result = stmt.run(newLikes, newDislikes, JSON.stringify(feedbacks), messageId);
+
+      console.log(`👍 Updated feedback for message ${messageId}: ${reaction} (likes: ${newLikes}, dislikes: ${newDislikes})`);
+      return result.changes > 0;
+    } catch (error) {
+      console.error(`❌ Error updating feedback for message ${messageId}:`, error);
+      return false;
+    }
+  }
+
+  // Get all feedback records (for debugging)
+  getAllFeedback(): FeedbackRecord[] {
+    try {
+      const stmt = this.db.prepare('SELECT * FROM feedback ORDER BY created_at DESC');
+      const records = stmt.all() as FeedbackRecord[];
+      console.log(`🔍 Retrieved ${records.length} feedback records`);
+      return records;
+    } catch (error) {
+      console.error(`❌ Error getting all feedback records:`, error);
+      return [];
+    }
+  }
+
+  // Clear all feedback records
+  clearAllFeedback(): number {
+    try {
+      const stmt = this.db.prepare('DELETE FROM feedback');
+      const result = stmt.run();
+      console.log(`🧹 Cleared ALL feedback records: ${result.changes} records removed`);
+      return result.changes as number;
+    } catch (error) {
+      console.error(`❌ Error clearing all feedback:`, error);
+      return 0;
+    }
+  }
+
+  // Get feedback summary for analytics
+  getFeedbackSummary(): any {
+    try {
+      const totalFeedback = this.db.prepare('SELECT COUNT(*) as count FROM feedback').get() as { count: number };
+      const totalLikes = this.db.prepare('SELECT SUM(likes) as total FROM feedback').get() as { total: number };
+      const totalDislikes = this.db.prepare('SELECT SUM(dislikes) as total FROM feedback').get() as { total: number };
+      
+      return {
+        total_feedback_records: totalFeedback.count,
+        total_likes: totalLikes.total || 0,
+        total_dislikes: totalDislikes.total || 0,
+        like_ratio: totalLikes.total && totalDislikes.total ? 
+          (totalLikes.total / (totalLikes.total + totalDislikes.total) * 100).toFixed(1) + '%' : 
+          'N/A'
+      };
+    } catch (error) {
+      console.error(`❌ Error getting feedback summary:`, error);
+      return { error: 'Failed to get feedback summary' };
     }
   }
 }

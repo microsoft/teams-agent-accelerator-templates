@@ -36,6 +36,12 @@ export async function handleDebugCommand(text: string, conversationKey: string):
     case 'personal.actions':
       return handlePersonalActionItemsDebug(conversationKey);
     
+    case 'feedback.stats':
+      return handleFeedbackStats();
+    
+    case 'feedback.clear':
+      return handleClearFeedback();
+    
     default:
       return { isDebugCommand: false };
   }
@@ -149,8 +155,10 @@ function handleDebugHelp(): DebugResponse {
     `🧹 **\`clear.convo\`** - Clear conversation messages and history\n` +
     `📋 **\`action.items\`** - Show action items debug info\n` +
     `🗑️ **\`clear.actions\`** - Clear all action items for this conversation\n` +
-    `❓ **\`help.debug\`** - Show this help message\n` +
-    `👤 **\`personal.actions\`** - Show personal action items debug info\n\n` +
+    `👤 **\`personal.actions\`** - Show personal action items debug info\n` +
+    `� **\`feedback.stats\`** - Show AI response feedback statistics\n` +
+    `🧹 **\`feedback.clear\`** - Clear all feedback records\n` +
+    `❓ **\`help.debug\`** - Show this help message\n\n` +
     `**Usage:** Simply type any command in the chat to execute it.\n\n` +
     `💡 **Note:** Debug commands work in any conversation and only affect the current chat.`;
 
@@ -170,7 +178,9 @@ export function getDebugCommands(): string[] {
     'action.items',
     'clear.actions',
     'help.debug',
-    'personal.actions'
+    'personal.actions',
+    'feedback.stats',
+    'feedback.clear'
   ];
 }
 
@@ -229,6 +239,58 @@ function handlePersonalActionItemsDebug(_conversationKey: string): DebugResponse
   } else {
     response += `**No action items found across all conversations.**\n`;
   }
+  
+  return {
+    isDebugCommand: true,
+    response
+  };
+}
+
+/**
+ * Show feedback statistics
+ */
+function handleFeedbackStats(): DebugResponse {
+  const storage = promptManager.getStorage();
+  const summary = storage.getFeedbackSummary();
+  const allFeedback = storage.getAllFeedback();
+  
+  let response = `**🔄 Feedback Statistics**\n\n`;
+  response += `**Summary:**\n`;
+  response += `- Total feedback records: ${summary.total_feedback_records}\n`;
+  response += `- Total likes: ${summary.total_likes}\n`;
+  response += `- Total dislikes: ${summary.total_dislikes}\n`;
+  response += `- Like ratio: ${summary.like_ratio}\n\n`;
+  
+  if (allFeedback.length > 0) {
+    response += `**Recent Feedback (last 5):**\n`;
+    allFeedback.slice(0, 5).forEach((feedback, index) => {
+      const feedbacks = JSON.parse(feedback.feedbacks || '[]');
+      const feedbackTexts = feedbacks.map((f: any) => f.feedbackText || 'N/A').join(', ');
+      response += `${index + 1}. Message: ${feedback.message_id.substring(0, 8)}...\n`;
+      response += `   👍 ${feedback.likes} | 👎 ${feedback.dislikes}\n`;
+      if (feedbackTexts) {
+        response += `   Comments: "${feedbackTexts}"\n`;
+      }
+      response += `   Created: ${new Date(feedback.created_at).toLocaleDateString()}\n\n`;
+    });
+  } else {
+    response += `**No feedback records found.**\n`;
+  }
+  
+  return {
+    isDebugCommand: true,
+    response
+  };
+}
+
+/**
+ * Clear all feedback records
+ */
+function handleClearFeedback(): DebugResponse {
+  const storage = promptManager.getStorage();
+  const deletedCount = storage.clearAllFeedback();
+  
+  const response = `**🧹 Feedback Database Cleared**\n\nDeleted ${deletedCount} feedback records.`;
   
   return {
     isDebugCommand: true,

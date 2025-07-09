@@ -41,7 +41,7 @@ const CREATE_ACTION_ITEM_SCHEMA = {
     },
     due_date: {
       type: 'string' as const,
-      description: 'Optional due date in ISO format'
+      description: 'Optional due date in ISO format or relative expression (e.g., "tomorrow", "end of week", "next Monday"). Relative expressions are parsed using the user\'s timezone.'
     }
   },
   required: ['title', 'description', 'assigned_to', 'priority']
@@ -93,9 +93,14 @@ export function createActionItemsPrompt(
   availableMembers: Array<{name: string, id: string}> = [], 
   isPersonalChat: boolean = false,
   currentUserId?: string,
-  currentUserName?: string
+  currentUserName?: string,
+  userTimezone?: string
 ): ChatPrompt {
   const actionItemsModelConfig = getModelConfig('actionItems');
+  
+  if (userTimezone) {
+    console.log(`🕒 Action Items Agent using timezone: ${userTimezone}`);
+  }
   
   // Adjust instructions based on conversation type
   const instructions = isPersonalChat 
@@ -173,6 +178,16 @@ export function createActionItemsPrompt(
       
       console.log(`🔍 Found user ID for "${args.assigned_to}": ${assignedToId || 'Not found'}`);
       
+      // Parse due_date with timezone awareness if it's a relative expression
+      let parsedDueDate = args.due_date;
+      if (args.due_date && userTimezone) {
+        const timezoneParsedDate = parseDeadlineWithTimezone(args.due_date, userTimezone);
+        if (timezoneParsedDate) {
+          parsedDueDate = timezoneParsedDate;
+          console.log(`🕒 Parsed deadline "${args.due_date}" to ${parsedDueDate} (timezone: ${userTimezone})`);
+        }
+      }
+      
       const actionItem = storage.createActionItem({
         conversation_id: conversationId,
         title: args.title,
@@ -182,7 +197,7 @@ export function createActionItemsPrompt(
         assigned_by: 'AI Action Items Agent',
         status: 'pending',
         priority: args.priority,
-        due_date: args.due_date
+        due_date: parsedDueDate
       });
       
       return JSON.stringify({
@@ -308,4 +323,66 @@ export async function getConversationParticipantsFromAPI(api: any, conversationI
     console.error(`❌ Error fetching conversation members from Teams API:`, error);
     throw error;
   }
+}
+
+/**
+ * Parse deadline expressions like "by tomorrow", "end of week", "by Friday" with timezone awareness
+ */
+function parseDeadlineWithTimezone(deadlineExpression: string, userTimezone: string = 'UTC'): string | undefined {
+  if (!deadlineExpression) return undefined;
+  
+  console.log(`🕒 Parsing deadline "${deadlineExpression}" in timezone: ${userTimezone}`);
+  
+  const expression = deadlineExpression.toLowerCase().trim();
+  const nowUTC = new Date();
+  const nowInUserTZ = new Date(nowUTC.toLocaleString("en-US", { timeZone: userTimezone }));
+  const todayInUserTZ = new Date(nowInUserTZ.getFullYear(), nowInUserTZ.getMonth(), nowInUserTZ.getDate());
+  
+  // Parse common deadline expressions
+  if (expression.includes('tomorrow') || expression.includes('next day')) {
+    const tomorrow = new Date(todayInUserTZ);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(23, 59, 59, 999); // End of day
+    const tomorrowUTC = new Date(tomorrow.toLocaleString("en-US", { timeZone: "UTC" }));
+    return tomorrowUTC.toISOString();
+  }
+  
+  if (expression.includes('end of week') || expression.includes('this friday') || expression.includes('friday')) {
+    const endOfWeek = new Date(todayInUserTZ);
+    const daysUntilFriday = (5 - todayInUserTZ.getDay() + 7) % 7; // 5 = Friday
+    endOfWeek.setDate(todayInUserTZ.getDate() + (daysUntilFriday || 7)); // If today is Friday, next Friday
+    endOfWeek.setHours(23, 59, 59, 999);
+    const endOfWeekUTC = new Date(endOfWeek.toLocaleString("en-US", { timeZone: "UTC" }));
+    return endOfWeekUTC.toISOString();
+  }
+  
+  if (expression.includes('next week') || expression.includes('monday')) {
+    const nextMonday = new Date(todayInUserTZ);
+    const daysUntilMonday = (8 - todayInUserTZ.getDay()) % 7; // Next Monday
+    nextMonday.setDate(todayInUserTZ.getDate() + (daysUntilMonday || 7));
+    nextMonday.setHours(23, 59, 59, 999);
+    const nextMondayUTC = new Date(nextMonday.toLocaleString("en-US", { timeZone: "UTC" }));
+    return nextMondayUTC.toISOString();
+  }
+  
+  if (expression.includes('end of month')) {
+    const endOfMonth = new Date(todayInUserTZ.getFullYear(), todayInUserTZ.getMonth() + 1, 0);
+    endOfMonth.setHours(23, 59, 59, 999);
+    const endOfMonthUTC = new Date(endOfMonth.toLocaleString("en-US", { timeZone: "UTC" }));
+    return endOfMonthUTC.toISOString();
+  }
+  
+  // Try to parse specific dates (this is basic - could be enhanced)
+  const dateMatch = expression.match(/(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?/);
+  if (dateMatch) {
+    const month = parseInt(dateMatch[1]) - 1; // JS months are 0-indexed
+    const day = parseInt(dateMatch[2]);
+    const year = dateMatch[3] ? parseInt(dateMatch[3]) : todayInUserTZ.getFullYear();
+    
+    const specificDate = new Date(year, month, day, 23, 59, 59, 999);
+    const specificDateUTC = new Date(specificDate.toLocaleString("en-US", { timeZone: "UTC" }));
+    return specificDateUTC.toISOString();
+  }
+  
+  return undefined;
 }
