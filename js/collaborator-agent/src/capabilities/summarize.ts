@@ -48,11 +48,25 @@ const EMPTY_SCHEMA = {
   properties: {}
 };
 
+const GET_MESSAGES_BY_RELATIVE_TIME_SCHEMA = {
+  type: 'object' as const,
+  properties: {
+    time_expression: {
+      type: 'string' as const,
+      description: 'Relative time expression like "today", "yesterday", "this week" - will be parsed using user timezone'
+    }
+  },
+  required: ['time_expression']
+};
+
 /**
  * Creates a specialized summarizer prompt with function tools for dynamic message retrieval
  */
-export function createSummarizerPrompt(conversationId: string, storage: SqliteKVStore): ChatPrompt {
+export function createSummarizerPrompt(conversationId: string, storage: SqliteKVStore, userTimezone?: string): ChatPrompt {
   console.log(`📋 Creating Summarizer Agent for conversation: ${conversationId}`);
+  if (userTimezone) {
+    console.log(`🕒 Using timezone: ${userTimezone}`);
+  }
   
   // Note: We don't load conversation history upfront to avoid redundancy and double execution
   // Instead, we let the AI use function tools to fetch exactly what it needs
@@ -146,6 +160,28 @@ export function createSummarizerPrompt(conversationId: string, storage: SqliteKV
         content: msg.content
       }))
     });
+  })
+  .function('get_messages_by_relative_time', 'Retrieve messages based on a relative time expression', GET_MESSAGES_BY_RELATIVE_TIME_SCHEMA, async (args: any) => {
+    const { time_expression } = args;
+    console.log(`🔍 FUNCTION CALL: get_messages_by_relative_time with expression="${time_expression}" for conversation=${conversationId}`);
+    
+    // Parse the relative time expression to get start and end times
+    const { startTime, endTime } = parseRelativeTimeForSummary(time_expression, userTimezone);
+    console.log(`⏳ Time range for "${time_expression}": ${startTime} to ${endTime}`);
+    
+    const rangeMessages = storage.getMessagesByTimeRange(conversationId, startTime, endTime);
+    console.log(`📅 Retrieved ${rangeMessages.length} messages for relative time range`);
+    return JSON.stringify({
+      status: 'success',
+      messages: rangeMessages.map(msg => ({
+        timestamp: msg.timestamp,
+        role: msg.role,
+        name: msg.name,
+        content: msg.content
+      })),
+      count: rangeMessages.length,
+      timeRange: { start: startTime, end: endTime }
+    });
   });
 
   console.log(`📋 Summarizer Agent created with conversation history and functions`);
@@ -171,4 +207,55 @@ export function getMessagesByTimeRangeWithNames(storage: SqliteKVStore, conversa
  */
 export function getAllMessagesWithNames(storage: SqliteKVStore, conversationId: string) {
   return storage.getAllMessagesWithTimestamps(conversationId);
+}
+
+/**
+ * Parse relative time expressions for summaries with timezone awareness
+ */
+function parseRelativeTimeForSummary(timeExpression: string, userTimezone: string = 'UTC'): { startTime: string, endTime: string } {
+  const nowUTC = new Date();
+  const nowInUserTZ = new Date(nowUTC.toLocaleString("en-US", { timeZone: userTimezone }));
+  const todayInUserTZ = new Date(nowInUserTZ.getFullYear(), nowInUserTZ.getMonth(), nowInUserTZ.getDate());
+  
+  timeExpression = timeExpression.toLowerCase();
+  
+  if (timeExpression.includes('today')) {
+    const startOfToday = new Date(todayInUserTZ);
+    const startOfTodayUTC = new Date(startOfToday.toLocaleString("en-US", { timeZone: "UTC" }));
+    return {
+      startTime: startOfTodayUTC.toISOString(),
+      endTime: nowUTC.toISOString()
+    };
+  }
+  
+  if (timeExpression.includes('yesterday')) {
+    const yesterday = new Date(todayInUserTZ);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const endOfYesterday = new Date(yesterday);
+    endOfYesterday.setHours(23, 59, 59, 999);
+    
+    const yesterdayUTC = new Date(yesterday.toLocaleString("en-US", { timeZone: "UTC" }));
+    const endOfYesterdayUTC = new Date(endOfYesterday.toLocaleString("en-US", { timeZone: "UTC" }));
+    return {
+      startTime: yesterdayUTC.toISOString(),
+      endTime: endOfYesterdayUTC.toISOString()
+    };
+  }
+  
+  if (timeExpression.includes('this week')) {
+    const startOfWeek = new Date(todayInUserTZ);
+    startOfWeek.setDate(todayInUserTZ.getDate() - todayInUserTZ.getDay());
+    const startOfWeekUTC = new Date(startOfWeek.toLocaleString("en-US", { timeZone: "UTC" }));
+    return {
+      startTime: startOfWeekUTC.toISOString(),
+      endTime: nowUTC.toISOString()
+    };
+  }
+  
+  // Default to last 24 hours
+  const yesterday24h = new Date(nowUTC.getTime() - 24 * 60 * 60 * 1000);
+  return {
+    startTime: yesterday24h.toISOString(),
+    endTime: nowUTC.toISOString()
+  };
 }

@@ -1,11 +1,53 @@
 import { App } from '@microsoft/teams.apps';
 import { DevtoolsPlugin } from '@microsoft/teams.dev';
+import { MessageActivity } from '@microsoft/teams.api';
 import { promptManager } from './agent/core';
 import { validateEnvironment, logModelConfigs } from './utils/config';
 import { handleDebugCommand } from './utils/debug';
 
 const app = new App({
   plugins: [new DevtoolsPlugin()],
+});
+
+// Initialize feedback storage (reuse the same storage instance from promptManager)
+const feedbackStorage = promptManager.getStorage();
+
+// Handle feedback submissions
+app.on('message.submit.feedback', async ({ activity, log }) => {
+  try {
+    const { reaction, feedback: feedbackJson } = activity.value.actionValue;
+
+    if (activity.replyToId == null) {
+      log.warn(`No replyToId found for messageId ${activity.id}`);
+      return;
+    }
+
+    console.log(`👍 Received feedback for message ${activity.replyToId}: ${reaction}`, feedbackJson);
+
+    // Check if feedback record exists (it should since we store delegated agent info when sending)
+    let existingFeedback = feedbackStorage.getFeedbackByMessageId(activity.replyToId);
+    if (!existingFeedback) {
+      // If no record exists, initialize without delegated agent info (fallback)
+      feedbackStorage.initializeFeedbackRecord(activity.replyToId);
+      console.log(`📝 Initialized feedback record for message ${activity.replyToId} (no prior delegated agent info)`);
+    }
+    
+    // Update feedback in storage
+    const success = feedbackStorage.updateFeedback(activity.replyToId, reaction, feedbackJson);
+    
+    if (success) {
+      console.log(`✅ Successfully recorded feedback for message ${activity.replyToId}`);
+      
+      // Optionally send a confirmation response
+      // await send({ type: 'message', text: `Thank you for your feedback! 👍` });
+    } else {
+      log.warn(`Failed to record feedback for message ${activity.replyToId}`);
+    }
+
+  } catch (error) {
+    console.error('❌ Error handling feedback submission:', error);
+    log.error(`Error processing feedback: ${error instanceof Error ? error.message : 'Unknown error'}`);
+  }
 });
 
 // Handle all messages for tracking and debug commands
@@ -26,41 +68,56 @@ app.on('message', async ({ send, activity, next }) => {
     }
     return;
   }
-
+  
   // If this is a personal chat, always route to the manager for full conversational experience
   if (isPersonalChat && activity.text && activity.text.trim() !== '') {
     console.log('🔍 Personal chat detected - routing to manager with personal action items support');
-    
+
     const userId = activity.from.id;
     const userName = activity.from.name || 'User';
     
+    // Extract timezone from Teams activity (cast to any to access localTimezone)
+    const userTimezone = (activity as any).localTimezone;
+    if (userTimezone) {
+      console.log(`🕒 Detected user timezone: ${userTimezone}`);
+    }
+
     // Track the user message first
     promptManager.addMessageToTracking(conversationKey, 'user', activity.text, activity, userName);
-    
+
     // Use the manager to process the request, but enable personal mode for action items
-    const response = await promptManager.processUserRequestWithPersonalMode(
-      conversationKey, 
-      activity.text, 
+    const result = await promptManager.processUserRequestWithPersonalMode(
+      conversationKey,
+      activity.text,
       null, // no API in personal chat
       userId,
-      userName
+      userName,
+      userTimezone
     );
-    
-    if (response && response.trim() !== '') {
-      await send({ type: 'message', text: response });
-      console.log('🤖 Personal chat response sent:', response);
+
+    if (result.response && result.response.trim() !== '') {
+      const { id: sentMessageId } = await send(
+        new MessageActivity(result.response)
+          .addAiGenerated()
+          .addFeedback()
+      );
       
+      // Store delegated agent info for potential feedback
+      feedbackStorage.storeDelegatedAgent(sentMessageId, result.delegatedAgent);
+      
+      console.log(`🤖 Personal chat response sent with feedback enabled: ${sentMessageId} (delegated to: ${result.delegatedAgent || 'direct'})`);
+
       // Track AI response
-      promptManager.addMessageToTracking(conversationKey, 'assistant', response, undefined, 'AI Assistant');
+      promptManager.addMessageToTracking(conversationKey, 'assistant', result.response, { id: sentMessageId }, 'AI Assistant');
     } else {
       await send({ type: 'message', text: 'Hello! I can help you with conversation summaries, action item management, and general assistance. What would you like help with?' });
       console.log('🤖 Personal chat fallback response sent');
     }
-    
+
     // Save messages to database
     await promptManager.saveMessagesDirectly(conversationKey);
     console.log('💾 Personal chat messages saved to database');
-    
+
     return;
   }
 
@@ -94,16 +151,30 @@ app.on('mention', async ({ send, activity, api }) => {
       return;
     }
 
+    // Extract timezone from Teams activity (cast to any to access localTimezone)
+    const userTimezone = (activity as any).localTimezone;
+    if (userTimezone) {
+      console.log(`🕒 Detected user timezone: ${userTimezone}`);
+    }
+
     // Use the manager to process the request (now with API access)
-    const response = await promptManager.processUserRequestWithAPI(conversationKey, activity.text, api);
+    const result = await promptManager.processUserRequest(conversationKey, activity.text, api, userTimezone);
 
     // Always send a response when @mentioned
-    if (response && response.trim() !== '') {
-      await send({ type: 'message', text: response });
-      console.log('🤖 AI Response sent:', response);
+    if (result.response && result.response.trim() !== '') {
+      const { id: sentMessageId } = await send(
+        new MessageActivity(result.response)
+          .addAiGenerated()
+          .addFeedback()
+      );
+      
+      // Store delegated agent info for potential feedback
+      feedbackStorage.storeDelegatedAgent(sentMessageId, result.delegatedAgent);
+      
+      console.log(`🤖 AI Response sent with feedback enabled: ${sentMessageId} (delegated to: ${result.delegatedAgent || 'direct'})`);
 
       // Track AI response
-      promptManager.addMessageToTracking(conversationKey, 'assistant', response, undefined, 'AI Assistant');
+      promptManager.addMessageToTracking(conversationKey, 'assistant', result.response, { id: sentMessageId }, 'AI Assistant');
     } else {
       // Fallback response if manager returns empty
       await send({ type: 'message', text: 'I received your message but I\'m not sure how to help with that. I can help with conversation summaries and message analysis.' });
