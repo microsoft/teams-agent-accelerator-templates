@@ -16,11 +16,11 @@ export interface ManagerResult {
 export class ManagerPrompt {
     private prompt: ChatPrompt;
     private storage: SqliteKVStore;
-    private currentAPI?: any; // Teams API instance for current request
-    private currentUserId?: string; // Current user ID for personal mode
-    private currentUserName?: string; // Current user name for personal mode
-    private currentUserTimezone?: string; // Current user's timezone from Teams activity
-    private lastDelegatedAgent: string | null = null; // Track the last delegated agent
+    private currentAPI?: any;
+    private currentUserId?: string;
+    private currentUserName?: string;
+    private currentUserTimezone?: string;
+    private lastDelegatedAgent: string | null = null;
 
     constructor(storage: SqliteKVStore) {
         this.storage = storage;
@@ -99,14 +99,11 @@ export class ManagerPrompt {
         try {
             console.log(`🎯 Manager processing request: "${userRequest}" for conversation: ${conversationId}`);
             if (userTimezone) {
-                console.log(`🕒 User timezone: ${userTimezone}`);
                 this.currentUserTimezone = userTimezone;
             }
 
-            // Reset delegation tracking
             this.lastDelegatedAgent = null;
 
-            // Send the user request to the manager for analysis and delegation
             const response = await this.prompt.send(`
 User Request: "${userRequest}"
 Conversation ID: ${conversationId}
@@ -114,7 +111,6 @@ Conversation ID: ${conversationId}
 Please analyze this request and delegate it to the appropriate specialized agent. Return ONLY the response from the delegated agent without any additional commentary.
 `);
 
-            console.log(`🎯 Manager delegation completed. Response content length: ${response.content?.length || 0}`);
             console.log(`🎯 Delegated to agent: ${this.lastDelegatedAgent || 'direct (no delegation)'}`);
             
             return {
@@ -135,17 +131,12 @@ Please analyze this request and delegate it to the appropriate specialized agent
         try {
             console.log(`🎯 Manager processing request with API: "${userRequest}" for conversation: ${conversationId}`);
             if (userTimezone) {
-                console.log(`🕒 User timezone: ${userTimezone}`);
                 this.currentUserTimezone = userTimezone;
             }
 
-            // Store API for use in delegation methods
             this.currentAPI = api;
-            
-            // Reset delegation tracking
             this.lastDelegatedAgent = null;
 
-            // Send the user request to the manager for analysis and delegation
             const response = await this.prompt.send(`
 User Request: "${userRequest}"
 Conversation ID: ${conversationId}
@@ -153,7 +144,6 @@ Conversation ID: ${conversationId}
 Please analyze this request and delegate it to the appropriate specialized agent. Return ONLY the response from the delegated agent without any additional commentary.
 `);
 
-            console.log(response);
             console.log(`🎯 Delegated to agent: ${this.lastDelegatedAgent || 'direct (no delegation)'}`);
             
             return {
@@ -168,7 +158,6 @@ Please analyze this request and delegate it to the appropriate specialized agent
                 delegatedAgent: null
             };
         } finally {
-            // Clean up API reference
             this.currentAPI = undefined;
             this.currentUserTimezone = undefined;
         }
@@ -178,19 +167,14 @@ Please analyze this request and delegate it to the appropriate specialized agent
         try {
             console.log(`🎯 Manager processing request in personal mode: "${userRequest}" for user: ${userName} (${userId})`);
             if (userTimezone) {
-                console.log(`🕒 User timezone: ${userTimezone}`);
                 this.currentUserTimezone = userTimezone;
             }
 
-            // Store API and user context for use in delegation methods
             this.currentAPI = api;
             this.currentUserId = userId;
             this.currentUserName = userName;
-            
-            // Reset delegation tracking
             this.lastDelegatedAgent = null;
 
-            // Send the user request to the manager for analysis and delegation
             const response = await this.prompt.send(`
 User Request: "${userRequest}"
 Conversation ID: ${conversationId}
@@ -201,7 +185,6 @@ Context: This is a personal (1:1) chat with the user.
 Please analyze this request and delegate it to the appropriate specialized agent. Return ONLY the response from the delegated agent without any additional commentary.
 For action item requests, use the user's ID for personal action item management.
 `);
-            console.log(response);
             console.log(`🎯 Delegated to agent: ${this.lastDelegatedAgent || 'direct (no delegation)'}`);
             
             return {
@@ -216,7 +199,6 @@ For action item requests, use the user's ID for personal action item management.
                 delegatedAgent: null
             };
         } finally {
-            // Clean up API and user context references
             this.currentAPI = undefined;
             this.currentUserId = undefined;
             this.currentUserName = undefined;
@@ -228,11 +210,7 @@ For action item requests, use the user's ID for personal action item management.
         try {
             console.log(`📋 DELEGATION: Delegating to Summarizer Agent: "${userRequest}" for conversation: ${conversationId}`);
 
-            // Import and use the router to get the appropriate prompt with timezone
             const summarizerPrompt = await routeToPrompt('summarizer', conversationId, this.storage, [], this.currentUserTimezone);
-
-            // Send the request to the summarizer
-            console.log(`📋 DELEGATION: Sending request to Summarizer Agent...`);
             const response = await summarizerPrompt.send(userRequest);
 
             console.log(`📋 DELEGATION: Summarizer Agent completed task. Response length: ${response.content?.length || 0}`);
@@ -254,28 +232,25 @@ For action item requests, use the user's ID for personal action item management.
             let participantList: Array<{ name: string, id: string }> = [];
             let isPersonalChat = false;
 
-            // Check if we're in personal mode
             if (this.currentUserId && this.currentUserName) {
                 console.log(`👤 Personal mode detected for user: ${this.currentUserName} (${this.currentUserId})`);
                 isPersonalChat = true;
-                participantList = []; // Empty for personal chat
+                participantList = [];
             } else {
-                // Try to get participants from Teams API if available
                 if (this.currentAPI) {
                     try {
                         console.log(`👥 Fetching conversation members from Teams API...`);
                         participantList = await getConversationParticipantsFromAPI(this.currentAPI, conversationId);
                     } catch (apiError) {
                         console.warn(`⚠️ Failed to get members from Teams API:`, apiError);
-                        participantList = []; // Empty array if API fails
+                        participantList = [];
                     }
                 } else {
                     console.warn(`⚠️ No Teams API available for action items agent`);
-                    participantList = []; // Empty array when API not available
+                    participantList = [];
                 }
             }
 
-            // Create action items prompt for this specific conversation
             const actionItemsPrompt = createActionItemsPrompt(
                 conversationId,
                 this.storage,
@@ -286,8 +261,6 @@ For action item requests, use the user's ID for personal action item management.
                 this.currentUserTimezone
             );
 
-            // Send the request to the action items agent
-            console.log(`📋 DELEGATION: Sending request to Action Items Agent...`);
             const response = await actionItemsPrompt.send(userRequest);
 
             console.log(`📋 DELEGATION: Action Items Agent completed task. Response length: ${response.content?.length || 0}`);
@@ -306,11 +279,7 @@ For action item requests, use the user's ID for personal action item management.
         try {
             console.log(`🔍 DELEGATION: Delegating to Search Agent: "${userRequest}" for conversation: ${conversationId}`);
 
-            // Import and use the router to get the appropriate prompt with timezone
             const searchPrompt = await routeToPrompt('search', conversationId, this.storage, [], this.currentUserTimezone);
-
-            // Send the request to the search agent
-            console.log(`🔍 DELEGATION: Sending request to Search Agent...`);
             const response = await searchPrompt.send(userRequest);
 
             console.log(`🔍 DELEGATION: Search Agent completed task. Response length: ${response.content?.length || 0}`);
@@ -327,8 +296,6 @@ For action item requests, use the user's ID for personal action item management.
 
     // Method to add new specialized agents in the future
     addAgent(agentName: string, _description: string, _functionSchema: any, _handler: Function): void {
-        // This can be used to dynamically add new agents
         console.log(`🔧 Adding new agent: ${agentName}`);
-        // Implementation would add new function to the prompt
     }
 }
