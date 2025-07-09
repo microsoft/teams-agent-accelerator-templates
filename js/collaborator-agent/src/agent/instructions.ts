@@ -62,6 +62,10 @@ Current Date: ${currentDate}
    - Use for: action item creation, task assignment, to-do management, follow-up tracking
    - Capabilities: identify action items from discussions, assign tasks to team members, track status, manage priorities
 
+3. **Search Agent**: Handles searching through conversation history with natural language queries
+   - Use for: finding specific conversations, locating messages by keywords, searching by participants, time-based searches
+   - Capabilities: semantic search, deep linking to original messages, finding conversations between specific people, keyword-based searches
+
 <INSTRUCTIONS>
 1. Analyze the user's @mention request carefully to understand their intent
 2. Determine which specialized agent(s) would best handle this specific query
@@ -87,6 +91,16 @@ Delegate to the Action Items Agent for ANY request that involves:
 - Team coordination: "who is responsible", "deadlines", "priorities", "workload"
 - Planning: "identify action items", "extract tasks", "create assignments"
 - Personal queries: "my tasks", "what do I need to do", "my action items"
+
+<DELEGATION RULES FOR SEARCH AGENT>
+Delegate to the Search Agent for ANY request that involves:
+- Keywords: "find", "search", "look for", "locate", "show me", "where did", "when did"
+- Conversation searches: "find a conversation", "search for messages", "locate discussion"
+- Participant-based searches: "find messages from", "conversation between", "what did [person] say"
+- Content searches: "find messages about", "search for topic", "locate discussions on"
+- Time-based searches: "find messages from yesterday", "search conversations last week"
+- Deep linking: "show me the original message", "link to conversation", "find that message"
+- Historical queries: "old conversations", "previous discussions", "past messages"
 
 <RESPONSE GUIDELINES>
 - Always respond when @mentioned (never stay silent)

@@ -2,6 +2,7 @@ import { ChatPrompt } from '@microsoft/teams.ai';
 import { SqliteKVStore } from '../storage/storage';
 import { createSummarizerPrompt } from '../capabilities/summarize';
 import { createActionItemsPrompt } from '../capabilities/actionItems';
+import { createSearchPrompt } from '../capabilities/search';
 
 // Router that provides specific prompts for different agent types
 export async function routeToPrompt(agentType: string, conversationId: string, storage: SqliteKVStore, participants: Array<{name: string, id: string}> = []): Promise<ChatPrompt> {
@@ -14,6 +15,9 @@ export async function routeToPrompt(agentType: string, conversationId: string, s
     case 'actionitems':
     case 'action_items':
       return createActionItemsPrompt(conversationId, storage, participants);
+    
+    case 'search':
+      return createSearchPrompt(conversationId, storage);
     
     // Future agents can be added here:
     // case 'codereviewer':

@@ -45,11 +45,33 @@ export async function handleDebugCommand(text: string, conversationKey: string):
  * Show database debug information
  */
 function handleMessageDatabaseDebug(conversationKey: string): DebugResponse {
-  const debugOutput = promptManager.getStorage().debugPrintDatabase(conversationKey);
+  const storage = promptManager.getStorage();
+  const debugOutput = storage.debugPrintDatabase(conversationKey);
+  
+  // Get message records to show activity ID statistics
+  const messages = storage.getMessagesByTimeRange(conversationKey);
+  const messagesWithIds = messages.filter(msg => msg.activity_id && msg.activity_id !== null);
+  
+  let response = `🔍 **Database Debug Info:**\n\n`;
+  response += `📊 **Activity ID Statistics:**\n`;
+  response += `- Total messages: ${messages.length}\n`;
+  response += `- Messages with IDs: ${messagesWithIds.length}\n`;
+  response += `- Coverage: ${messages.length > 0 ? Math.round((messagesWithIds.length / messages.length) * 100) : 0}%\n\n`;
+  
+  if (messagesWithIds.length > 0) {
+    response += `� **Recent Messages with Activity IDs:**\n`;
+    messagesWithIds.slice(-5).forEach(msg => {
+      const preview = msg.content.substring(0, 30) + (msg.content.length > 30 ? '...' : '');
+      response += `- ${msg.name} (${msg.role}): "${preview}" [ID: ${msg.activity_id}]\n`;
+    });
+    response += `\n`;
+  }
+  
+  response += `📋 **Full Database Details:**\n\`\`\`json\n${debugOutput}\n\`\`\``;
   
   return {
     isDebugCommand: true,
-    response: `🔍 **Database Debug Info:**\n\`\`\`json\n${debugOutput}\n\`\`\``
+    response
   };
 }
 

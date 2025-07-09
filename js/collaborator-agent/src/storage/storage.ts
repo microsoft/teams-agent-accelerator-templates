@@ -9,6 +9,7 @@ export interface MessageRecord {
   content: string;
   name: string;
   timestamp: string;
+  activity_id?: string; // Teams activity ID for deep linking
 }
 
 // Interface for action items
@@ -55,7 +56,8 @@ export class SqliteKVStore {
         role TEXT NOT NULL,
         content TEXT NOT NULL,
         name TEXT NOT NULL DEFAULT 'Unknown',
-        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+        activity_id TEXT NULL
       )
     `);
 
@@ -99,6 +101,14 @@ export class SqliteKVStore {
       console.log(`🔄 Added 'assigned_by_id' column to existing action_items table`);
     } catch (error) {
       console.log(`📝 'assigned_by_id' column already exists in action_items table`);
+    }
+
+    // Add activity_id column to existing messages table (migration for deep linking)
+    try {
+      this.db.exec(`ALTER TABLE messages ADD COLUMN activity_id TEXT NULL`);
+      console.log(`🔄 Added 'activity_id' column to existing messages table`);
+    } catch (error) {
+      console.log(`📝 'activity_id' column already exists in messages table`);
     }
 
     // Create indexes for better query performance
@@ -194,15 +204,16 @@ export class SqliteKVStore {
       if (newMessages.length > 0) {
         // Insert only new messages with individual timestamps
         const insertStmt = this.db.prepare(`
-          INSERT INTO messages (conversation_id, role, content, name, timestamp)
-          VALUES (?, ?, ?, ?, ?)
+          INSERT INTO messages (conversation_id, role, content, name, timestamp, activity_id)
+          VALUES (?, ?, ?, ?, ?, ?)
         `);
         
         for (const message of newMessages) {
           const messageTimestamp = new Date().toISOString();
           const contentStr = getContentString(message.content);
           const messageName = (message as any).name || 'Unknown';
-          insertStmt.run(key, message.role, contentStr, messageName, messageTimestamp);
+          const activityId = (message as any).activity_id || null;
+          insertStmt.run(key, message.role, contentStr, messageName, messageTimestamp, activityId);
           
           const preview = contentStr.length > 50 ? contentStr.substring(0, 50) + '...' : contentStr;
           console.log(`📝 Added new message with timestamp ${messageTimestamp}: ${message.role} (${messageName}) - ${preview}`);
@@ -296,14 +307,15 @@ export class SqliteKVStore {
   addMessages(conversationId: string, messages: Array<Message>): void {
     try {
       const stmt = this.db.prepare(`
-        INSERT INTO messages (conversation_id, role, content, timestamp)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO messages (conversation_id, role, content, timestamp, activity_id)
+        VALUES (?, ?, ?, ?, ?)
       `);
 
       const now = new Date().toISOString();
       
       for (const message of messages) {
-        stmt.run(conversationId, message.role, message.content, now);
+        const activityId = (message as any).activity_id || null;
+        stmt.run(conversationId, message.role, message.content, now, activityId);
       }
 
       console.log(`📝 Added ${messages.length} individual messages to timestamp table for conversation: ${conversationId}`);
@@ -456,6 +468,7 @@ export class SqliteKVStore {
             role: msg.role,
             name: msg.name,
             timestamp: msg.timestamp,
+            activity_id: msg.activity_id || null, // Include Teams activity ID for deep linking
             content_preview: msg.content.substring(0, 100) + (msg.content.length > 100 ? '...' : ''),
             content_length: msg.content.length
           }))
@@ -476,13 +489,13 @@ export class SqliteKVStore {
   }
 
   // Method to insert a message with custom timestamp (for mock data)
-  insertMessageWithTimestamp(conversationId: string, role: string, content: string, timestamp: string, name?: string): void {
+  insertMessageWithTimestamp(conversationId: string, role: string, content: string, timestamp: string, name?: string, activityId?: string): void {
     try {
       const stmt = this.db.prepare(`
-        INSERT INTO messages (conversation_id, role, content, name, timestamp)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO messages (conversation_id, role, content, name, timestamp, activity_id)
+        VALUES (?, ?, ?, ?, ?, ?)
       `);
-      stmt.run(conversationId, role, content, name || 'Unknown', timestamp);
+      stmt.run(conversationId, role, content, name || 'Unknown', timestamp, activityId || null);
     } catch (error) {
       console.error(`❌ Error inserting message with custom timestamp:`, error);
     }

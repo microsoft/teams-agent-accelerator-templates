@@ -32,6 +32,14 @@ export const AI_MODELS = {
     apiVersion: '2025-04-01-preview',
   } as ModelConfig,
 
+  // Search Agent - Uses capable model for semantic search and deep linking
+  SEARCH: {
+    model: process.env.AOAI_MODEL || 'gpt-4o',
+    apiKey: process.env.AOAI_API_KEY!,
+    endpoint: process.env.AOAI_ENDPOINT!,
+    apiVersion: '2025-04-01-preview',
+  } as ModelConfig,
+
   // Default model configuration (fallback)
   DEFAULT: {
     model: process.env.AOAI_MODEL || 'gpt-4o',
@@ -42,7 +50,7 @@ export const AI_MODELS = {
 };
 
 // Helper function to get model config for a specific agent
-export function getModelConfig(agentType: 'manager' | 'summarizer' | 'actionItems' | 'default' = 'default'): ModelConfig {
+export function getModelConfig(agentType: 'manager' | 'summarizer' | 'actionItems' | 'search' | 'default' = 'default'): ModelConfig {
   switch (agentType.toLowerCase()) {
     case 'manager':
       return AI_MODELS.MANAGER;
@@ -50,6 +58,8 @@ export function getModelConfig(agentType: 'manager' | 'summarizer' | 'actionItem
       return AI_MODELS.SUMMARIZER;
     case 'actionitems':
       return AI_MODELS.ACTION_ITEMS;
+    case 'search':
+      return AI_MODELS.SEARCH;
     default:
       return AI_MODELS.DEFAULT;
   }
@@ -73,5 +83,6 @@ export function logModelConfigs(): void {
   console.log(`  Manager Agent: ${AI_MODELS.MANAGER.model}`);
   console.log(`  Summarizer Agent: ${AI_MODELS.SUMMARIZER.model}`);
   console.log(`  Action Items Agent: ${AI_MODELS.ACTION_ITEMS.model}`);
+  console.log(`  Search Agent: ${AI_MODELS.SEARCH.model}`);
   console.log(`  Default Model: ${AI_MODELS.DEFAULT.model}`);
 }

@@ -62,6 +62,22 @@ export class ManagerPrompt {
                 required: ['user_request', 'conversation_id']
             }, async (args: any) => {
                 return await this.delegateToActionItems(args.user_request, args.conversation_id);
+            })
+            .function('delegate_to_search', 'Delegate conversation search, message finding, or historical conversation lookup to the Search Agent', {
+                type: 'object',
+                properties: {
+                    user_request: {
+                        type: 'string',
+                        description: 'The original user request to be processed by the Search Agent'
+                    },
+                    conversation_id: {
+                        type: 'string',
+                        description: 'The conversation ID for context'
+                    }
+                },
+                required: ['user_request', 'conversation_id']
+            }, async (args: any) => {
+                return await this.delegateToSearch(args.user_request, args.conversation_id);
             });
 
         console.log('🎯 Manager Agent initialized with delegation capabilities');
@@ -225,6 +241,29 @@ For action item requests, use the user's ID for personal action item management.
             return JSON.stringify({
                 status: 'error',
                 message: `Error in Action Items Agent: ${error instanceof Error ? error.message : 'Unknown error'}`
+            });
+        }
+    }
+
+    private async delegateToSearch(userRequest: string, conversationId: string): Promise<string> {
+        try {
+            console.log(`🔍 DELEGATION: Delegating to Search Agent: "${userRequest}" for conversation: ${conversationId}`);
+
+            // Import and use the router to get the appropriate prompt
+            const searchPrompt = await routeToPrompt('search', conversationId, this.storage, []);
+
+            // Send the request to the search agent
+            console.log(`🔍 DELEGATION: Sending request to Search Agent...`);
+            const response = await searchPrompt.send(userRequest);
+
+            console.log(`🔍 DELEGATION: Search Agent completed task. Response length: ${response.content?.length || 0}`);
+            return response.content || 'No response from Search Agent';
+
+        } catch (error) {
+            console.error('❌ Error delegating to Search Agent:', error);
+            return JSON.stringify({
+                status: 'error',
+                message: `Error in Search Agent: ${error instanceof Error ? error.message : 'Unknown error'}`
             });
         }
     }
