@@ -1,5 +1,6 @@
 import { ChatPrompt } from '@microsoft/teams.ai';
 import { OpenAIChatModel } from '@microsoft/teams.openai';
+import { CitationAppearance } from '@microsoft/teams.api';
 import { SqliteKVStore } from '../storage/storage';
 import { MANAGER_PROMPT } from './instructions';
 import { getModelConfig } from '../utils/config';
@@ -10,7 +11,7 @@ import { createActionItemsPrompt, getConversationParticipantsFromAPI } from '../
 export interface ManagerResult {
     response: string;
     delegatedCapability: string | null; // 'summarizer', 'action_items', 'search', or null for direct response
-    adaptiveCards?: any[]; // Optional adaptive cards for search results
+    citations?: CitationAppearance[]; // Optional citations for search results
 }
 
 // Manager prompt that coordinates all sub-tasks
@@ -22,7 +23,7 @@ export class ManagerPrompt {
     private currentUserName?: string;
     private currentUserTimezone?: string;
     private lastDelegatedCapability: string | null = null;
-    private lastSearchAdaptiveCards: any[] = [];
+    private lastSearchCitations: CitationAppearance[] = [];
 
     constructor(storage: SqliteKVStore) {
         this.storage = storage;
@@ -105,7 +106,7 @@ export class ManagerPrompt {
             }
 
             this.lastDelegatedCapability = null;
-            this.lastSearchAdaptiveCards = [];
+            this.lastSearchCitations = [];
 
             const response = await this.prompt.send(`
 User Request: "${userRequest}"
@@ -119,7 +120,7 @@ Please analyze this request and delegate it to the appropriate specialized capab
             return {
                 response: response.content || 'No response generated',
                 delegatedCapability: this.lastDelegatedCapability,
-                adaptiveCards: this.lastSearchAdaptiveCards.length > 0 ? this.lastSearchAdaptiveCards : undefined
+                citations: this.lastSearchCitations.length > 0 ? this.lastSearchCitations : undefined
             };
 
         } catch (error) {
@@ -140,7 +141,7 @@ Please analyze this request and delegate it to the appropriate specialized capab
 
             this.currentAPI = api;
             this.lastDelegatedCapability = null;
-            this.lastSearchAdaptiveCards = [];
+            this.lastSearchCitations = [];
 
             const response = await this.prompt.send(`
 User Request: "${userRequest}"
@@ -154,7 +155,7 @@ Please analyze this request and delegate it to the appropriate specialized capab
             return {
                 response: response.content || 'No response generated',
                 delegatedCapability: this.lastDelegatedCapability,
-                adaptiveCards: this.lastSearchAdaptiveCards.length > 0 ? this.lastSearchAdaptiveCards : undefined
+                citations: this.lastSearchCitations.length > 0 ? this.lastSearchCitations : undefined
             };
 
         } catch (error) {
@@ -180,7 +181,7 @@ Please analyze this request and delegate it to the appropriate specialized capab
             this.currentUserId = userId;
             this.currentUserName = userName;
             this.lastDelegatedCapability = null;
-            this.lastSearchAdaptiveCards = [];
+            this.lastSearchCitations = [];
 
             const response = await this.prompt.send(`
 User Request: "${userRequest}"
@@ -197,7 +198,7 @@ For action item requests, use the user's ID for personal action item management.
             return {
                 response: response.content || 'No response generated',
                 delegatedCapability: this.lastDelegatedCapability,
-                adaptiveCards: this.lastSearchAdaptiveCards.length > 0 ? this.lastSearchAdaptiveCards : undefined
+                citations: this.lastSearchCitations.length > 0 ? this.lastSearchCitations : undefined
             };
 
         } catch (error) {
@@ -287,15 +288,15 @@ For action item requests, use the user's ID for personal action item management.
         try {
             console.log(`🔍 DELEGATION: Delegating to Search Capability: "${userRequest}" for conversation: ${conversationId}`);
 
-            // Create a shared array for adaptive cards
-            const adaptiveCardsArray: any[] = [];
-            const searchPrompt = await routeToPrompt('search', conversationId, this.storage, [], this.currentUserTimezone, adaptiveCardsArray);
+            // Create a shared array for citations
+            const citationsArray: CitationAppearance[] = [];
+            const searchPrompt = await routeToPrompt('search', conversationId, this.storage, [], this.currentUserTimezone, citationsArray);
             const response = await searchPrompt.send(userRequest);
 
-            // Store the adaptive cards that were added during search
-            this.lastSearchAdaptiveCards = adaptiveCardsArray;
+            // Store the citations that were added during search
+            this.lastSearchCitations = citationsArray;
 
-            console.log(`🔍 DELEGATION: Search Capability completed task. Response length: ${response.content?.length || 0}, Cards found: ${adaptiveCardsArray.length}`);
+            console.log(`🔍 DELEGATION: Search Capability completed task. Response length: ${response.content?.length || 0}, Citations found: ${citationsArray.length}`);
             
             return response.content || 'No response from Search Capability';
 

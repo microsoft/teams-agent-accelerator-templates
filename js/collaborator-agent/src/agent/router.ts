@@ -1,4 +1,5 @@
 import { ChatPrompt } from '@microsoft/teams.ai';
+import { CitationAppearance } from '@microsoft/teams.api';
 import { SqliteKVStore } from '../storage/storage';
 import { createSummarizerPrompt } from '../capabilities/summarize';
 import { createActionItemsPrompt } from '../capabilities/actionItems';
@@ -11,7 +12,7 @@ export async function routeToPrompt(
   storage: SqliteKVStore, 
   participants: Array<{name: string, id: string}> = [], 
   userTimezone?: string,
-  adaptiveCardsArray?: any[]
+  citationsArray?: CitationAppearance[]
 ): Promise<ChatPrompt> {
   console.log(`🔀 Routing to ${capabilityType} capability for conversation: ${conversationId}`);
   
@@ -24,7 +25,7 @@ export async function routeToPrompt(
       return createActionItemsPrompt(conversationId, storage, participants, false, undefined, undefined, userTimezone);
     
     case 'search':
-      return createSearchPrompt(conversationId, userTimezone, adaptiveCardsArray);
+      return createSearchPrompt(conversationId, userTimezone, citationsArray);
     
     default:
       console.warn(`⚠️ Unknown capability type: ${capabilityType}, defaulting to summarizer`);
@@ -51,3 +52,4 @@ export function createCapabilityRouter(): {
     }
   };
 }
+
