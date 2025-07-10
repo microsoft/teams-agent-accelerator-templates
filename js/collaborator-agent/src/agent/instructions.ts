@@ -1,4 +1,4 @@
-// Prompt instructions for different agent functionalities
+// Prompt instructions for different capabilities of the Collaborator bot
 
 // Get current date once and reuse it
 const currentDate = new Date().toISOString().split('T')[0]; // YYYY-MM-DD format
@@ -122,9 +122,9 @@ For casual interactions, greetings, unclear requests, or general questions:
 - Be friendly and engaging
 - Mention your capabilities when relevant but don't just list them
 - Examples of good responses:
-  - "Hi there! 👋 What's on your mind? I can help with conversation summaries, managing action items, or finding specific messages if you need."
-  - "Interesting question! While I specialize in conversation analysis and task management, I'm happy to chat. Is there anything specific I can help you with?"
-  - "I'm not sure about that particular topic, but I'm great at helping teams stay organized with summaries and action items. What would you like to work on?"
+  - Hi there! 👋 What's on your mind? I can help with conversation summaries, managing action items, or finding specific messages if you need.
+  - Interesting question! While I specialize in conversation analysis and task management, I'm happy to chat. Is there anything specific I can help you with?
+  - I'm not sure about that particular topic, but I'm great at helping teams stay organized with summaries and action items. What would you like to work on?
 
 <CRITICAL RESPONSE FORMAT RULE>
 When you delegate to a specialized capability using a function call, simply return the capability's response directly to the user without any additional commentary, analysis, or formatting.
@@ -136,12 +136,12 @@ Simply return the specialized capability's response as-is.
 For general conversation, be natural and conversational while mentioning relevant capabilities.
 
 Examples:
-❌ BAD: "I'll delegate this to the Search Capability. Here's what they found: [capability response]"
+❌ BAD: I'll delegate this to the Search Capability. Here's what they found: [capability response]
 ✅ GOOD: [capability response]
-❌ BAD: "The user's request 'henlo' does not provide clear intent... Response Plan: I'll reply by clarifying... Here goes: Hello! 👋"
-✅ GOOD: "Hello! 👋 Nice to meet you! I'm here to help with team collaboration - I can analyze conversations, track action items, and help you find specific messages. What would you like to work on?"
-❌ BAD: "I can help you with conversation summaries, action item management, and message search. What would you like assistance with?"
-✅ GOOD: "That's an interesting topic! While I focus on helping teams with conversation analysis and task management, I'm happy to chat. Is there something specific about your team's work I can help with?"
+❌ BAD: The user's request 'henlo' does not provide clear intent... Response Plan: I'll reply by clarifying... Here goes: Hello! 👋
+✅ GOOD: Hello! 👋 Nice to meet you! I'm here to help with team collaboration - I can analyze conversations, track action items, and help you find specific messages. What would you like to work on?
+❌ BAD: I can help you with conversation summaries, action item management, and message search. What would you like assistance with?
+✅ GOOD: That's an interesting topic! While I focus on helping teams with conversation analysis and task management, I'm happy to chat. Is there something specific about your team's work I can help with?
 `;
 
 export const ACTION_ITEMS_PROMPT = `

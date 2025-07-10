@@ -88,6 +88,7 @@ app.on('message', async ({ send, activity, next }) => {
 
   // If this is a personal chat, always route to the manager for full conversational experience
   if (isPersonalChat && activity.text && activity.text.trim() !== '') {
+    await send({ type: 'typing' });
     const userId = activity.from.id;
     const userName = activity.from.name || 'User';
 
@@ -123,6 +124,7 @@ app.on('message', async ({ send, activity, next }) => {
 });
 
 app.on('mention', async ({ send, activity, api }) => {
+  await send({ type: 'typing' });
   const conversationKey = `${activity.conversation.id}`;
 
   if (activity.type === 'message' && activity.text && activity.text.trim() !== '') {
