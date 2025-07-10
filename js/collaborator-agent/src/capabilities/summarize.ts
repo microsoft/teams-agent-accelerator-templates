@@ -63,7 +63,7 @@ const GET_MESSAGES_BY_RELATIVE_TIME_SCHEMA = {
  * Creates a specialized summarizer prompt with function tools for dynamic message retrieval
  */
 export function createSummarizerPrompt(conversationId: string, userTimezone?: string): ChatPrompt {
-  console.log(`📋 Creating Summarizer Agent for conversation: ${conversationId}`);
+  console.log(`📋 Creating Summarizer Capability for conversation: ${conversationId}`);
   if (userTimezone) {
     console.log(`🕒 Using timezone: ${userTimezone}`);
   }
@@ -184,7 +184,7 @@ export function createSummarizerPrompt(conversationId: string, userTimezone?: st
     });
   });
 
-  console.log(`📋 Summarizer Agent created with conversation history and functions`);
+  console.log(`📋 Summarizer Capability created with conversation history and functions`);
   return summarizerPrompt;
 }
 

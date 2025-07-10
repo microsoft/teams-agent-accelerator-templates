@@ -5,7 +5,7 @@ import { getMessagesByTimeRange } from '../storage/message';
 import { ACTION_ITEMS_PROMPT } from '../agent/instructions';
 import { getModelConfig } from '../utils/config';
 
-// Function schemas for the action items agent
+// Function schemas for the action items capability
 const ANALYZE_FOR_ACTION_ITEMS_SCHEMA = {
   type: 'object' as const,
   properties: {
@@ -100,7 +100,7 @@ export function createActionItemsPrompt(
   const actionItemsModelConfig = getModelConfig('actionItems');
   
   if (userTimezone) {
-    console.log(`🕒 Action Items Agent using timezone: ${userTimezone}`);
+    console.log(`🕒 Action Items Capability using timezone: ${userTimezone}`);
   }
   
   // Adjust instructions based on conversation type
@@ -195,7 +195,7 @@ export function createActionItemsPrompt(
         description: args.description,
         assigned_to: args.assigned_to,
         assigned_to_id: assignedToId, // Now properly setting the user ID
-        assigned_by: 'AI Action Items Agent',
+        assigned_by: 'AI Action Items Capability',
         status: 'pending',
         priority: args.priority,
         due_date: parsedDueDate
@@ -271,7 +271,7 @@ export function createActionItemsPrompt(
   .function('update_action_item_status', 'Update the status of an existing action item', UPDATE_ACTION_ITEM_SCHEMA, async (args: any) => {
     console.log(`🔄 FUNCTION CALL: update_action_item_status - Item #${args.action_item_id} to ${args.new_status}`);
     
-    const success = storage.updateActionItemStatus(args.action_item_id, args.new_status, 'AI Action Items Agent');
+    const success = storage.updateActionItemStatus(args.action_item_id, args.new_status, 'AI Action Items Capability');
     
     if (success) {
       const updatedItem = storage.getActionItemById(args.action_item_id);
@@ -299,7 +299,7 @@ export function createActionItemsPrompt(
     });
   });
 
-  console.log('🎯 Action Items Agent initialized with action item management capabilities');
+  console.log('🎯 Action Items Capability initialized with action item management capabilities');
   return prompt;
 }
 
