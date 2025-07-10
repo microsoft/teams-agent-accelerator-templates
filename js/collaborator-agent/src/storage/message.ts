@@ -6,6 +6,8 @@ import { SqliteKVStore, MessageRecord } from './storage';
  */
 export class MessageManager {
   private storage: SqliteKVStore;
+  private conversationMessages = new Map<string, any[]>(); // In-memory message tracking
+  private activityContext = new Map<string, any>(); // Store activity context for chat type detection
 
   constructor(storage: SqliteKVStore) {
     this.storage = storage;
@@ -111,6 +113,68 @@ export class MessageManager {
   }
 
   /**
+   * Add a message to tracking (called when user sends or AI responds)
+   */
+  addMessageToTracking(conversationKey: string, role: string, content: string, activity?: any, name?: string): void {
+    const messages = this.conversationMessages.get(conversationKey) || [];
+    const newMessage = { 
+      role, 
+      content,
+      name: name || (role === 'user' ? 'Unknown User' : 'Assistant'),
+      activity_id: activity?.id || undefined
+    };
+    messages.push(newMessage);
+    this.conversationMessages.set(conversationKey, messages);
+    
+    console.log(`📝 Added ${role} message from "${newMessage.name}" to tracking for ${conversationKey} (total: ${messages.length})`);
+    
+    if (activity) {
+      this.activityContext.set(conversationKey, activity);
+      const detectedType = activity?.conversation?.isGroup === false ? '1-on-1' : 'Group/Channel';
+      console.log(`🎯 Detected chat type: ${detectedType}`);
+    }
+  }
+
+  /**
+   * Clear conversation from both tracking and storage
+   */
+  clearConversation(conversationKey: string): void {
+    this.storage.clearConversation(conversationKey);
+    this.conversationMessages.delete(conversationKey);
+    this.activityContext.delete(conversationKey);
+    console.log(`🧹 Cleared conversation: ${conversationKey}`);
+  }
+
+  /**
+   * Save messages directly without needing a prompt
+   */
+  async saveMessagesDirectly(conversationKey: string): Promise<void> {
+    try {
+      const messages = this.conversationMessages.get(conversationKey) || [];
+      console.log(`💾 Saving messages directly using tracking: ${messages.length} messages`);
+      
+      let messagesToStore: any[];
+      const storedActivity = this.activityContext.get(conversationKey);
+      const isOneOnOne = storedActivity?.conversation?.isGroup === false;
+      
+      if (isOneOnOne) {
+        messagesToStore = messages.filter(msg => 
+          msg.role === 'user' || msg.role === 'model'
+        );
+        console.log(`💬 1-on-1 chat: Storing user + AI messages (${messagesToStore.length}/${messages.length})`);
+      } else {
+        messagesToStore = messages.filter(msg => msg.role === 'user');
+        console.log(`👥 Group chat: Storing user messages only (${messagesToStore.length}/${messages.length})`);
+      }
+      
+      this.storage.set(conversationKey, messagesToStore);
+      
+    } catch (error) {
+      console.error(`❌ Error saving messages directly for key ${conversationKey}:`, error);
+    }
+  }
+
+  /**
    * Get the underlying storage instance for advanced operations
    */
   getStorage(): SqliteKVStore {
@@ -137,4 +201,17 @@ export function getRecentMessages(conversationKey: string, limit: number = 10): 
 
 export function getMessageStorage(): SqliteKVStore {
   return messageManager.getStorage();
+}
+
+// Message tracking functions
+export function addMessageToTracking(conversationKey: string, role: string, content: string, activity?: any, name?: string): void {
+  return messageManager.addMessageToTracking(conversationKey, role, content, activity, name);
+}
+
+export function clearConversation(conversationKey: string): void {
+  return messageManager.clearConversation(conversationKey);
+}
+
+export async function saveMessagesDirectly(conversationKey: string): Promise<void> {
+  return messageManager.saveMessagesDirectly(conversationKey);
 }

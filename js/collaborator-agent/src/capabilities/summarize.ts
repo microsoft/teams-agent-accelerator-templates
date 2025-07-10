@@ -189,27 +189,6 @@ export function createSummarizerPrompt(conversationId: string, userTimezone?: st
 }
 
 /**
- * Helper function to get recent messages with proper attribution
- */
-export function getRecentMessagesWithNames(conversationId: string, limit: number = 10) {
-  return getRecentMessages(conversationId, limit);
-}
-
-/**
- * Helper function to get messages by time range with proper attribution
- */
-export function getMessagesByTimeRangeWithNames(conversationId: string, startTime?: string, endTime?: string) {
-  return getMessagesByTimeRange(conversationId, startTime, endTime);
-}
-
-/**
- * Helper function to get all messages with timestamps and names
- */
-export function getAllMessagesWithNames(conversationId: string) {
-  return getMessagesWithTimestamps(conversationId);
-}
-
-/**
  * Parse relative time expressions for summaries with timezone awareness
  */
 function parseRelativeTimeForSummary(timeExpression: string, userTimezone: string = 'UTC'): { startTime: string, endTime: string } {
