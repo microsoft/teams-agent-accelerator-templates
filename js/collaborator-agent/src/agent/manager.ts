@@ -9,7 +9,7 @@ import { createActionItemsPrompt, getConversationParticipantsFromAPI } from '../
 // Result interface for manager responses
 export interface ManagerResult {
     response: string;
-    delegatedAgent: string | null; // 'summarizer', 'action_items', 'search', or null for direct response
+    delegatedCapability: string | null; // 'summarizer', 'action_items', 'search', or null for direct response
     adaptiveCards?: any[]; // Optional adaptive cards for search results
 }
 
@@ -21,7 +21,7 @@ export class ManagerPrompt {
     private currentUserId?: string;
     private currentUserName?: string;
     private currentUserTimezone?: string;
-    private lastDelegatedAgent: string | null = null;
+    private lastDelegatedCapability: string | null = null;
     private lastSearchAdaptiveCards: any[] = [];
 
     constructor(storage: SqliteKVStore) {
@@ -41,12 +41,12 @@ export class ManagerPrompt {
                 apiVersion: managerModelConfig.apiVersion,
             }),
         })
-            .function('delegate_to_summarizer', 'Delegate conversation analysis, summarization, or message retrieval tasks to the Summarizer Agent', {
+            .function('delegate_to_summarizer', 'Delegate conversation analysis, summarization, or message retrieval tasks to the Summarizer Capability', {
                 type: 'object',
                 properties: {
                     user_request: {
                         type: 'string',
-                        description: 'The original user request to be processed by the Summarizer Agent'
+                        description: 'The original user request to be processed by the Summarizer Capability'
                     },
                     conversation_id: {
                         type: 'string',
@@ -55,15 +55,15 @@ export class ManagerPrompt {
                 },
                 required: ['user_request', 'conversation_id']
             }, async (args: any) => {
-                this.lastDelegatedAgent = 'summarizer';
+                this.lastDelegatedCapability = 'summarizer';
                 return await this.delegateToSummarizer(args.user_request, args.conversation_id);
             })
-            .function('delegate_to_action_items', 'Delegate task management, action item creation, or assignment tracking to the Action Items Agent', {
+            .function('delegate_to_action_items', 'Delegate task management, action item creation, or assignment tracking to the Action Items Capability', {
                 type: 'object',
                 properties: {
                     user_request: {
                         type: 'string',
-                        description: 'The original user request to be processed by the Action Items Agent'
+                        description: 'The original user request to be processed by the Action Items Capability'
                     },
                     conversation_id: {
                         type: 'string',
@@ -72,15 +72,15 @@ export class ManagerPrompt {
                 },
                 required: ['user_request', 'conversation_id']
             }, async (args: any) => {
-                this.lastDelegatedAgent = 'action_items';
+                this.lastDelegatedCapability = 'action_items';
                 return await this.delegateToActionItems(args.user_request, args.conversation_id);
             })
-            .function('delegate_to_search', 'Delegate conversation search, message finding, or historical conversation lookup to the Search Agent', {
+            .function('delegate_to_search', 'Delegate conversation search, message finding, or historical conversation lookup to the Search Capability', {
                 type: 'object',
                 properties: {
                     user_request: {
                         type: 'string',
-                        description: 'The original user request to be processed by the Search Agent'
+                        description: 'The original user request to be processed by the Search Capability'
                     },
                     conversation_id: {
                         type: 'string',
@@ -89,11 +89,11 @@ export class ManagerPrompt {
                 },
                 required: ['user_request', 'conversation_id']
             }, async (args: any) => {
-                this.lastDelegatedAgent = 'search';
+                this.lastDelegatedCapability = 'search';
                 return await this.delegateToSearch(args.user_request, args.conversation_id);
             });
 
-        console.log('🎯 Manager Agent initialized with delegation capabilities');
+        console.log('🎯 Manager initialized with delegation capabilities');
         return prompt;
     }
 
@@ -104,29 +104,29 @@ export class ManagerPrompt {
                 this.currentUserTimezone = userTimezone;
             }
 
-            this.lastDelegatedAgent = null;
+            this.lastDelegatedCapability = null;
             this.lastSearchAdaptiveCards = [];
 
             const response = await this.prompt.send(`
 User Request: "${userRequest}"
 Conversation ID: ${conversationId}
 
-Please analyze this request and delegate it to the appropriate specialized agent. Return ONLY the response from the delegated agent without any additional commentary.
+Please analyze this request and delegate it to the appropriate specialized capability. Return ONLY the response from the delegated capability without any additional commentary.
 `);
 
-            console.log(`🎯 Delegated to agent: ${this.lastDelegatedAgent || 'direct (no delegation)'}`);
+            console.log(`🎯 Delegated to capability: ${this.lastDelegatedCapability || 'direct (no delegation)'}`);
             
             return {
                 response: response.content || 'No response generated',
-                delegatedAgent: this.lastDelegatedAgent,
+                delegatedCapability: this.lastDelegatedCapability,
                 adaptiveCards: this.lastSearchAdaptiveCards.length > 0 ? this.lastSearchAdaptiveCards : undefined
             };
 
         } catch (error) {
-            console.error('❌ Error in Manager Agent:', error);
+            console.error('❌ Error in Manager:', error);
             return {
                 response: `Sorry, I encountered an error processing your request: ${error instanceof Error ? error.message : 'Unknown error'}`,
-                delegatedAgent: null
+                delegatedCapability: null
             };
         }
     }
@@ -139,29 +139,29 @@ Please analyze this request and delegate it to the appropriate specialized agent
             }
 
             this.currentAPI = api;
-            this.lastDelegatedAgent = null;
+            this.lastDelegatedCapability = null;
             this.lastSearchAdaptiveCards = [];
 
             const response = await this.prompt.send(`
 User Request: "${userRequest}"
 Conversation ID: ${conversationId}
 
-Please analyze this request and delegate it to the appropriate specialized agent. Return ONLY the response from the delegated agent without any additional commentary.
+Please analyze this request and delegate it to the appropriate specialized capability. Return ONLY the response from the delegated capability without any additional commentary.
 `);
 
-            console.log(`🎯 Delegated to agent: ${this.lastDelegatedAgent || 'direct (no delegation)'}`);
+            console.log(`🎯 Delegated to capability: ${this.lastDelegatedCapability || 'direct (no delegation)'}`);
             
             return {
                 response: response.content || 'No response generated',
-                delegatedAgent: this.lastDelegatedAgent,
+                delegatedCapability: this.lastDelegatedCapability,
                 adaptiveCards: this.lastSearchAdaptiveCards.length > 0 ? this.lastSearchAdaptiveCards : undefined
             };
 
         } catch (error) {
-            console.error('❌ Error in Manager Agent:', error);
+            console.error('❌ Error in Manager:', error);
             return {
                 response: `Sorry, I encountered an error processing your request: ${error instanceof Error ? error.message : 'Unknown error'}`,
-                delegatedAgent: null
+                delegatedCapability: null
             };
         } finally {
             this.currentAPI = undefined;
@@ -179,7 +179,7 @@ Please analyze this request and delegate it to the appropriate specialized agent
             this.currentAPI = api;
             this.currentUserId = userId;
             this.currentUserName = userName;
-            this.lastDelegatedAgent = null;
+            this.lastDelegatedCapability = null;
             this.lastSearchAdaptiveCards = [];
 
             const response = await this.prompt.send(`
@@ -189,22 +189,22 @@ User ID: ${userId}
 User Name: ${userName}
 Context: This is a personal (1:1) chat with the user.
 
-Please analyze this request and delegate it to the appropriate specialized agent. Return ONLY the response from the delegated agent without any additional commentary.
+Please analyze this request and delegate it to the appropriate specialized capability. Return ONLY the response from the delegated capability without any additional commentary.
 For action item requests, use the user's ID for personal action item management.
 `);
-            console.log(`🎯 Delegated to agent: ${this.lastDelegatedAgent || 'direct (no delegation)'}`);
+            console.log(`🎯 Delegated to capability: ${this.lastDelegatedCapability || 'direct (no delegation)'}`);
             
             return {
                 response: response.content || 'No response generated',
-                delegatedAgent: this.lastDelegatedAgent,
+                delegatedCapability: this.lastDelegatedCapability,
                 adaptiveCards: this.lastSearchAdaptiveCards.length > 0 ? this.lastSearchAdaptiveCards : undefined
             };
 
         } catch (error) {
-            console.error('❌ Error in Manager Agent (personal mode):', error);
+            console.error('❌ Error in Manager (personal mode):', error);
             return {
                 response: `Sorry, I encountered an error processing your request: ${error instanceof Error ? error.message : 'Unknown error'}`,
-                delegatedAgent: null
+                delegatedCapability: null
             };
         } finally {
             this.currentAPI = undefined;
@@ -216,26 +216,26 @@ For action item requests, use the user's ID for personal action item management.
 
     private async delegateToSummarizer(userRequest: string, conversationId: string): Promise<string> {
         try {
-            console.log(`📋 DELEGATION: Delegating to Summarizer Agent: "${userRequest}" for conversation: ${conversationId}`);
+            console.log(`📋 DELEGATION: Delegating to Summarizer Capability: "${userRequest}" for conversation: ${conversationId}`);
 
             const summarizerPrompt = await routeToPrompt('summarizer', conversationId, this.storage, [], this.currentUserTimezone);
             const response = await summarizerPrompt.send(userRequest);
 
-            console.log(`📋 DELEGATION: Summarizer Agent completed task. Response length: ${response.content?.length || 0}`);
-            return response.content || 'No response from Summarizer Agent';
+            console.log(`📋 DELEGATION: Summarizer Capability completed task. Response length: ${response.content?.length || 0}`);
+            return response.content || 'No response from Summarizer Capability';
 
         } catch (error) {
-            console.error('❌ Error delegating to Summarizer Agent:', error);
+            console.error('❌ Error delegating to Summarizer Capability:', error);
             return JSON.stringify({
                 status: 'error',
-                message: `Error in Summarizer Agent: ${error instanceof Error ? error.message : 'Unknown error'}`
+                message: `Error in Summarizer Capability: ${error instanceof Error ? error.message : 'Unknown error'}`
             });
         }
     }
 
     private async delegateToActionItems(userRequest: string, conversationId: string): Promise<string> {
         try {
-            console.log(`📋 DELEGATION: Delegating to Action Items Agent: "${userRequest}" for conversation: ${conversationId}`);
+            console.log(`📋 DELEGATION: Delegating to Action Items Capability: "${userRequest}" for conversation: ${conversationId}`);
 
             let participantList: Array<{ name: string, id: string }> = [];
             let isPersonalChat = false;
@@ -254,7 +254,7 @@ For action item requests, use the user's ID for personal action item management.
                         participantList = [];
                     }
                 } else {
-                    console.warn(`⚠️ No Teams API available for action items agent`);
+                    console.warn(`⚠️ No Teams API available for action items capability`);
                     participantList = [];
                 }
             }
@@ -271,21 +271,21 @@ For action item requests, use the user's ID for personal action item management.
 
             const response = await actionItemsPrompt.send(userRequest);
 
-            console.log(`📋 DELEGATION: Action Items Agent completed task. Response length: ${response.content?.length || 0}`);
-            return response.content || 'No response from Action Items Agent';
+            console.log(`📋 DELEGATION: Action Items Capability completed task. Response length: ${response.content?.length || 0}`);
+            return response.content || 'No response from Action Items Capability';
 
         } catch (error) {
-            console.error('❌ Error delegating to Action Items Agent:', error);
+            console.error('❌ Error delegating to Action Items Capability:', error);
             return JSON.stringify({
                 status: 'error',
-                message: `Error in Action Items Agent: ${error instanceof Error ? error.message : 'Unknown error'}`
+                message: `Error in Action Items Capability: ${error instanceof Error ? error.message : 'Unknown error'}`
             });
         }
     }
 
     private async delegateToSearch(userRequest: string, conversationId: string): Promise<string> {
         try {
-            console.log(`🔍 DELEGATION: Delegating to Search Agent: "${userRequest}" for conversation: ${conversationId}`);
+            console.log(`🔍 DELEGATION: Delegating to Search Capability: "${userRequest}" for conversation: ${conversationId}`);
 
             // Create a shared array for adaptive cards
             const adaptiveCardsArray: any[] = [];
@@ -295,21 +295,21 @@ For action item requests, use the user's ID for personal action item management.
             // Store the adaptive cards that were added during search
             this.lastSearchAdaptiveCards = adaptiveCardsArray;
 
-            console.log(`🔍 DELEGATION: Search Agent completed task. Response length: ${response.content?.length || 0}, Cards found: ${adaptiveCardsArray.length}`);
+            console.log(`🔍 DELEGATION: Search Capability completed task. Response length: ${response.content?.length || 0}, Cards found: ${adaptiveCardsArray.length}`);
             
-            return response.content || 'No response from Search Agent';
+            return response.content || 'No response from Search Capability';
 
         } catch (error) {
-            console.error('❌ Error delegating to Search Agent:', error);
+            console.error('❌ Error delegating to Search Capability:', error);
             return JSON.stringify({
                 status: 'error',
-                message: `Error in Search Agent: ${error instanceof Error ? error.message : 'Unknown error'}`
+                message: `Error in Search Capability: ${error instanceof Error ? error.message : 'Unknown error'}`
             });
         }
     }
 
-    // Method to add new specialized agents in the future
-    addAgent(agentName: string, _description: string, _functionSchema: any, _handler: Function): void {
-        console.log(`🔧 Adding new agent: ${agentName}`);
+    // Method to add new specialized capabilitys in the future
+    addCapability(capabilityName: string, _description: string, _functionSchema: any, _handler: Function): void {
+        console.log(`🔧 Adding new capability: ${capabilityName}`);
     }
 }

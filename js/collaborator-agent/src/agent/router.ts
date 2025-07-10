@@ -4,18 +4,18 @@ import { createSummarizerPrompt } from '../capabilities/summarize';
 import { createActionItemsPrompt } from '../capabilities/actionItems';
 import { createSearchPrompt } from '../capabilities/search';
 
-// Router that provides specific prompts for different agent types
+// Router that provides specific prompts for different capability types
 export async function routeToPrompt(
-  agentType: string, 
+  capabilityType: string, 
   conversationId: string, 
   storage: SqliteKVStore, 
   participants: Array<{name: string, id: string}> = [], 
   userTimezone?: string,
   adaptiveCardsArray?: any[]
 ): Promise<ChatPrompt> {
-  console.log(`🔀 Routing to ${agentType} agent for conversation: ${conversationId}`);
+  console.log(`🔀 Routing to ${capabilityType} capability for conversation: ${conversationId}`);
   
-  switch (agentType.toLowerCase()) {
+  switch (capabilityType.toLowerCase()) {
     case 'summarizer':
       return createSummarizerPrompt(conversationId, userTimezone);
     
@@ -27,26 +27,26 @@ export async function routeToPrompt(
       return createSearchPrompt(conversationId, userTimezone, adaptiveCardsArray);
     
     default:
-      console.warn(`⚠️ Unknown agent type: ${agentType}, defaulting to summarizer`);
+      console.warn(`⚠️ Unknown capability type: ${capabilityType}, defaulting to summarizer`);
       return createSummarizerPrompt(conversationId, userTimezone);
   }
 }
 
-// Factory function for creating new agent types
-export function createAgentRouter(): {
-  addRoute: (agentType: string, factory: (conversationId: string, userTimezone?: string) => ChatPrompt) => void;
-  route: (agentType: string, conversationId: string, userTimezone?: string) => Promise<ChatPrompt>;
+// Factory function for creating new capability types
+export function createCapabilityRouter(): {
+  addRoute: (capabilityType: string, factory: (conversationId: string, userTimezone?: string) => ChatPrompt) => void;
+  route: (capabilityType: string, conversationId: string, userTimezone?: string) => Promise<ChatPrompt>;
 } {
   const routes = new Map<string, (conversationId: string, userTimezone?: string) => ChatPrompt>();
   
   routes.set('summarizer', createSummarizerPrompt);
   
   return {
-    addRoute: (agentType: string, factory: (conversationId: string, userTimezone?: string) => ChatPrompt) => {
-      routes.set(agentType.toLowerCase(), factory);
+    addRoute: (capabilityType: string, factory: (conversationId: string, userTimezone?: string) => ChatPrompt) => {
+      routes.set(capabilityType.toLowerCase(), factory);
     },
-    route: async (agentType: string, conversationId: string, userTimezone?: string) => {
-      const factory = routes.get(agentType.toLowerCase()) || routes.get('summarizer')!;
+    route: async (capabilityType: string, conversationId: string, userTimezone?: string) => {
+      const factory = routes.get(capabilityType.toLowerCase()) || routes.get('summarizer')!;
       return factory(conversationId, userTimezone);
     }
   };
