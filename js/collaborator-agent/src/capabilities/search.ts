@@ -1,9 +1,9 @@
 import { ChatPrompt } from '@microsoft/teams.ai';
 import { OpenAIChatModel } from '@microsoft/teams.openai';
+import { CitationAppearance } from '@microsoft/teams.api';
 import { MessageRecord } from '../storage/storage';
 import { getMessagesByTimeRange } from '../storage/message';
 import { getModelConfig } from '../utils/config';
-import { IMessageActivity } from '@microsoft/teams.api';
 import { SEARCH_PROMPT } from '../agent/instructions';
 
 // Function schemas for search operations
@@ -38,70 +38,25 @@ const SEARCH_MESSAGES_SCHEMA = {
 };
 
 /**
- * Create an Adaptive Card with deep link to original message
+ * Create a Citation object from a message record for display in Teams
  */
-export function createQuotedAdaptiveCard(activity: IMessageActivity): any {
-  if (!activity.id || !activity.conversation?.id) {
-    throw new Error("Missing activity.id or conversation.id");
-  }
-
-  const messageText = activity.text ?? "<no message text>";
-  const senderName = activity.from?.name ?? "Unknown";
-  const timestamp = activity.timestamp
-    ? new Date(activity.timestamp).toLocaleString()
-    : "";
-
-  // Build deep link with chat context
-  const chatId = activity.conversation.id;
-  const messageId = activity.id;
-  const contextParam = encodeURIComponent(JSON.stringify({ contextType: "chat" }));
-  const deepLink = `https://teams.microsoft.com/l/message/${encodeURIComponent(chatId)}/${messageId}?context=${contextParam}`;
-
-  // Return Adaptive Card JSON
-  return {
-    type: "AdaptiveCard",
-    version: "1.4",
-    body: [
-      {
-        type: "TextBlock",
-        text: `"${messageText}"`,
-        wrap: true,
-        weight: "Bolder",
-        color: "Accent",
-        spacing: "Medium"
-      },
-      {
-        type: "TextBlock",
-        text: `— ${senderName}${timestamp ? `, ${timestamp}` : ""}`,
-        isSubtle: true,
-        wrap: true,
-        spacing: "None"
-      }
-    ],
-    actions: [
-      {
-        type: "Action.OpenUrl",
-        title: "View Original Message",
-        url: deepLink
-      }
-    ],
-    $schema: "http://adaptivecards.io/schemas/adaptive-card.json"
-  };
-}
-
-/**
- * Create an Adaptive Card from a stored message record
- */
-export function createQuotedAdaptiveCardFromRecord(message: MessageRecord, conversationId: string): any {
+export function createCitationFromRecord(message: MessageRecord, conversationId: string): CitationAppearance {
   if (!message.activity_id) {
     throw new Error("Message record missing activity_id for deep linking");
   }
 
   const messageText = message.content ?? "<no message text>";
   const senderName = message.name ?? "Unknown";
-  const timestamp = message.timestamp
-    ? new Date(message.timestamp).toLocaleString()
-    : "";
+  
+  // Format timestamp for context
+  const messageDate = new Date(message.timestamp);
+  const formattedDate = messageDate.toLocaleDateString('en-US', { 
+    month: 'short', 
+    day: 'numeric', 
+    hour: 'numeric', 
+    minute: '2-digit',
+    hour12: true 
+  });
 
   // Build deep link with chat context
   const chatId = conversationId;
@@ -109,35 +64,20 @@ export function createQuotedAdaptiveCardFromRecord(message: MessageRecord, conve
   const contextParam = encodeURIComponent(JSON.stringify({ contextType: "chat" }));
   const deepLink = `https://teams.microsoft.com/l/message/${encodeURIComponent(chatId)}/${messageId}?context=${contextParam}`;
 
-  // Return Adaptive Card JSON
+  // Create citation with message content and timestamp context
+  const maxContentLength = 120; // Leave room for timestamp info
+  const truncatedContent = messageText.length > maxContentLength ? 
+    messageText.substring(0, maxContentLength) + '...' : 
+    messageText;
+  const abstractText = `${formattedDate}: "${truncatedContent}"`;
+  
+  const titleText = `Message from ${senderName}`.length > 80 ? `${senderName}` : `Message from ${senderName}`;
+
   return {
-    type: "AdaptiveCard",
-    version: "1.4",
-    body: [
-      {
-        type: "TextBlock",
-        text: `"${messageText}"`,
-        wrap: true,
-        weight: "Bolder",
-        color: "Accent",
-        spacing: "Medium"
-      },
-      {
-        type: "TextBlock",
-        text: `— ${senderName}${timestamp ? `, ${timestamp}` : ""}`,
-        isSubtle: true,
-        wrap: true,
-        spacing: "None"
-      }
-    ],
-    actions: [
-      {
-        type: "Action.OpenUrl",
-        title: "View Original Message",
-        url: deepLink
-      }
-    ],
-    $schema: "http://adaptivecards.io/schemas/adaptive-card.json"
+    name: titleText,
+    url: deepLink,
+    abstract: abstractText,
+    keywords: senderName ? [senderName] : undefined
   };
 }
 
@@ -190,7 +130,7 @@ function searchMessages(
 export function createSearchPrompt(
   conversationId: string,
   userTimezone?: string,
-  adaptiveCardsArray?: any[]
+  citationsArray?: CitationAppearance[]
 ): ChatPrompt {
   const searchModelConfig = getModelConfig('search');
   
@@ -248,16 +188,16 @@ CURRENT CONTEXT:
       response += '\n';
     });
 
-    // Create adaptive cards for the first few results (limit to 5 to avoid overwhelming the user)
-    const cardsToShow = matchingMessages.slice(0, 5);
-    const adaptiveCards = cardsToShow.map(msg => createQuotedAdaptiveCardFromRecord(msg, conversationId));
+    // Create citations for the first few results (limit to 5 to avoid overwhelming the user)
+    const messagesToCite = matchingMessages.slice(0, 5);
+    const citations = messagesToCite.map(msg => createCitationFromRecord(msg, conversationId));
     
-    // If we have an array to store cards, add them there for the manager to access
-    if (adaptiveCardsArray) {
-      adaptiveCardsArray.push(...adaptiveCards);
+    // If we have an array to store citations, add them there for the manager to access
+    if (citationsArray) {
+      citationsArray.push(...citations);
     }
     
-    // Return just the summary text (adaptive cards are handled via the shared array)
+    // Return just the summary text (citations are handled via the shared array)
     return response;
   });
   

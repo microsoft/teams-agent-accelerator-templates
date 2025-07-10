@@ -1,6 +1,6 @@
 import { App } from '@microsoft/teams.apps';
 import { DevtoolsPlugin } from '@microsoft/teams.dev';
-import { MessageActivity } from '@microsoft/teams.api';
+import { MessageActivity, CitationAppearance } from '@microsoft/teams.api';
 import { ManagerPrompt } from './agent/manager';
 import { addMessageToTracking, saveMessagesDirectly, getMessageStorage } from './storage/message';
 import { validateEnvironment, logModelConfigs } from './utils/config';
@@ -8,23 +8,26 @@ import { handleDebugCommand } from './utils/debug';
 import { MockDataManager } from './utils/mockData';
 
 /**
- * Helper function to send a message with optional adaptive cards
+ * Helper function to finalize and send a prompt response with citations
  */
-async function sendMessageWithCards(send: any, text: string, adaptiveCards?: any[]): Promise<string> {
+async function finalizePromptResponse(send: any, text: string, citations?: CitationAppearance[]): Promise<string> {
   const messageActivity = new MessageActivity(text)
     .addAiGenerated()
     .addFeedback();
 
-  // If we have adaptive cards, add them as attachments
-  if (adaptiveCards && adaptiveCards.length > 0) {
-    for (const card of adaptiveCards) {
-      messageActivity.addAttachments({
-        contentType: 'application/vnd.microsoft.card.adaptive',
-        content: card
-      });
-    }
+  // Add citations if provided
+  if (citations && citations.length > 0) {
+    console.log(`Adding ${citations.length} citations to message activity`);
+    citations.forEach((citation, index) => {
+      const citationNumber = index + 1;
+      messageActivity.addCitation(citationNumber, citation);
+      // The corresponding citation needs to be added in the message content
+      messageActivity.text += ` [${citationNumber}]`;
+    });
   }
 
+  console.log('Citations in message activity:');
+  console.log(JSON.stringify(messageActivity.entities?.find(e => e.citation)?.citation, null, 2));
   const { id: sentMessageId } = await send(messageActivity);
   return sentMessageId;
 }
@@ -105,7 +108,7 @@ app.on('message', async ({ send, activity, next }) => {
     );
 
     if (result.response && result.response.trim() !== '') {
-      const sentMessageId = await sendMessageWithCards(send, result.response, result.adaptiveCards);
+      const sentMessageId = await finalizePromptResponse(send, result.response, result.citations);
       feedbackStorage.storeDelegatedCapability(sentMessageId, result.delegatedCapability);
       addMessageToTracking(conversationKey, 'assistant', result.response, { id: sentMessageId }, 'AI Assistant');
     } else {
@@ -141,7 +144,7 @@ app.on('mention', async ({ send, activity, api }) => {
     const result = await manager.processRequestWithAPI(activity.text, conversationKey, api, userTimezone);
 
     if (result.response && result.response.trim() !== '') {
-      const sentMessageId = await sendMessageWithCards(send, result.response, result.adaptiveCards);
+      const sentMessageId = await finalizePromptResponse(send, result.response, result.citations);
 
       feedbackStorage.storeDelegatedCapability(sentMessageId, result.delegatedCapability);
 
