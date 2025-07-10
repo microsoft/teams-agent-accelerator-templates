@@ -1,6 +1,7 @@
 import { ChatPrompt } from '@microsoft/teams.ai';
 import { OpenAIChatModel } from '@microsoft/teams.openai';
 import { SqliteKVStore, ActionItem } from '../storage/storage';
+import { getMessagesByTimeRange } from '../storage/message';
 import { ACTION_ITEMS_PROMPT } from '../agent/instructions';
 import { getModelConfig } from '../utils/config';
 
@@ -130,8 +131,8 @@ export function createActionItemsPrompt(
     
     const { start_time, end_time } = args;
     console.log(`🔍 FUNCTION CALL: get_messages_by_time_range with start=${start_time}, end=${end_time} for conversation=${conversationId}`);
-    const messages = storage.getMessagesByTimeRange(conversationId, start_time, end_time);
-    console.log(`� Retrieved ${messages.length} messages from time range`);
+    const messages = getMessagesByTimeRange(conversationId, start_time, end_time);
+    console.log(`📅 Retrieved ${messages.length} messages from time range`);
     
     // Get existing action items to avoid duplicates
     const existingActionItems = storage.getActionItemsByConversation(conversationId);

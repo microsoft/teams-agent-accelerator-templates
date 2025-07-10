@@ -1,6 +1,7 @@
 import { ChatPrompt } from '@microsoft/teams.ai';
 import { OpenAIChatModel } from '@microsoft/teams.openai';
-import { SqliteKVStore, MessageRecord } from '../storage/storage';
+import { MessageRecord } from '../storage/storage';
+import { getMessagesByTimeRange } from '../storage/message';
 import { getModelConfig } from '../utils/config';
 import { IMessageActivity } from '@microsoft/teams.api';
 import { SEARCH_PROMPT } from '../agent/instructions';
@@ -144,7 +145,6 @@ export function createQuotedAdaptiveCardFromRecord(message: MessageRecord, conve
  * Search for messages based on keywords and participants
  */
 function searchMessages(
-  storage: SqliteKVStore,
   conversationId: string,
   keywords: string[],
   participants: string[] = [],
@@ -153,18 +153,18 @@ function searchMessages(
   maxResults: number = 10
 ): MessageRecord[] {
   try {
-    // Get messages in the time range
-    const messages = storage.getMessagesByTimeRange(conversationId, startTime, endTime);
+    // Get messages in the time range using centralized function
+    const messages = getMessagesByTimeRange(conversationId, startTime, endTime);
     
     // Filter by keywords (case-insensitive)
-    let filteredMessages = messages.filter(msg => {
+    let filteredMessages = messages.filter((msg: MessageRecord) => {
       const content = msg.content.toLowerCase();
       return keywords.some(keyword => content.includes(keyword.toLowerCase()));
     });
     
     // Filter by participants if specified
     if (participants.length > 0) {
-      filteredMessages = filteredMessages.filter(msg => {
+      filteredMessages = filteredMessages.filter((msg: MessageRecord) => {
         const name = msg.name.toLowerCase();
         return participants.some(participant => 
           name.includes(participant.toLowerCase()) || 
@@ -174,7 +174,7 @@ function searchMessages(
     }
     
     // Sort by timestamp (most recent first) and limit results
-    filteredMessages.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+    filteredMessages.sort((a: MessageRecord, b: MessageRecord) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
     
     return filteredMessages.slice(0, maxResults);
     
@@ -189,7 +189,6 @@ function searchMessages(
  */
 export function createSearchPrompt(
   conversationId: string,
-  storage: SqliteKVStore,
   userTimezone?: string,
   adaptiveCardsArray?: any[]
 ): ChatPrompt {
@@ -219,7 +218,6 @@ CURRENT CONTEXT:
     
     // Search for matching messages
     const matchingMessages = searchMessages(
-      storage,
       conversationId,
       keywords,
       participants,

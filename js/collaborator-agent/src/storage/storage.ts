@@ -327,98 +327,7 @@ export class SqliteKVStore {
     }
   }
 
-  // Get messages within a time range
-  getMessagesByTimeRange(conversationId: string, startTime?: string, endTime?: string): MessageRecord[] {
-    try {
-      let sql = 'SELECT * FROM messages WHERE conversation_id = ?';
-      const params: any[] = [conversationId];
 
-      console.log(`🔍 SQL Query Debug - Conversation: ${conversationId}`);
-      console.log(`🔍 SQL Query Debug - Start time: ${startTime}`);
-      console.log(`🔍 SQL Query Debug - End time: ${endTime}`);
-
-      if (startTime) {
-        sql += ' AND timestamp >= ?';
-        params.push(startTime);
-      }
-
-      if (endTime) {
-        sql += ' AND timestamp <= ?';
-        params.push(endTime);
-      }
-
-      sql += ' ORDER BY timestamp ASC';
-
-      console.log(`🔍 SQL Query Debug - Final SQL: ${sql}`);
-      console.log(`🔍 SQL Query Debug - Parameters:`, params);
-
-      const stmt = this.db.prepare(sql);
-      const rows = stmt.all(...params) as MessageRecord[];
-      
-      console.log(`🔍 Retrieved ${rows.length} messages from time range for conversation: ${conversationId}`);
-      
-      // Additional debugging - show first few timestamps if available
-      if (rows.length > 0) {
-        console.log(`🔍 SQL Query Debug - First message timestamp: ${rows[0].timestamp}`);
-        console.log(`🔍 SQL Query Debug - Last message timestamp: ${rows[rows.length - 1].timestamp}`);
-      }
-      
-      // If no results but we expected some, let's debug further
-      if (rows.length === 0 && (startTime || endTime)) {
-        // Get all messages to compare timestamps
-        const allRows = this.db.prepare('SELECT * FROM messages WHERE conversation_id = ? ORDER BY timestamp ASC').all(conversationId) as MessageRecord[];
-        console.log(`🔍 SQL Query Debug - Total messages in conversation: ${allRows.length}`);
-        if (allRows.length > 0) {
-          console.log(`🔍 SQL Query Debug - Actual first timestamp: ${allRows[0].timestamp}`);
-          console.log(`🔍 SQL Query Debug - Actual last timestamp: ${allRows[allRows.length - 1].timestamp}`);
-          console.log(`🔍 SQL Query Debug - String comparison test:`, {
-            firstVsStart: startTime ? `"${allRows[0].timestamp}" >= "${startTime}" = ${allRows[0].timestamp >= startTime}` : 'N/A',
-            lastVsEnd: endTime ? `"${allRows[allRows.length - 1].timestamp}" <= "${endTime}" = ${allRows[allRows.length - 1].timestamp <= endTime}` : 'N/A'
-          });
-        }
-      }
-      
-      return rows;
-    } catch (error) {
-      console.error(`❌ Error getting messages by time range for conversation ${conversationId}:`, error);
-      return [];
-    }
-  }
-
-  // Get all messages for a conversation with timestamps
-  getAllMessagesWithTimestamps(conversationId: string): MessageRecord[] {
-    return this.getMessagesByTimeRange(conversationId);
-  }
-
-  // Get recent messages (last N messages)
-  getRecentMessages(conversationId: string, limit: number = 10): MessageRecord[] {
-    try {
-      const stmt = this.db.prepare(`
-        SELECT * FROM messages 
-        WHERE conversation_id = ? 
-        ORDER BY id DESC 
-        LIMIT ?
-      `);
-      
-      const rows = stmt.all(conversationId, limit) as MessageRecord[];
-      console.log(`🔍 Retrieved ${rows.length} recent messages for conversation: ${conversationId}`);
-      
-      // Log the timestamps for debugging
-      if (rows.length > 0) {
-        console.log(`🕐 Recent message timestamps:`, rows.map(row => ({
-          id: row.id,
-          timestamp: row.timestamp,
-          role: row.role,
-          preview: row.content.substring(0, 30) + '...'
-        })));
-      }
-      
-      return rows.reverse(); // Return in chronological order (oldest first)
-    } catch (error) {
-      console.error(`❌ Error getting recent messages for conversation ${conversationId}:`, error);
-      return [];
-    }
-  }
 
   // Clear all messages for debugging (optional utility method)
   clearAllMessages(): void {
@@ -836,5 +745,12 @@ export class SqliteKVStore {
       console.error(`❌ Error getting feedback summary:`, error);
       return { error: 'Failed to get feedback summary' };
     }
+  }
+
+  /**
+   * Get the underlying database instance for direct SQL operations
+   */
+  getDb(): Database.Database {
+    return this.db;
   }
 }

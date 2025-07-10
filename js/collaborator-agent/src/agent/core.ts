@@ -1,4 +1,4 @@
-import { SqliteKVStore, MessageRecord } from '../storage/storage';
+import { SqliteKVStore } from '../storage/storage';
 import { createMockDatabase } from '../mock/mockMessages';
 import { USE_MOCK_DATA, DEFAULT_MOCK_CONVERSATION } from '../utils/constants';
 import { ManagerPrompt, ManagerResult } from './manager';
@@ -10,9 +10,6 @@ export interface PromptManager {
   processUserRequest(conversationKey: string, userRequest: string, api: any, userTimezone?: string): Promise<ManagerResult>;
   processUserRequestWithPersonalMode(conversationKey: string, userRequest: string, api: any, userId: string, userName: string, userTimezone?: string): Promise<ManagerResult>;
   clearConversation(conversationKey: string): void;
-  getMessagesWithTimestamps(conversationKey: string): MessageRecord[];
-  getMessagesByTimeRange(conversationKey: string, startTime?: string, endTime?: string): MessageRecord[];
-  getRecentMessages(conversationKey: string, limit?: number): MessageRecord[];
   getStorage(): SqliteKVStore;
   saveMessagesDirectly(conversationKey: string): Promise<void>;
   addMessageToTracking(conversationKey: string, role: string, content: string, activity?: any, name?: string): void;
@@ -67,20 +64,6 @@ export class CorePromptManager implements PromptManager {
   
   getStorage(): SqliteKVStore {
     return storage;
-  }
-
-  // ===== Timestamp-based Message Retrieval Methods =====
-
-  getMessagesWithTimestamps(conversationKey: string): MessageRecord[] {
-    return storage.getAllMessagesWithTimestamps(conversationKey);
-  }
-
-  getMessagesByTimeRange(conversationKey: string, startTime?: string, endTime?: string): MessageRecord[] {
-    return storage.getMessagesByTimeRange(conversationKey, startTime, endTime);
-  }
-
-  getRecentMessages(conversationKey: string, limit: number = 10): MessageRecord[] {
-    return storage.getRecentMessages(conversationKey, limit);
   }
 
   // ===== Mock Database for Debug Mode =====

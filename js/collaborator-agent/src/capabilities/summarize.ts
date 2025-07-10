@@ -1,6 +1,6 @@
 import { ChatPrompt } from '@microsoft/teams.ai';
 import { OpenAIChatModel } from '@microsoft/teams.openai';
-import { SqliteKVStore } from '../storage/storage';
+import { getRecentMessages, getMessagesByTimeRange, getMessagesWithTimestamps } from '../storage/message';
 import { SUMMARY_PROMPT } from '../agent/instructions';
 import { getModelConfig } from '../utils/config';
 
@@ -62,7 +62,7 @@ const GET_MESSAGES_BY_RELATIVE_TIME_SCHEMA = {
 /**
  * Creates a specialized summarizer prompt with function tools for dynamic message retrieval
  */
-export function createSummarizerPrompt(conversationId: string, storage: SqliteKVStore, userTimezone?: string): ChatPrompt {
+export function createSummarizerPrompt(conversationId: string, userTimezone?: string): ChatPrompt {
   console.log(`📋 Creating Summarizer Agent for conversation: ${conversationId}`);
   if (userTimezone) {
     console.log(`🕒 Using timezone: ${userTimezone}`);
@@ -88,11 +88,11 @@ export function createSummarizerPrompt(conversationId: string, storage: SqliteKV
   .function('get_recent_messages', 'Retrieve recent messages from the conversation history with timestamps', GET_RECENT_MESSAGES_SCHEMA, async (args: any) => {
     const limit = args.limit || 5;
     console.log(`🔍 FUNCTION CALL: get_recent_messages with limit=${limit} for conversation=${conversationId}`);
-    const recentMessages = storage.getRecentMessages(conversationId, limit);
+    const recentMessages = getRecentMessages(conversationId, limit);
     console.log(`📨 Retrieved ${recentMessages.length} recent messages`);
     return JSON.stringify({
       status: 'success',
-      messages: recentMessages.map(msg => ({
+      messages: recentMessages.map((msg: any) => ({
         timestamp: msg.timestamp,
         role: msg.role,
         name: msg.name,
@@ -104,11 +104,11 @@ export function createSummarizerPrompt(conversationId: string, storage: SqliteKV
   .function('get_messages_by_time_range', 'Retrieve messages from a specific time range', GET_MESSAGES_BY_TIME_RANGE_SCHEMA, async (args: any) => {
     const { start_time, end_time } = args;
     console.log(`🔍 FUNCTION CALL: get_messages_by_time_range with start=${start_time}, end=${end_time} for conversation=${conversationId}`);
-    const rangeMessages = storage.getMessagesByTimeRange(conversationId, start_time, end_time);
+    const rangeMessages = getMessagesByTimeRange(conversationId, start_time, end_time);
     console.log(`📅 Retrieved ${rangeMessages.length} messages from time range`);
     return JSON.stringify({
       status: 'success',
-      messages: rangeMessages.map(msg => ({
+      messages: rangeMessages.map((msg: any) => ({
         timestamp: msg.timestamp,
         role: msg.role,
         name: msg.name,
@@ -121,9 +121,9 @@ export function createSummarizerPrompt(conversationId: string, storage: SqliteKV
   .function('show_recent_messages', 'Display recent messages in a formatted way for the user', SHOW_RECENT_MESSAGES_SCHEMA, async (args: any) => {
     const displayCount = args.count || 5;
     console.log(`🔍 FUNCTION CALL: show_recent_messages with count=${displayCount} for conversation=${conversationId}`);
-    const messagesToShow = storage.getRecentMessages(conversationId, displayCount);
+    const messagesToShow = getRecentMessages(conversationId, displayCount);
     console.log(`📋 Formatting ${messagesToShow.length} messages for display`);
-    const messageList = messagesToShow.map(msg => 
+    const messageList = messagesToShow.map((msg: any) => 
       `[${new Date(msg.timestamp).toLocaleString()}] ${msg.name} (${msg.role}): ${msg.content}`
     ).join('\n');
     
@@ -136,7 +136,7 @@ export function createSummarizerPrompt(conversationId: string, storage: SqliteKV
   })
   .function('summarize_conversation', 'Get a summary of the conversation with message counts and time span', EMPTY_SCHEMA, async (_args: any) => {
     console.log(`🔍 FUNCTION CALL: summarize_conversation for conversation=${conversationId}`);
-    const allMessages = storage.getAllMessagesWithTimestamps(conversationId);
+    const allMessages = getMessagesWithTimestamps(conversationId);
     console.log(`📊 Retrieved ${allMessages.length} total messages for conversation summary`);
     return JSON.stringify({
       status: 'success',
@@ -144,16 +144,16 @@ export function createSummarizerPrompt(conversationId: string, storage: SqliteKV
       conversationId: conversationId,
       oldestMessage: allMessages.length > 0 ? allMessages[0].timestamp : null,
       newestMessage: allMessages.length > 0 ? allMessages[allMessages.length - 1].timestamp : null,
-      messagesByRole: allMessages.reduce((acc, msg) => {
+      messagesByRole: allMessages.reduce((acc: any, msg: any) => {
         acc[msg.role] = (acc[msg.role] || 0) + 1;
         return acc;
       }, {} as Record<string, number>),
-      messagesByName: allMessages.reduce((acc, msg) => {
+      messagesByName: allMessages.reduce((acc: any, msg: any) => {
         acc[msg.name] = (acc[msg.name] || 0) + 1;
         return acc;
       }, {} as Record<string, number>),
-      participants: [...new Set(allMessages.map(msg => msg.name))],
-      messages: allMessages.map(msg => ({
+      participants: [...new Set(allMessages.map((msg: any) => msg.name))],
+      messages: allMessages.map((msg: any) => ({
         timestamp: msg.timestamp,
         role: msg.role,
         name: msg.name,
@@ -169,11 +169,11 @@ export function createSummarizerPrompt(conversationId: string, storage: SqliteKV
     const { startTime, endTime } = parseRelativeTimeForSummary(time_expression, userTimezone);
     console.log(`⏳ Time range for "${time_expression}": ${startTime} to ${endTime}`);
     
-    const rangeMessages = storage.getMessagesByTimeRange(conversationId, startTime, endTime);
+    const rangeMessages = getMessagesByTimeRange(conversationId, startTime, endTime);
     console.log(`📅 Retrieved ${rangeMessages.length} messages for relative time range`);
     return JSON.stringify({
       status: 'success',
-      messages: rangeMessages.map(msg => ({
+      messages: rangeMessages.map((msg: any) => ({
         timestamp: msg.timestamp,
         role: msg.role,
         name: msg.name,
@@ -191,22 +191,22 @@ export function createSummarizerPrompt(conversationId: string, storage: SqliteKV
 /**
  * Helper function to get recent messages with proper attribution
  */
-export function getRecentMessagesWithNames(storage: SqliteKVStore, conversationId: string, limit: number = 10) {
-  return storage.getRecentMessages(conversationId, limit);
+export function getRecentMessagesWithNames(conversationId: string, limit: number = 10) {
+  return getRecentMessages(conversationId, limit);
 }
 
 /**
  * Helper function to get messages by time range with proper attribution
  */
-export function getMessagesByTimeRangeWithNames(storage: SqliteKVStore, conversationId: string, startTime?: string, endTime?: string) {
-  return storage.getMessagesByTimeRange(conversationId, startTime, endTime);
+export function getMessagesByTimeRangeWithNames(conversationId: string, startTime?: string, endTime?: string) {
+  return getMessagesByTimeRange(conversationId, startTime, endTime);
 }
 
 /**
  * Helper function to get all messages with timestamps and names
  */
-export function getAllMessagesWithNames(storage: SqliteKVStore, conversationId: string) {
-  return storage.getAllMessagesWithTimestamps(conversationId);
+export function getAllMessagesWithNames(conversationId: string) {
+  return getMessagesWithTimestamps(conversationId);
 }
 
 /**

@@ -1,4 +1,5 @@
 import { promptManager } from '../agent/core';
+import { getMessagesWithTimestamps } from '../storage/message';
 
 // Interface for debug command response
 interface DebugResponse {
@@ -55,7 +56,7 @@ function handleMessageDatabaseDebug(conversationKey: string): DebugResponse {
   const debugOutput = storage.debugPrintDatabase(conversationKey);
   
   // Get message records to show activity ID statistics
-  const messages = storage.getMessagesByTimeRange(conversationKey);
+  const messages = getMessagesWithTimestamps(conversationKey);
   const messagesWithIds = messages.filter(msg => msg.activity_id && msg.activity_id !== null);
   
   let response = `🔍 **Database Debug Info:**\n\n`;
