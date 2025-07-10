@@ -10,6 +10,7 @@ import { createActionItemsPrompt, getConversationParticipantsFromAPI } from '../
 export interface ManagerResult {
     response: string;
     delegatedAgent: string | null; // 'summarizer', 'action_items', 'search', or null for direct response
+    adaptiveCards?: any[]; // Optional adaptive cards for search results
 }
 
 // Manager prompt that coordinates all sub-tasks
@@ -21,6 +22,7 @@ export class ManagerPrompt {
     private currentUserName?: string;
     private currentUserTimezone?: string;
     private lastDelegatedAgent: string | null = null;
+    private lastSearchAdaptiveCards: any[] = [];
 
     constructor(storage: SqliteKVStore) {
         this.storage = storage;
@@ -103,6 +105,7 @@ export class ManagerPrompt {
             }
 
             this.lastDelegatedAgent = null;
+            this.lastSearchAdaptiveCards = [];
 
             const response = await this.prompt.send(`
 User Request: "${userRequest}"
@@ -115,7 +118,8 @@ Please analyze this request and delegate it to the appropriate specialized agent
             
             return {
                 response: response.content || 'No response generated',
-                delegatedAgent: this.lastDelegatedAgent
+                delegatedAgent: this.lastDelegatedAgent,
+                adaptiveCards: this.lastSearchAdaptiveCards.length > 0 ? this.lastSearchAdaptiveCards : undefined
             };
 
         } catch (error) {
@@ -136,6 +140,7 @@ Please analyze this request and delegate it to the appropriate specialized agent
 
             this.currentAPI = api;
             this.lastDelegatedAgent = null;
+            this.lastSearchAdaptiveCards = [];
 
             const response = await this.prompt.send(`
 User Request: "${userRequest}"
@@ -148,7 +153,8 @@ Please analyze this request and delegate it to the appropriate specialized agent
             
             return {
                 response: response.content || 'No response generated',
-                delegatedAgent: this.lastDelegatedAgent
+                delegatedAgent: this.lastDelegatedAgent,
+                adaptiveCards: this.lastSearchAdaptiveCards.length > 0 ? this.lastSearchAdaptiveCards : undefined
             };
 
         } catch (error) {
@@ -174,6 +180,7 @@ Please analyze this request and delegate it to the appropriate specialized agent
             this.currentUserId = userId;
             this.currentUserName = userName;
             this.lastDelegatedAgent = null;
+            this.lastSearchAdaptiveCards = [];
 
             const response = await this.prompt.send(`
 User Request: "${userRequest}"
@@ -189,7 +196,8 @@ For action item requests, use the user's ID for personal action item management.
             
             return {
                 response: response.content || 'No response generated',
-                delegatedAgent: this.lastDelegatedAgent
+                delegatedAgent: this.lastDelegatedAgent,
+                adaptiveCards: this.lastSearchAdaptiveCards.length > 0 ? this.lastSearchAdaptiveCards : undefined
             };
 
         } catch (error) {
@@ -279,10 +287,16 @@ For action item requests, use the user's ID for personal action item management.
         try {
             console.log(`🔍 DELEGATION: Delegating to Search Agent: "${userRequest}" for conversation: ${conversationId}`);
 
-            const searchPrompt = await routeToPrompt('search', conversationId, this.storage, [], this.currentUserTimezone);
+            // Create a shared array for adaptive cards
+            const adaptiveCardsArray: any[] = [];
+            const searchPrompt = await routeToPrompt('search', conversationId, this.storage, [], this.currentUserTimezone, adaptiveCardsArray);
             const response = await searchPrompt.send(userRequest);
 
-            console.log(`🔍 DELEGATION: Search Agent completed task. Response length: ${response.content?.length || 0}`);
+            // Store the adaptive cards that were added during search
+            this.lastSearchAdaptiveCards = adaptiveCardsArray;
+
+            console.log(`🔍 DELEGATION: Search Agent completed task. Response length: ${response.content?.length || 0}, Cards found: ${adaptiveCardsArray.length}`);
+            
             return response.content || 'No response from Search Agent';
 
         } catch (error) {

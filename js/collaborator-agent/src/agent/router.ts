@@ -5,7 +5,14 @@ import { createActionItemsPrompt } from '../capabilities/actionItems';
 import { createSearchPrompt } from '../capabilities/search';
 
 // Router that provides specific prompts for different agent types
-export async function routeToPrompt(agentType: string, conversationId: string, storage: SqliteKVStore, participants: Array<{name: string, id: string}> = [], userTimezone?: string): Promise<ChatPrompt> {
+export async function routeToPrompt(
+  agentType: string, 
+  conversationId: string, 
+  storage: SqliteKVStore, 
+  participants: Array<{name: string, id: string}> = [], 
+  userTimezone?: string,
+  adaptiveCardsArray?: any[]
+): Promise<ChatPrompt> {
   console.log(`🔀 Routing to ${agentType} agent for conversation: ${conversationId}`);
   
   switch (agentType.toLowerCase()) {
@@ -17,7 +24,7 @@ export async function routeToPrompt(agentType: string, conversationId: string, s
       return createActionItemsPrompt(conversationId, storage, participants, false, undefined, undefined, userTimezone);
     
     case 'search':
-      return createSearchPrompt(conversationId, storage, userTimezone);
+      return createSearchPrompt(conversationId, storage, userTimezone, adaptiveCardsArray);
     
     default:
       console.warn(`⚠️ Unknown agent type: ${agentType}, defaulting to summarizer`);
@@ -44,3 +51,4 @@ export function createAgentRouter(): {
     }
   };
 }
+
