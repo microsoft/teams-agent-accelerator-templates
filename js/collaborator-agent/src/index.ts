@@ -105,7 +105,7 @@ app.on('message', async ({ send, activity, next }) => {
 
     if (result.response && result.response.trim() !== '') {
       const sentMessageId = await sendMessageWithCards(send, result.response, result.adaptiveCards);
-      feedbackStorage.storeDelegatedAgent(sentMessageId, result.delegatedAgent);
+      feedbackStorage.storeDelegatedCapability(sentMessageId, result.delegatedCapability);
       addMessageToTracking(conversationKey, 'assistant', result.response, { id: sentMessageId }, 'AI Assistant');
     } else {
       await send({ type: 'message', text: 'Hello! I can help you with conversation summaries, action item management, and general assistance. What would you like help with?' });
@@ -141,7 +141,7 @@ app.on('mention', async ({ send, activity, api }) => {
     if (result.response && result.response.trim() !== '') {
       const sentMessageId = await sendMessageWithCards(send, result.response, result.adaptiveCards);
 
-      feedbackStorage.storeDelegatedAgent(sentMessageId, result.delegatedAgent);
+      feedbackStorage.storeDelegatedCapability(sentMessageId, result.delegatedCapability);
 
       addMessageToTracking(conversationKey, 'assistant', result.response, { id: sentMessageId }, 'AI Assistant');
     } else {

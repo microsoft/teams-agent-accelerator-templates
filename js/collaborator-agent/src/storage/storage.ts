@@ -37,7 +37,7 @@ export interface FeedbackRecord {
   likes: number;
   dislikes: number;
   feedbacks: string; // JSON array of feedback objects like {"feedbackText":"Nice!"}
-  delegated_agent?: string; // Which sub-agent handled this response (e.g., 'summarizer', 'search', 'action_items', 'direct')
+  delegated_capability?: string; // Which sub-capability handled this response (e.g., 'summarizer', 'search', 'action_items', 'direct')
   created_at: string;
   updated_at: string;
 }
@@ -101,7 +101,7 @@ export class SqliteKVStore {
         likes INTEGER NOT NULL DEFAULT 0,
         dislikes INTEGER NOT NULL DEFAULT 0,
         feedbacks TEXT NOT NULL DEFAULT '[]',
-        delegated_agent TEXT NULL,
+        delegated_capability TEXT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
       )
@@ -613,18 +613,18 @@ export class SqliteKVStore {
 
   // ===== FEEDBACK MANAGEMENT =====
 
-  // Initialize feedback record for a message with optional delegated agent
-  initializeFeedbackRecord(messageId: string, delegatedAgent?: string): FeedbackRecord {
+  // Initialize feedback record for a message with optional delegated capability
+  initializeFeedbackRecord(messageId: string, delegatedCapability?: string): FeedbackRecord {
     try {
       const stmt = this.db.prepare(`
-        INSERT OR IGNORE INTO feedback (message_id, likes, dislikes, feedbacks, delegated_agent)
+        INSERT OR IGNORE INTO feedback (message_id, likes, dislikes, feedbacks, delegated_capability)
         VALUES (?, 0, 0, '[]', ?)
       `);
-      stmt.run(messageId, delegatedAgent || null);
+      stmt.run(messageId, delegatedCapability || null);
 
       const selectStmt = this.db.prepare('SELECT * FROM feedback WHERE message_id = ?');
       const record = selectStmt.get(messageId) as FeedbackRecord;
-      console.log(`📝 Initialized feedback record for message: ${messageId}${delegatedAgent ? ` (agent: ${delegatedAgent})` : ''}`);
+      console.log(`📝 Initialized feedback record for message: ${messageId}${delegatedCapability ? ` (capability: ${delegatedCapability})` : ''}`);
       return record;
     } catch (error) {
       console.error(`❌ Error initializing feedback record for message ${messageId}:`, error);
@@ -632,17 +632,17 @@ export class SqliteKVStore {
     }
   }
 
-  // Store delegated agent info for a message (for later feedback initialization)
-  storeDelegatedAgent(messageId: string, delegatedAgent: string | null): void {
+  // Store delegated capability info for a message (for later feedback initialization)
+  storeDelegatedCapability(messageId: string, delegatedCapability: string | null): void {
     try {
       const stmt = this.db.prepare(`
-        INSERT OR IGNORE INTO feedback (message_id, likes, dislikes, feedbacks, delegated_agent)
+        INSERT OR IGNORE INTO feedback (message_id, likes, dislikes, feedbacks, delegated_capability)
         VALUES (?, 0, 0, '[]', ?)
       `);
-      stmt.run(messageId, delegatedAgent);
-      console.log(`📝 Stored delegated agent info for message ${messageId}: ${delegatedAgent || 'direct'}`);
+      stmt.run(messageId, delegatedCapability);
+      console.log(`📝 Stored delegated capability info for message ${messageId}: ${delegatedCapability || 'direct'}`);
     } catch (error) {
-      console.error(`❌ Error storing delegated agent for message ${messageId}:`, error);
+      console.error(`❌ Error storing delegated capability for message ${messageId}:`, error);
     }
   }
 
