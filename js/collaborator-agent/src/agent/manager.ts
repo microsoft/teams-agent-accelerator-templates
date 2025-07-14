@@ -4,8 +4,8 @@ import { CitationAppearance } from '@microsoft/teams.api';
 import { SqliteKVStore } from '../storage/storage';
 import { MANAGER_PROMPT } from './instructions';
 import { getModelConfig } from '../utils/config';
-import { routeToPrompt } from './router';
-import { createActionItemsPrompt, getConversationParticipantsFromAPI } from '../capabilities/actionItems';
+import { getConversationParticipantsFromAPI } from '../capabilities/actionItems';
+import { CapabilityRouter } from './router';
 
 // Result interface for manager responses
 export interface ManagerResult {
@@ -24,9 +24,11 @@ export class ManagerPrompt {
     private currentUserTimezone?: string;
     private lastDelegatedCapability: string | null = null;
     private lastSearchCitations: CitationAppearance[] = [];
+    private router: CapabilityRouter;
 
     constructor(storage: SqliteKVStore) {
         this.storage = storage;
+        this.router = new CapabilityRouter();
         this.prompt = this.initializePrompt();
     }
 
@@ -52,12 +54,40 @@ export class ManagerPrompt {
                     conversation_id: {
                         type: 'string',
                         description: 'The conversation ID for context'
+                    },
+                    calculated_start_time: {
+                        type: 'string',
+                        description: 'Pre-calculated start time in ISO format (optional, only if time range is specified)'
+                    },
+                    calculated_end_time: {
+                        type: 'string',
+                        description: 'Pre-calculated end time in ISO format (optional, only if time range is specified)'
+                    },
+                    timespan_description: {
+                        type: 'string',
+                        description: 'Human-readable description of the calculated time range (optional)'
                     }
                 },
                 required: ['user_request', 'conversation_id']
             }, async (args: any) => {
                 this.lastDelegatedCapability = 'summarizer';
-                return await this.delegateToSummarizer(args.user_request, args.conversation_id);
+                console.log(`📋 DELEGATION: Delegating to Summarizer Capability via Router: "${args.user_request}" for conversation: ${args.conversation_id}`);
+
+                const result = await this.router.processRequest('summarizer', args.user_request, {
+                    conversationId: args.conversation_id,
+                    userTimezone: this.currentUserTimezone,
+                    calculatedStartTime: args.calculated_start_time,
+                    calculatedEndTime: args.calculated_end_time,
+                    timespanDescription: args.timespan_description
+                });
+
+                if (result.error) {
+                    console.error(`❌ Error in Summarizer Capability: ${result.error}`);
+                    return `Error in Summarizer Capability: ${result.error}`;
+                }
+
+                console.log(`📋 DELEGATION: Summarizer Capability completed. Response length: ${result.response?.length || 0}`);
+                return result.response || 'No response from Summarizer Capability';
             })
             .function('delegate_to_action_items', 'Delegate task management, action item creation, or assignment tracking to the Action Items Capability', {
                 type: 'object',
@@ -69,12 +99,57 @@ export class ManagerPrompt {
                     conversation_id: {
                         type: 'string',
                         description: 'The conversation ID for context'
+                    },
+                    calculated_start_time: {
+                        type: 'string',
+                        description: 'Pre-calculated start time in ISO format (optional, only if time range is specified)'
+                    },
+                    calculated_end_time: {
+                        type: 'string',
+                        description: 'Pre-calculated end time in ISO format (optional, only if time range is specified)'
+                    },
+                    timespan_description: {
+                        type: 'string',
+                        description: 'Human-readable description of the calculated time range (optional)'
                     }
                 },
                 required: ['user_request', 'conversation_id']
             }, async (args: any) => {
                 this.lastDelegatedCapability = 'action_items';
-                return await this.delegateToActionItems(args.user_request, args.conversation_id);
+                console.log(`📋 DELEGATION: Delegating to Action Items Capability via Router: "${args.user_request}" for conversation: ${args.conversation_id}`);
+
+                let participantList: Array<{ name: string, id: string }> = [];
+                let isPersonalChat = false;
+
+                if (this.currentUserId && this.currentUserName) {
+                    console.log(`👤 Personal mode detected for user: ${this.currentUserName} (${this.currentUserId})`);
+                    isPersonalChat = true;
+                    participantList = [];
+                } else {
+                    if (this.currentAPI) {
+                        try {
+                            participantList = await getConversationParticipantsFromAPI(this.currentAPI, args.conversation_id);
+                        } catch (apiError) {
+                            console.warn(`⚠️ Failed to get members from Teams API:`, apiError);
+                            participantList = [];
+                        }
+                    }
+                }
+
+                const result = await this.router.processRequest('actionitems', args.user_request, {
+                    conversationId: args.conversation_id,
+                    userTimezone: this.currentUserTimezone,
+                    storage: this.storage,
+                    availableMembers: participantList,
+                    isPersonalChat,
+                    currentUserId: this.currentUserId,
+                    currentUserName: this.currentUserName,
+                    calculatedStartTime: args.calculated_start_time,
+                    calculatedEndTime: args.calculated_end_time,
+                    timespanDescription: args.timespan_description
+                });
+
+                return result.response || 'No response from Action Items Capability';
             })
             .function('delegate_to_search', 'Delegate conversation search, message finding, or historical conversation lookup to the Search Capability', {
                 type: 'object',
@@ -86,50 +161,45 @@ export class ManagerPrompt {
                     conversation_id: {
                         type: 'string',
                         description: 'The conversation ID for context'
+                    },
+                    calculated_start_time: {
+                        type: 'string',
+                        description: 'Pre-calculated start time in ISO format (optional, only if time range is specified)'
+                    },
+                    calculated_end_time: {
+                        type: 'string',
+                        description: 'Pre-calculated end time in ISO format (optional, only if time range is specified)'
+                    },
+                    timespan_description: {
+                        type: 'string',
+                        description: 'Human-readable description of the calculated time range (optional)'
                     }
                 },
                 required: ['user_request', 'conversation_id']
             }, async (args: any) => {
                 this.lastDelegatedCapability = 'search';
-                return await this.delegateToSearch(args.user_request, args.conversation_id);
+                console.log(`🔍 DELEGATION: Delegating to Search Capability via Router: "${args.user_request}" for conversation: ${args.conversation_id}`);
+
+                // Create a shared array for citations
+                const citationsArray: CitationAppearance[] = [];
+
+                const result = await this.router.processRequest('search', args.user_request, {
+                    conversationId: args.conversation_id,
+                    userTimezone: this.currentUserTimezone,
+                    citationsArray,
+                    calculatedStartTime: args.calculated_start_time,
+                    calculatedEndTime: args.calculated_end_time,
+                    timespanDescription: args.timespan_description
+                });
+
+                // Store the citations that were added during search
+                this.lastSearchCitations = citationsArray;
+
+                return result.response || 'No response from Search Capability';
             });
 
         console.log('🎯 Manager initialized with delegation capabilities');
         return prompt;
-    }
-
-    async processRequest(userRequest: string, conversationId: string, userTimezone?: string): Promise<ManagerResult> {
-        try {
-            console.log(`🎯 Manager processing request: "${userRequest}" for conversation: ${conversationId}`);
-            if (userTimezone) {
-                this.currentUserTimezone = userTimezone;
-            }
-
-            this.lastDelegatedCapability = null;
-            this.lastSearchCitations = [];
-
-            const response = await this.prompt.send(`
-User Request: "${userRequest}"
-Conversation ID: ${conversationId}
-
-Please analyze this request and delegate it to the appropriate specialized capability. Return ONLY the response from the delegated capability without any additional commentary.
-`);
-
-            console.log(`🎯 Delegated to capability: ${this.lastDelegatedCapability || 'direct (no delegation)'}`);
-            
-            return {
-                response: response.content || 'No response generated',
-                delegatedCapability: this.lastDelegatedCapability,
-                citations: this.lastSearchCitations.length > 0 ? this.lastSearchCitations : undefined
-            };
-
-        } catch (error) {
-            console.error('❌ Error in Manager:', error);
-            return {
-                response: `Sorry, I encountered an error processing your request: ${error instanceof Error ? error.message : 'Unknown error'}`,
-                delegatedCapability: null
-            };
-        }
     }
 
     async processRequestWithAPI(userRequest: string, conversationId: string, api: any, userTimezone?: string): Promise<ManagerResult> {
@@ -151,7 +221,7 @@ Please analyze this request and delegate it to the appropriate specialized capab
 `);
 
             console.log(`🎯 Delegated to capability: ${this.lastDelegatedCapability || 'direct (no delegation)'}`);
-            
+
             return {
                 response: response.content || 'No response generated',
                 delegatedCapability: this.lastDelegatedCapability,
@@ -194,7 +264,7 @@ Please analyze this request and delegate it to the appropriate specialized capab
 For action item requests, use the user's ID for personal action item management.
 `);
             console.log(`🎯 Delegated to capability: ${this.lastDelegatedCapability || 'direct (no delegation)'}`);
-            
+
             return {
                 response: response.content || 'No response generated',
                 delegatedCapability: this.lastDelegatedCapability,
@@ -215,101 +285,7 @@ For action item requests, use the user's ID for personal action item management.
         }
     }
 
-    private async delegateToSummarizer(userRequest: string, conversationId: string): Promise<string> {
-        try {
-            console.log(`📋 DELEGATION: Delegating to Summarizer Capability: "${userRequest}" for conversation: ${conversationId}`);
-
-            const summarizerPrompt = await routeToPrompt('summarizer', conversationId, this.storage, [], this.currentUserTimezone);
-            const response = await summarizerPrompt.send(userRequest);
-
-            console.log(`📋 DELEGATION: Summarizer Capability completed task. Response length: ${response.content?.length || 0}`);
-            return response.content || 'No response from Summarizer Capability';
-
-        } catch (error) {
-            console.error('❌ Error delegating to Summarizer Capability:', error);
-            return JSON.stringify({
-                status: 'error',
-                message: `Error in Summarizer Capability: ${error instanceof Error ? error.message : 'Unknown error'}`
-            });
-        }
-    }
-
-    private async delegateToActionItems(userRequest: string, conversationId: string): Promise<string> {
-        try {
-            console.log(`📋 DELEGATION: Delegating to Action Items Capability: "${userRequest}" for conversation: ${conversationId}`);
-
-            let participantList: Array<{ name: string, id: string }> = [];
-            let isPersonalChat = false;
-
-            if (this.currentUserId && this.currentUserName) {
-                console.log(`👤 Personal mode detected for user: ${this.currentUserName} (${this.currentUserId})`);
-                isPersonalChat = true;
-                participantList = [];
-            } else {
-                if (this.currentAPI) {
-                    try {
-                        console.log(`👥 Fetching conversation members from Teams API...`);
-                        participantList = await getConversationParticipantsFromAPI(this.currentAPI, conversationId);
-                    } catch (apiError) {
-                        console.warn(`⚠️ Failed to get members from Teams API:`, apiError);
-                        participantList = [];
-                    }
-                } else {
-                    console.warn(`⚠️ No Teams API available for action items capability`);
-                    participantList = [];
-                }
-            }
-
-            const actionItemsPrompt = createActionItemsPrompt(
-                conversationId,
-                this.storage,
-                participantList,
-                isPersonalChat,
-                this.currentUserId,
-                this.currentUserName,
-                this.currentUserTimezone
-            );
-
-            const response = await actionItemsPrompt.send(userRequest);
-
-            console.log(`📋 DELEGATION: Action Items Capability completed task. Response length: ${response.content?.length || 0}`);
-            return response.content || 'No response from Action Items Capability';
-
-        } catch (error) {
-            console.error('❌ Error delegating to Action Items Capability:', error);
-            return JSON.stringify({
-                status: 'error',
-                message: `Error in Action Items Capability: ${error instanceof Error ? error.message : 'Unknown error'}`
-            });
-        }
-    }
-
-    private async delegateToSearch(userRequest: string, conversationId: string): Promise<string> {
-        try {
-            console.log(`🔍 DELEGATION: Delegating to Search Capability: "${userRequest}" for conversation: ${conversationId}`);
-
-            // Create a shared array for citations
-            const citationsArray: CitationAppearance[] = [];
-            const searchPrompt = await routeToPrompt('search', conversationId, this.storage, [], this.currentUserTimezone, citationsArray);
-            const response = await searchPrompt.send(userRequest);
-
-            // Store the citations that were added during search
-            this.lastSearchCitations = citationsArray;
-
-            console.log(`🔍 DELEGATION: Search Capability completed task. Response length: ${response.content?.length || 0}, Citations found: ${citationsArray.length}`);
-            
-            return response.content || 'No response from Search Capability';
-
-        } catch (error) {
-            console.error('❌ Error delegating to Search Capability:', error);
-            return JSON.stringify({
-                status: 'error',
-                message: `Error in Search Capability: ${error instanceof Error ? error.message : 'Unknown error'}`
-            });
-        }
-    }
-
-    // Method to add new specialized capabilitys in the future
+    // Method to add new specialized capabilities in the future
     addCapability(capabilityName: string, _description: string, _functionSchema: any, _handler: Function): void {
         console.log(`🔧 Adding new capability: ${capabilityName}`);
     }

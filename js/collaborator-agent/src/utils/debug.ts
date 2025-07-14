@@ -1,5 +1,4 @@
-import { promptManager } from '../agent/core';
-import { getMessagesWithTimestamps } from '../storage/message';
+import { getMessagesWithTimestamps, getMessageStorage, clearConversation } from '../storage/message';
 
 // Interface for debug command response
 interface DebugResponse {
@@ -52,7 +51,7 @@ export async function handleDebugCommand(text: string, conversationKey: string):
  * Show database debug information
  */
 function handleMessageDatabaseDebug(conversationKey: string): DebugResponse {
-  const storage = promptManager.getStorage();
+  const storage = getMessageStorage();
   const debugOutput = storage.debugPrintDatabase(conversationKey);
   
   // Get message records to show activity ID statistics
@@ -86,7 +85,7 @@ function handleMessageDatabaseDebug(conversationKey: string): DebugResponse {
  * Clear conversation history
  */
 function handleClearConversation(conversationKey: string): DebugResponse {
-  promptManager.clearConversation(conversationKey);
+  clearConversation(conversationKey);
   
   return {
     isDebugCommand: true,
@@ -98,7 +97,7 @@ function handleClearConversation(conversationKey: string): DebugResponse {
  * Show action items debug information
  */
 function handleActionItemsDebug(conversationKey: string): DebugResponse {
-  const storage = promptManager.getStorage();
+  const storage = getMessageStorage();
   const actionItems = storage.getActionItemsByConversation(conversationKey);
   const summary = storage.getActionItemsSummary();
   
@@ -138,7 +137,7 @@ function handleActionItemsDebug(conversationKey: string): DebugResponse {
  * Clear all action items for the conversation
  */
 function handleClearActionItems(conversationKey: string): DebugResponse {
-  const storage = promptManager.getStorage();
+  const storage = getMessageStorage();
   const clearedCount = storage.clearActionItems(conversationKey);
   
   return {
@@ -197,7 +196,7 @@ export function isDebugCommand(text: string): boolean {
  * Show personal action items debug information for a specific user
  */
 function handlePersonalActionItemsDebug(_conversationKey: string): DebugResponse {
-  const storage = promptManager.getStorage();
+  const storage = getMessageStorage();
   
   // Get all action items across all conversations to show user IDs
   const allActionItems = storage.getAllActionItems();
@@ -251,7 +250,7 @@ function handlePersonalActionItemsDebug(_conversationKey: string): DebugResponse
  * Show feedback statistics
  */
 function handleFeedbackStats(): DebugResponse {
-  const storage = promptManager.getStorage();
+  const storage = getMessageStorage();
   const summary = storage.getFeedbackSummary();
   const allFeedback = storage.getAllFeedback();
   
@@ -288,7 +287,7 @@ function handleFeedbackStats(): DebugResponse {
  * Clear all feedback records
  */
 function handleClearFeedback(): DebugResponse {
-  const storage = promptManager.getStorage();
+  const storage = getMessageStorage();
   const deletedCount = storage.clearAllFeedback();
   
   const response = `**🧹 Feedback Database Cleared**\n\nDeleted ${deletedCount} feedback records.`;

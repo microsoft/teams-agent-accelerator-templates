@@ -20,9 +20,3 @@
  */
 export const USE_MOCK_DATA = false; // Change to true to enable mock mode
 export const DEFAULT_MOCK_CONVERSATION = 'mock-conversation';
-
-/**
- * Other application constants
- */
-export const APP_NAME = 'Teams Collaborator Bot';
-export const VERSION = '1.0.0';

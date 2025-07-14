@@ -99,8 +99,8 @@ app.on('message', async ({ send, activity, next }) => {
     addMessageToTracking(conversationKey, 'user', activity.text, activity, userName);
 
     const result = await manager.processRequestWithPersonalMode(
-      conversationKey,
       activity.text,
+      conversationKey,
       null,
       userId,
       userName,

@@ -3,8 +3,8 @@ import { OpenAIChatModel } from '@microsoft/teams.openai';
 import { CitationAppearance } from '@microsoft/teams.api';
 import { MessageRecord } from '../storage/storage';
 import { getMessagesByTimeRange } from '../storage/message';
-import { getModelConfig } from '../utils/config';
 import { SEARCH_PROMPT } from '../agent/instructions';
+import { BaseCapability, CapabilityConfig } from './capability';
 
 // Function schemas for search operations
 const SEARCH_MESSAGES_SCHEMA = {
@@ -124,84 +124,111 @@ function searchMessages(
   }
 }
 
+
+
 /**
- * Create the search prompt for a specific conversation
+ * Refactored Search Capability that implements the unified capability interface
  */
-export function createSearchPrompt(
-  conversationId: string,
-  userTimezone?: string,
-  citationsArray?: CitationAppearance[]
-): ChatPrompt {
-  const searchModelConfig = getModelConfig('search');
+export class SearchCapability extends BaseCapability {
+  readonly name = 'search';
   
-  // Get current date and timezone info for the LLM
-  const currentDate = new Date().toISOString();
-  const timezone = userTimezone || 'UTC';
-  
-  const prompt = new ChatPrompt({
-    instructions: `${SEARCH_PROMPT}
+  createPrompt(config: CapabilityConfig): ChatPrompt {
+    this.logInit(config.conversationId, config.userTimezone);
+    
+    const searchModelConfig = this.getModelConfig('search');
+    
+    // Build additional time context if pre-calculated times are provided
+    let timeContext = '';
+    if (config.calculatedStartTime && config.calculatedEndTime) {
+      console.log(`🕒 Search Capability received pre-calculated time range: ${config.timespanDescription || 'calculated timespan'} (${config.calculatedStartTime} to ${config.calculatedEndTime})`);
+      timeContext = `
+
+IMPORTANT: Pre-calculated time range available:
+- Start: ${config.calculatedStartTime}
+- End: ${config.calculatedEndTime}
+- Description: ${config.timespanDescription || 'calculated timespan'}
+
+When searching messages, use these exact timestamps instead of calculating your own. This ensures consistency with the Manager's time calculations and reduces token usage.`;
+    }
+    
+    // Get current date and timezone info for the LLM
+    const currentDate = new Date().toISOString();
+    const timezone = config.userTimezone || 'UTC';
+    
+    const instructions = `${SEARCH_PROMPT}
 
 CURRENT CONTEXT:
 - Current date/time: ${currentDate}
 - User timezone: ${timezone}
 - When calculating time ranges like "earlier today", "yesterday", use the current time and timezone above
-- Always provide start_time and end_time in ISO format when searching for time-based queries`,
-    model: new OpenAIChatModel({
-      model: searchModelConfig.model,
-      apiKey: searchModelConfig.apiKey,
-      endpoint: searchModelConfig.endpoint,
-      apiVersion: searchModelConfig.apiVersion,
-    }),
-  })
-  .function('search_messages', 'Search for messages in the conversation history', SEARCH_MESSAGES_SCHEMA, async (args: any) => {
-    const { keywords, participants = [], start_time, end_time, max_results = 10 } = args;
+- Always provide start_time and end_time in ISO format when searching for time-based queries${timeContext}`;
     
-    // Search for matching messages
-    const matchingMessages = searchMessages(
-      conversationId,
-      keywords,
-      participants,
-      start_time,
-      end_time,
-      max_results
-    );
-    
-    if (matchingMessages.length === 0) {
-      return 'No messages found matching your search criteria. Try different keywords or a broader time range.';
-    }
-    
-    // Group messages by time periods for better context
-    const groupedMessages = groupMessagesByTime(matchingMessages);
-    
-    // Create a summary response
-    let response = `Found ${matchingMessages.length} messages matching your search:\n\n`;
-    
-    groupedMessages.forEach(group => {
-      response += `**${group.period}** (${group.messages.length} messages)\n`;
-      group.messages.slice(0, 3).forEach(msg => {
-        const preview = msg.content.length > 100 ? msg.content.substring(0, 100) + '...' : msg.content;
-        response += `• ${msg.name}: "${preview}"\n`;
-      });
-      if (group.messages.length > 3) {
-        response += `  ... and ${group.messages.length - 3} more\n`;
+    const prompt = new ChatPrompt({
+      instructions,
+      model: new OpenAIChatModel({
+        model: searchModelConfig.model,
+        apiKey: searchModelConfig.apiKey,
+        endpoint: searchModelConfig.endpoint,
+        apiVersion: searchModelConfig.apiVersion,
+      }),
+    })
+    .function('search_messages', 'Search for messages in the conversation history', SEARCH_MESSAGES_SCHEMA, async (args: any) => {
+      const { keywords, participants = [], start_time, end_time, max_results = 10 } = args;
+      
+      // Search for matching messages
+      const matchingMessages = searchMessages(
+        config.conversationId,
+        keywords,
+        participants,
+        start_time,
+        end_time,
+        max_results
+      );
+      
+      if (matchingMessages.length === 0) {
+        return 'No messages found matching your search criteria. Try different keywords or a broader time range.';
       }
-      response += '\n';
-    });
+      
+      // Group messages by time periods for better context
+      const groupedMessages = groupMessagesByTime(matchingMessages);
+      
+      // Create a summary response
+      let response = `Found ${matchingMessages.length} messages matching your search:\n\n`;
+      
+      groupedMessages.forEach(group => {
+        response += `**${group.period}** (${group.messages.length} messages)\n`;
+        group.messages.slice(0, 3).forEach(msg => {
+          const preview = msg.content.length > 100 ? msg.content.substring(0, 100) + '...' : msg.content;
+          response += `• ${msg.name}: "${preview}"\n`;
+        });
+        if (group.messages.length > 3) {
+          response += `  ... and ${group.messages.length - 3} more\n`;
+        }
+        response += '\n';
+      });
 
-    // Create citations for the first few results (limit to 5 to avoid overwhelming the user)
-    const messagesToCite = matchingMessages.slice(0, 5);
-    const citations = messagesToCite.map(msg => createCitationFromRecord(msg, conversationId));
+      // Create citations for the first few results (limit to 5 to avoid overwhelming the user)
+      const messagesToCite = matchingMessages.slice(0, 5);
+      const citations = messagesToCite.map(msg => createCitationFromRecord(msg, config.conversationId));
+      
+      // If we have an array to store citations, add them there for the manager to access
+      if (config.citationsArray) {
+        config.citationsArray.push(...citations);
+      }
+      
+      // Return just the summary text (citations are handled via the shared array)
+      return response;
+    });
     
-    // If we have an array to store citations, add them there for the manager to access
-    if (citationsArray) {
-      citationsArray.push(...citations);
-    }
-    
-    // Return just the summary text (citations are handled via the shared array)
-    return response;
-  });
+    console.log(`🔍 Search Capability created with unified interface`);
+    return prompt;
+  }
   
-  return prompt;
+  getFunctionSchemas(): Array<{name: string, schema: any}> {
+    return [
+      { name: 'search_messages', schema: SEARCH_MESSAGES_SCHEMA }
+    ];
+  }
 }
 
 /**
