@@ -2,8 +2,9 @@ import { ChatPrompt } from '@microsoft/teams.ai';
 import { OpenAIChatModel } from '@microsoft/teams.openai';
 import { ActionItem } from '../storage/storage';
 import { getMessagesByTimeRange } from '../storage/message';
-import { ACTION_ITEMS_PROMPT } from '../agent/instructions';
-import { BaseCapability, CapabilityConfig } from './capability';
+import { ACTION_ITEMS_PROMPT } from '../agent/prompt';
+import { BaseCapability, CapabilityOptions } from './capability';
+import { getContextById } from '../utils/messageContext';
 
 // Function schemas for the action items capability
 const ANALYZE_FOR_ACTION_ITEMS_SCHEMA = {
@@ -91,33 +92,64 @@ const GET_CHAT_MEMBERS_SCHEMA = {
  */
 export class ActionItemsCapability extends BaseCapability {
   readonly name = 'action_items';
+  private availableMembers: Array<{name: string, id: string}> = [];
   
-  createPrompt(config: CapabilityConfig): ChatPrompt {
-    this.logInit(config.conversationId, config.userTimezone);
+  constructor() {
+    super();
+  }
+
+  async initializeMembers(contextID: string): Promise<void> {
+    const messageContext = getContextById(contextID);
+    if (!messageContext) {
+      return;
+    }
+
+    // Fetch available members if API is provided and it's not a personal chat
+    if (messageContext.api && !messageContext.isPersonalChat) {
+      try {
+        this.availableMembers = await getConversationParticipantsFromAPI(messageContext.api, messageContext.conversationKey);
+        console.log(`👥 Action Items Capability initialized with ${this.availableMembers.length} members from Teams API`);
+      } catch (error) {
+        console.warn(`⚠️ Failed to fetch conversation members during initialization:`, error);
+        this.availableMembers = [];
+      }
+    }
+  }
+  
+  createPrompt(contextID: string, options: CapabilityOptions = {}): ChatPrompt {
+    const messageContext = getContextById(contextID);
+    if (!messageContext) {
+      throw new Error(`Context not found for activity ID: ${contextID}`);
+    }
     
-    if (!config.storage) {
+    this.logInit(messageContext);
+    
+    if (!options.storage) {
       throw new Error('Action Items capability requires storage configuration');
     }
     
     const actionItemsModelConfig = this.getModelConfig('actionItems');
     
+    // Members should already be fetched during initialization
+    console.log(`👥 Action Items Capability using ${this.availableMembers.length} pre-fetched members`);
+    
     // Build additional time context if pre-calculated times are provided
     let timeContext = '';
-    if (config.calculatedStartTime && config.calculatedEndTime) {
-      console.log(`🕒 Action Items Capability received pre-calculated time range: ${config.timespanDescription || 'calculated timespan'} (${config.calculatedStartTime} to ${config.calculatedEndTime})`);
+    if (options.calculatedStartTime && options.calculatedEndTime) {
+      console.log(`🕒 Action Items Capability received pre-calculated time range: ${options.timespanDescription || 'calculated timespan'} (${options.calculatedStartTime} to ${options.calculatedEndTime})`);
       timeContext = `
 
 IMPORTANT: Pre-calculated time range available:
-- Start: ${config.calculatedStartTime}
-- End: ${config.calculatedEndTime}
-- Description: ${config.timespanDescription || 'calculated timespan'}
+- Start: ${options.calculatedStartTime}
+- End: ${options.calculatedEndTime}
+- Description: ${options.timespanDescription || 'calculated timespan'}
 
 When analyzing messages for action items or performing any time-based queries, use these exact timestamps instead of calculating your own. This ensures consistency with the Manager's time calculations and reduces token usage.`;
     }
     
     // Adjust instructions based on conversation type
-    const baseInstructions = config.isPersonalChat 
-      ? `You are a personal action items assistant for ${config.currentUserName || 'the user'}. 
+    const baseInstructions = messageContext.isPersonalChat 
+      ? `You are a personal action items assistant for ${messageContext.userName || 'the user'}. 
          
          Your role is to help them:
          - View their personal action items assigned to them across all conversations
@@ -141,15 +173,18 @@ When analyzing messages for action items or performing any time-based queries, u
       }),
     })
     .function('analyze_for_action_items', 'Analyze conversation messages in a time range to identify potential action items', ANALYZE_FOR_ACTION_ITEMS_SCHEMA, async (args: any) => {
-      console.log(`🔍 FUNCTION CALL: analyze_for_action_items for conversation=${config.conversationId}`);
+      console.log(`🔍 FUNCTION CALL: analyze_for_action_items for conversation=${messageContext.conversationKey}`);
       
       const { start_time, end_time } = args;
-      console.log(`🔍 FUNCTION CALL: get_messages_by_time_range with start=${start_time}, end=${end_time} for conversation=${config.conversationId}`);
-      const messages = getMessagesByTimeRange(config.conversationId, start_time, end_time);
+      console.log(`🔍 FUNCTION CALL: get_messages_by_time_range with start=${start_time}, end=${end_time} for conversation=${messageContext.conversationKey}`);
+      const messages = getMessagesByTimeRange(messageContext.conversationKey, start_time, end_time);
       console.log(`📅 Retrieved ${messages.length} messages from time range`);
       
       // Get existing action items to avoid duplicates
-      const existingActionItems = config.storage!.getActionItemsByConversation(config.conversationId);
+      const existingActionItems = options.storage!.getActionItemsByConversation(messageContext.conversationKey);
+      
+      // Use pre-fetched members
+      const availableMembers = this.availableMembers;
       
       return JSON.stringify({
         status: 'success',
@@ -160,7 +195,7 @@ When analyzing messages for action items or performing any time-based queries, u
           name: msg.name,
           content: msg.content
         })),
-        existing_action_items: existingActionItems.map(item => ({
+        existing_action_items: existingActionItems.map((item: ActionItem) => ({
           id: item.id,
           title: item.title,
           description: item.description,
@@ -170,7 +205,7 @@ When analyzing messages for action items or performing any time-based queries, u
           due_date: item.due_date,
           created_at: item.created_at
         })),
-        available_members: config.availableMembers || []
+        available_members: availableMembers
       });
     })
     .function('create_action_item', 'Create a new action item and assign it to a team member', CREATE_ACTION_ITEM_SCHEMA, async (args: any) => {
@@ -179,12 +214,12 @@ When analyzing messages for action items or performing any time-based queries, u
       try {
         // Find the user ID for the assigned person
         let assignedToId: string | undefined;
-        if (config.isPersonalChat && config.currentUserId) {
+        if (messageContext.isPersonalChat && messageContext.userId) {
           // In personal chat, assign to the current user
-          assignedToId = config.currentUserId;
+          assignedToId = messageContext.userId;
         } else {
-          // In group chat, find the user ID from available members
-          const assignedMember = (config.availableMembers || []).find(member => 
+          // In group chat, find the user ID from pre-fetched members
+          const assignedMember = this.availableMembers.find((member: {name: string, id: string}) => 
             member.name === args.assigned_to || 
             member.name.toLowerCase() === args.assigned_to.toLowerCase()
           );
@@ -195,21 +230,22 @@ When analyzing messages for action items or performing any time-based queries, u
         
         // Parse due_date with timezone awareness if it's a relative expression
         let parsedDueDate = args.due_date;
-        if (args.due_date && config.userTimezone) {
-          const timezoneParsedDate = parseDeadlineWithTimezone(args.due_date, config.userTimezone);
+        if (args.due_date) {
+          // For now, default to UTC timezone - could be enhanced to extract timezone from currentDateTime
+          const timezoneParsedDate = parseDeadlineWithTimezone(args.due_date, 'UTC');
           if (timezoneParsedDate) {
             parsedDueDate = timezoneParsedDate;
-            console.log(`🕒 Parsed deadline "${args.due_date}" to ${parsedDueDate} (timezone: ${config.userTimezone})`);
+            console.log(`🕒 Parsed deadline "${args.due_date}" to ${parsedDueDate} (using UTC timezone)`);
           }
         }
         
-        const actionItem = config.storage!.createActionItem({
-          conversation_id: config.conversationId,
+        const actionItem = options.storage!.createActionItem({
+          conversation_id: messageContext.conversationKey,
           title: args.title,
           description: args.description,
           assigned_to: args.assigned_to,
           assigned_to_id: assignedToId,
-          assigned_by: config.currentUserName || 'AI Action Items Capability',
+          assigned_by: messageContext.userName || 'AI Action Items Capability',
           status: 'pending',
           priority: args.priority,
           due_date: parsedDueDate
@@ -242,18 +278,18 @@ When analyzing messages for action items or performing any time-based queries, u
       
       let actionItems: ActionItem[];
       
-      if (config.isPersonalChat && config.currentUserId) {
+      if (messageContext.isPersonalChat && messageContext.userId) {
         // In personal chat, only show the user's own action items across all conversations
-        actionItems = config.storage!.getActionItemsByUserId(config.currentUserId, args.status);
-        console.log(`👤 Personal chat: Retrieved ${actionItems.length} action items for user ${config.currentUserName}`);
+        actionItems = options.storage!.getActionItemsByUserId(messageContext.userId, args.status);
+        console.log(`👤 Personal chat: Retrieved ${actionItems.length} action items for user ${messageContext.userName}`);
       } else {
         // In group chat, handle normal conversation-based logic
         if (args.assigned_to && args.assigned_to !== 'all') {
           // Get action items for specific user
-          actionItems = config.storage!.getActionItemsForUser(args.assigned_to, args.status);
+          actionItems = options.storage!.getActionItemsForUser(args.assigned_to, args.status);
         } else {
           // Get all action items for this conversation
-          actionItems = config.storage!.getActionItemsByConversation(config.conversationId);
+          actionItems = options.storage!.getActionItemsByConversation(messageContext.conversationKey);
           if (args.status) {
             actionItems = actionItems.filter(item => item.status === args.status);
           }
@@ -262,7 +298,7 @@ When analyzing messages for action items or performing any time-based queries, u
       
       return JSON.stringify({
         status: 'success',
-        conversation_type: config.isPersonalChat ? 'personal' : 'group',
+        conversation_type: messageContext.isPersonalChat ? 'personal' : 'group',
         filters: args,
         action_items: actionItems.map(item => ({
           id: item.id,
@@ -275,7 +311,7 @@ When analyzing messages for action items or performing any time-based queries, u
           due_date: item.due_date,
           created_at: item.created_at,
           updated_at: item.updated_at,
-          conversation_id: config.isPersonalChat ? item.conversation_id : undefined // Show source conversation in personal view
+          conversation_id: messageContext.isPersonalChat ? item.conversation_id : undefined // Show source conversation in personal view
         })),
         count: actionItems.length
       });
@@ -283,10 +319,10 @@ When analyzing messages for action items or performing any time-based queries, u
     .function('update_action_item_status', 'Update the status of an existing action item', UPDATE_ACTION_ITEM_SCHEMA, async (args: any) => {
       console.log(`🔄 FUNCTION CALL: update_action_item_status - Item #${args.action_item_id} to ${args.new_status}`);
       
-      const success = config.storage!.updateActionItemStatus(args.action_item_id, args.new_status, 'AI Action Items Capability');
+      const success = options.storage!.updateActionItemStatus(args.action_item_id, args.new_status, 'AI Action Items Capability');
       
       if (success) {
-        const updatedItem = config.storage!.getActionItemById(args.action_item_id);
+        const updatedItem = options.storage!.getActionItemById(args.action_item_id);
         return JSON.stringify({
           status: 'success',
           action_item: updatedItem,
@@ -300,12 +336,15 @@ When analyzing messages for action items or performing any time-based queries, u
       }
     })
     .function('get_chat_members', 'Get the list of available members in this chat for action item assignment', GET_CHAT_MEMBERS_SCHEMA, async () => {
-      console.log(`👥 FUNCTION CALL: get_chat_members for conversation=${config.conversationId}`);
+      console.log(`👥 FUNCTION CALL: get_chat_members for conversation=${messageContext.conversationKey}`);
+      
+      // Use pre-fetched members
+      const availableMembers = this.availableMembers;
       
       return JSON.stringify({
         status: 'success',
-        available_members: config.availableMembers || [],
-        member_count: (config.availableMembers || []).length,
+        available_members: availableMembers,
+        member_count: availableMembers.length,
         guidance: "These are the available members who can be assigned action items. Choose assignees based on their expertise, availability, and the nature of the task."
       });
     });

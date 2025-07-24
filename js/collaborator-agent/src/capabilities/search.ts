@@ -3,8 +3,9 @@ import { OpenAIChatModel } from '@microsoft/teams.openai';
 import { CitationAppearance } from '@microsoft/teams.api';
 import { MessageRecord } from '../storage/storage';
 import { getMessagesByTimeRange } from '../storage/message';
-import { SEARCH_PROMPT } from '../agent/instructions';
-import { BaseCapability, CapabilityConfig } from './capability';
+import { SEARCH_PROMPT } from '../agent/prompt';
+import { BaseCapability, CapabilityOptions } from './capability';
+import { getContextById } from '../utils/messageContext';
 
 // Function schemas for search operations
 const SEARCH_MESSAGES_SCHEMA = {
@@ -132,35 +133,38 @@ function searchMessages(
 export class SearchCapability extends BaseCapability {
   readonly name = 'search';
   
-  createPrompt(config: CapabilityConfig): ChatPrompt {
-    this.logInit(config.conversationId, config.userTimezone);
+  createPrompt(contextID: string, options: CapabilityOptions = {}): ChatPrompt {
+    const messageContext = getContextById(contextID);
+    if (!messageContext) {
+      throw new Error(`Context not found for activity ID: ${contextID}`);
+    }
+    
+    this.logInit(messageContext);
     
     const searchModelConfig = this.getModelConfig('search');
     
     // Build additional time context if pre-calculated times are provided
     let timeContext = '';
-    if (config.calculatedStartTime && config.calculatedEndTime) {
-      console.log(`🕒 Search Capability received pre-calculated time range: ${config.timespanDescription || 'calculated timespan'} (${config.calculatedStartTime} to ${config.calculatedEndTime})`);
+    if (options.calculatedStartTime && options.calculatedEndTime) {
+      console.log(`🕒 Search Capability received pre-calculated time range: ${options.timespanDescription || 'calculated timespan'} (${options.calculatedStartTime} to ${options.calculatedEndTime})`);
       timeContext = `
 
 IMPORTANT: Pre-calculated time range available:
-- Start: ${config.calculatedStartTime}
-- End: ${config.calculatedEndTime}
-- Description: ${config.timespanDescription || 'calculated timespan'}
+- Start: ${options.calculatedStartTime}
+- End: ${options.calculatedEndTime}
+- Description: ${options.timespanDescription || 'calculated timespan'}
 
 When searching messages, use these exact timestamps instead of calculating your own. This ensures consistency with the Manager's time calculations and reduces token usage.`;
     }
     
     // Get current date and timezone info for the LLM
-    const currentDate = new Date().toISOString();
-    const timezone = config.userTimezone || 'UTC';
+    const currentDate = messageContext.currentDateTime;
     
     const instructions = `${SEARCH_PROMPT}
 
 CURRENT CONTEXT:
 - Current date/time: ${currentDate}
-- User timezone: ${timezone}
-- When calculating time ranges like "earlier today", "yesterday", use the current time and timezone above
+- When calculating time ranges like "earlier today", "yesterday", use the current time above
 - Always provide start_time and end_time in ISO format when searching for time-based queries${timeContext}`;
     
     const prompt = new ChatPrompt({
@@ -177,7 +181,7 @@ CURRENT CONTEXT:
       
       // Search for matching messages
       const matchingMessages = searchMessages(
-        config.conversationId,
+        messageContext.conversationKey,
         keywords,
         participants,
         start_time,
@@ -209,11 +213,11 @@ CURRENT CONTEXT:
 
       // Create citations for the first few results (limit to 5 to avoid overwhelming the user)
       const messagesToCite = matchingMessages.slice(0, 5);
-      const citations = messagesToCite.map(msg => createCitationFromRecord(msg, config.conversationId));
+      const citations = messagesToCite.map(msg => createCitationFromRecord(msg, messageContext.conversationKey));
       
       // If we have an array to store citations, add them there for the manager to access
-      if (config.citationsArray) {
-        config.citationsArray.push(...citations);
+      if (options.citationsArray) {
+        options.citationsArray.push(...citations);
       }
       
       // Return just the summary text (citations are handled via the shared array)

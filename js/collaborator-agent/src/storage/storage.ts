@@ -107,8 +107,6 @@ export class SqliteKVStore {
       )
     `);
 
-
-
     // Create indexes for better query performance
     this.db.exec(`
       CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages(conversation_id)

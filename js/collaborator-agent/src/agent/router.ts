@@ -1,40 +1,52 @@
 import { SummarizerCapability } from '../capabilities/summarize';
 import { ActionItemsCapability } from '../capabilities/actionItems';
 import { SearchCapability } from '../capabilities/search';
-import { CapabilityConfig, CapabilityResult } from '../capabilities/capability';
+import { CapabilityResult, CapabilityOptions } from '../capabilities/capability';
+import { getContextById } from '../utils/messageContext';
 
 // Router that handles capability delegation and execution
 export class CapabilityRouter {
-  private summarizerCapability: SummarizerCapability;
-  private actionItemsCapability: ActionItemsCapability;
-  private searchCapability: SearchCapability;
-
   constructor() {
-    this.summarizerCapability = new SummarizerCapability();
-    this.actionItemsCapability = new ActionItemsCapability();
-    this.searchCapability = new SearchCapability();
+    // No longer pre-creating capabilities - they're created per request
   }
 
   async processRequest(
     capabilityType: string,
-    userRequest: string,
-    config: CapabilityConfig
+    contextID: string,
+    options: CapabilityOptions = {}
   ): Promise<CapabilityResult> {
-    console.log(`🔀 Router processing ${capabilityType} capability for conversation: ${config.conversationId}`);
+    const messageContext = getContextById(contextID);
+    if (!messageContext) {
+      return {
+        response: '',
+        error: `Context not found for activity ID: ${contextID}`
+      };
+    }
+    
+    console.log(`🔀 Router processing ${capabilityType} capability for conversation: ${messageContext.conversationKey}`);
 
-    switch (capabilityType) {
-      case 'summarizer':
-        return await this.summarizerCapability.processRequest(userRequest, config);
+    switch (capabilityType.toLowerCase()) {
+      case 'summarizer': {
+        const summarizerCapability = new SummarizerCapability();
+        return await summarizerCapability.processRequest(contextID, options);
+      }
 
-      case 'actionitems':
-        return await this.actionItemsCapability.processRequest(userRequest, config);
+      case 'actionitems': {
+        const actionItemsCapability = new ActionItemsCapability();
+        await actionItemsCapability.initializeMembers(contextID);
+        return await actionItemsCapability.processRequest(contextID, options);
+      }
 
-      case 'search':
-        return await this.searchCapability.processRequest(userRequest, config);
+      case 'search': {
+        const searchCapability = new SearchCapability();
+        return await searchCapability.processRequest(contextID, options);
+      }
 
-      default:
+      default: {
         console.warn(`⚠️ Unknown capability type: ${capabilityType}, defaulting to summarizer`);
-        return await this.summarizerCapability.processRequest(userRequest, config);
+        const summarizerCapability = new SummarizerCapability();
+        return await summarizerCapability.processRequest(contextID, options);
+      }
     }
   }
 }

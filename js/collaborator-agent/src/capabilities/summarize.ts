@@ -1,8 +1,9 @@
 import { ChatPrompt } from '@microsoft/teams.ai';
 import { OpenAIChatModel } from '@microsoft/teams.openai';
 import { getRecentMessages, getMessagesByTimeRange, getMessagesWithTimestamps } from '../storage/message';
-import { SUMMARY_PROMPT } from '../agent/instructions';
-import { BaseCapability, CapabilityConfig } from './capability';
+import { SUMMARY_PROMPT } from '../agent/prompt';
+import { BaseCapability, CapabilityOptions } from './capability';
+import { getContextById } from '../utils/messageContext';
 
 // Function schemas for the summarizer
 const GET_RECENT_MESSAGES_SCHEMA = {
@@ -54,21 +55,26 @@ const EMPTY_SCHEMA = {
 export class SummarizerCapability extends BaseCapability {
   readonly name = 'summarizer';
   
-  createPrompt(config: CapabilityConfig): ChatPrompt {
-    this.logInit(config.conversationId, config.userTimezone);
+  createPrompt(contextID: string, options: CapabilityOptions = {}): ChatPrompt {
+    const messageContext = getContextById(contextID);
+    if (!messageContext) {
+      throw new Error(`Context not found for activity ID: ${contextID}`);
+    }
+    
+    this.logInit(messageContext);
     
     const summarizerModelConfig = this.getModelConfig('summarizer');
     
     // Build additional time context if pre-calculated times are provided
     let timeContext = '';
-    if (config.calculatedStartTime && config.calculatedEndTime) {
-      console.log(`🕒 Summarizer Capability received pre-calculated time range: ${config.timespanDescription || 'calculated timespan'} (${config.calculatedStartTime} to ${config.calculatedEndTime})`);
+    if (options.calculatedStartTime && options.calculatedEndTime) {
+      console.log(`🕒 Summarizer Capability received pre-calculated time range: ${options.timespanDescription || 'calculated timespan'} (${options.calculatedStartTime} to ${options.calculatedEndTime})`);
       timeContext = `
 
 IMPORTANT: Pre-calculated time range available:
-- Start: ${config.calculatedStartTime}
-- End: ${config.calculatedEndTime}
-- Description: ${config.timespanDescription || 'calculated timespan'}
+- Start: ${options.calculatedStartTime}
+- End: ${options.calculatedEndTime}
+- Description: ${options.timespanDescription || 'calculated timespan'}
 
 When retrieving messages for summarization, use these exact timestamps instead of calculating your own. This ensures consistency with the Manager's time calculations and reduces token usage.`;
     }
@@ -86,8 +92,8 @@ When retrieving messages for summarization, use these exact timestamps instead o
     })
     .function('get_recent_messages', 'Retrieve recent messages from the conversation history with timestamps', GET_RECENT_MESSAGES_SCHEMA, async (args: any) => {
       const limit = args.limit || 5;
-      console.log(`🔍 FUNCTION CALL: get_recent_messages with limit=${limit} for conversation=${config.conversationId}`);
-      const recentMessages = getRecentMessages(config.conversationId, limit);
+      console.log(`🔍 FUNCTION CALL: get_recent_messages with limit=${limit} for conversation=${messageContext.conversationKey}`);
+      const recentMessages = getRecentMessages(messageContext.conversationKey, limit);
       console.log(`📨 Retrieved ${recentMessages.length} recent messages`);
       return JSON.stringify({
         status: 'success',
@@ -102,8 +108,8 @@ When retrieving messages for summarization, use these exact timestamps instead o
     })
     .function('get_messages_by_time_range', 'Retrieve messages from a specific time range', GET_MESSAGES_BY_TIME_RANGE_SCHEMA, async (args: any) => {
       const { start_time, end_time } = args;
-      console.log(`🔍 FUNCTION CALL: get_messages_by_time_range with start=${start_time}, end=${end_time} for conversation=${config.conversationId}`);
-      const rangeMessages = getMessagesByTimeRange(config.conversationId, start_time, end_time);
+      console.log(`🔍 FUNCTION CALL: get_messages_by_time_range with start=${start_time}, end=${end_time} for conversation=${messageContext.conversationKey}`);
+      const rangeMessages = getMessagesByTimeRange(messageContext.conversationKey, start_time, end_time);
       console.log(`📅 Retrieved ${rangeMessages.length} messages from time range`);
       return JSON.stringify({
         status: 'success',
@@ -119,8 +125,8 @@ When retrieving messages for summarization, use these exact timestamps instead o
     })
     .function('show_recent_messages', 'Display recent messages in a formatted way for the user', SHOW_RECENT_MESSAGES_SCHEMA, async (args: any) => {
       const displayCount = args.count || 5;
-      console.log(`🔍 FUNCTION CALL: show_recent_messages with count=${displayCount} for conversation=${config.conversationId}`);
-      const messagesToShow = getRecentMessages(config.conversationId, displayCount);
+      console.log(`🔍 FUNCTION CALL: show_recent_messages with count=${displayCount} for conversation=${messageContext.conversationKey}`);
+      const messagesToShow = getRecentMessages(messageContext.conversationKey, displayCount);
       console.log(`📋 Formatting ${messagesToShow.length} messages for display`);
       const messageList = messagesToShow.map((msg: any) => 
         `[${new Date(msg.timestamp).toLocaleString()}] ${msg.name} (${msg.role}): ${msg.content}`
@@ -134,13 +140,13 @@ When retrieving messages for summarization, use these exact timestamps instead o
       });
     })
     .function('summarize_conversation', 'Get a summary of the conversation with message counts and time span', EMPTY_SCHEMA, async (_args: any) => {
-      console.log(`🔍 FUNCTION CALL: summarize_conversation for conversation=${config.conversationId}`);
-      const allMessages = getMessagesWithTimestamps(config.conversationId);
+      console.log(`🔍 FUNCTION CALL: summarize_conversation for conversation=${messageContext.conversationKey}`);
+      const allMessages = getMessagesWithTimestamps(messageContext.conversationKey);
       console.log(`📊 Retrieved ${allMessages.length} total messages for conversation summary`);
       return JSON.stringify({
         status: 'success',
         totalMessages: allMessages.length,
-        conversationId: config.conversationId,
+        conversationId: messageContext.conversationKey,
         oldestMessage: allMessages.length > 0 ? allMessages[0].timestamp : null,
         newestMessage: allMessages.length > 0 ? allMessages[allMessages.length - 1].timestamp : null,
         messagesByRole: allMessages.reduce((acc: any, msg: any) => {
