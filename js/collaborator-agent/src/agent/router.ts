@@ -7,7 +7,6 @@ import { getContextById } from '../utils/messageContext';
 // Router that handles capability delegation and execution
 export class CapabilityRouter {
   constructor() {
-    // No longer pre-creating capabilities - they're created per request
   }
 
   async processRequest(

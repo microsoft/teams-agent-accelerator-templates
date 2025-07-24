@@ -5,7 +5,13 @@ import { SqliteKVStore } from '../storage/storage';
 import { MANAGER_PROMPT } from './prompt';
 import { getModelConfig } from '../utils/config';
 import { CapabilityRouter } from './router';
-import { getContextById } from '../utils/messageContext';
+import { 
+    getContextById, 
+    setDelegatedCapability, 
+    getDelegatedCapability,
+    setSearchCitations,
+    getSearchCitations
+} from '../utils/messageContext';
 import { extractTimeRange } from '../utils/utils';
 
 // Result interface for manager responses
@@ -19,8 +25,6 @@ export interface ManagerResult {
 export class ManagerPrompt {
     private prompt: ChatPrompt;
     private storage: SqliteKVStore;
-    private lastDelegatedCapability: string | null = null;
-    private lastSearchCitations: CitationAppearance[] = [];
     private router: CapabilityRouter;
 
     constructor(storage: SqliteKVStore) {
@@ -104,7 +108,7 @@ export class ManagerPrompt {
                 },
                 required: ['contextID']
             }, async (args: any) => {
-                this.lastDelegatedCapability = 'summarizer';
+                setDelegatedCapability(args.contextID, 'summarizer');
 
                 const result = await this.router.processRequest('summarizer', args.contextID, {
                     calculatedStartTime: args.calculated_start_time,
@@ -140,7 +144,7 @@ export class ManagerPrompt {
                 },
                 required: ['contextID']
             }, async (args: any) => {
-                this.lastDelegatedCapability = 'action_items';
+                setDelegatedCapability(args.contextID, 'action_items');
 
                 const result = await this.router.processRequest('actionitems', args.contextID, {
                     storage: this.storage,
@@ -173,9 +177,8 @@ export class ManagerPrompt {
                 },
                 required: ['contextID']
             }, async (args: any) => {
-                this.lastDelegatedCapability = 'search';
+                setDelegatedCapability(args.contextID, 'search');
 
-                // Create a shared array for citations
                 const citationsArray: CitationAppearance[] = [];
 
                 const result = await this.router.processRequest('search', args.contextID, {
@@ -184,9 +187,8 @@ export class ManagerPrompt {
                     calculatedEndTime: args.calculated_end_time,
                     timespanDescription: args.timespan_description
                 });
-
-                // Store the citations that were added during search
-                this.lastSearchCitations = citationsArray;
+                
+                setSearchCitations(args.contextID, citationsArray);
 
                 return result.response || 'No response from Search Capability';
             });
@@ -201,11 +203,6 @@ export class ManagerPrompt {
         }
         
         try {
-            
-            // Reset delegation state
-            this.lastDelegatedCapability = null;
-            this.lastSearchCitations = [];
-
             const contextInfo = context.isPersonalChat 
                 ? `Context: This is a personal (1:1) chat with ${context.userName} (${context.userId}).`
                 : `Context: This is a group conversation.`;
@@ -226,8 +223,8 @@ For action item requests in personal chats, use the user's ID for personal actio
 
             return {
                 response: response.content || 'No response generated',
-                delegatedCapability: this.lastDelegatedCapability,
-                citations: this.lastSearchCitations.length > 0 ? this.lastSearchCitations : undefined
+                delegatedCapability: getDelegatedCapability(contextID),
+                citations: getSearchCitations(contextID).length > 0 ? getSearchCitations(contextID) : undefined
             };
 
         } catch (error) {
@@ -237,9 +234,8 @@ For action item requests in personal chats, use the user's ID for personal actio
                 delegatedCapability: null
             };
         } finally {
-            // Clean up delegation state
-            this.lastDelegatedCapability = null;
-            this.lastSearchCitations = [];
+            // Clean up delegation state - but keep it for the return value
+            // Context will be cleaned up by the main handler
         }
     }
 

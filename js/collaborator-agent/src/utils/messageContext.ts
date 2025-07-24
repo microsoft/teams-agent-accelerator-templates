@@ -1,3 +1,5 @@
+import { CitationAppearance } from '@microsoft/teams.api';
+
 /**
  * Context object that stores all important information for processing a message
  */
@@ -10,6 +12,10 @@ export interface MessageContext {
   currentDateTime: string;
   isPersonalChat: boolean;
   activity: any; // The original Teams activity object
+  
+  // Manager state (to avoid race conditions)
+  delegatedCapability?: string | null;
+  searchCitations?: CitationAppearance[];
 }
 
 /**
@@ -123,4 +129,40 @@ export function createMessageContext(
   setContextById(activityId, context);
   
   return activityId;
+}
+
+/**
+ * Set the delegated capability for a specific context
+ */
+export function setDelegatedCapability(activityId: string, capability: string | null): void {
+  const context = getContextById(activityId);
+  if (context) {
+    context.delegatedCapability = capability;
+  }
+}
+
+/**
+ * Get the delegated capability for a specific context
+ */
+export function getDelegatedCapability(activityId: string): string | null {
+  const context = getContextById(activityId);
+  return context?.delegatedCapability || null;
+}
+
+/**
+ * Set search citations for a specific context
+ */
+export function setSearchCitations(activityId: string, citations: CitationAppearance[]): void {
+  const context = getContextById(activityId);
+  if (context) {
+    context.searchCitations = citations;
+  }
+}
+
+/**
+ * Get search citations for a specific context
+ */
+export function getSearchCitations(activityId: string): CitationAppearance[] {
+  const context = getContextById(activityId);
+  return context?.searchCitations || [];
 }
