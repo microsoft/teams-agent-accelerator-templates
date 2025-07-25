@@ -42,7 +42,6 @@ const systemMessage = [
   'You can also return a simple text response chart is needed.',
 ].join('\n');
 
-// SQL Prompt
 const sqlPrompt = new ChatPrompt({
   instructions: [
     'You are an expert SQL executor. When called on, generate a SQL query given the context that is given by the main prompt and then execute the query using execute_sql function.',
@@ -97,7 +96,6 @@ const sqlPrompt = new ChatPrompt({
   }
 );
 
-// Card Generation Prompt
 const cardPrompt = new ChatPrompt({
   instructions: 'You generate adaptive cards and charts from provided data. Use the generate_card function to create visualizations.',
   model: new OpenAIChatModel({
