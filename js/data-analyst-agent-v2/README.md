@@ -134,8 +134,9 @@ See the [AdventureWorks README](src/data/README.md) for more details.
 
 **Core Components**
 
-- **Data Analyst Agent**: Main orchestrator that handles user requests. Handles database queries and also creates visualizations using Adaptive Cards.
-- **Base Agent**: Handles LLM calls and orchestration. Other agents are built on top of this.
+- **Data Analyst Agent**: Main orchestrator that handles user requests. Coordinates between SQL generation and card creation components to provide comprehensive data analysis responses.
+- **SQL Prompt**: Specialized prompt system that converts natural language queries into accurate SQL statements for database operations.
+- **Card Generation Prompt**: Dedicated prompt system that transforms query results into interactive Adaptive Cards visualizations for Teams.
 
 ### Running Evals
 
