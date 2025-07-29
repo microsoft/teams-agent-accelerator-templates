@@ -1,9 +1,11 @@
 import { App } from '@microsoft/teams.apps';
 import { ConsoleLogger } from '@microsoft/teams.common';
 import { DevtoolsPlugin } from '@microsoft/teams.dev';
-import { dataAnalystPrompt } from './prompt';
-import { shared } from './utils';
+import { createDataAnalystPrompt } from './prompt';
 import { MessageActivity } from '@microsoft/teams.api';
+import { Message } from '@microsoft/teams.ai';
+
+const conversationHistories = new Map<string, Message[]>();
 
 const app = new App({
     logger: new ConsoleLogger('adventureworks-data-analyst', { level: 'debug' }),
@@ -18,24 +20,33 @@ app.on('install.add', async ({ send }) => {
 
 app.on('message', async ({ send, activity, stream }) => {
     await send({ type: 'typing' });
-    const res = await dataAnalystPrompt.send(activity.text, {
-        onChunk: (chunk) => {
-            stream.emit(chunk);
-        }
+
+    const conversationId = activity.conversation.id;
+
+    let conversationHistory = conversationHistories.get(conversationId);
+    if (!conversationHistory) {
+        conversationHistory = [];
+        conversationHistories.set(conversationId, conversationHistory);
     }
-    );
+
+    const { prompt, attachments } = createDataAnalystPrompt(conversationHistory);
+
+    const res = activity.conversation.isGroup
+        ? await prompt.send(activity.text)
+        : await prompt.send(activity.text, {
+            onChunk: (chunk: any) => {
+                stream.emit(chunk);
+            }
+        });
 
     const cards = new MessageActivity().addAiGenerated();
-    if (shared.attachments.length > 0) {
-        cards.addAttachments(...shared.attachments);
-        shared.attachments = [];
+    if (attachments.length > 0) {
+        cards.addAttachments(...attachments);
     }
 
     if (activity.conversation.isGroup) {
-        if (res.content) {
-            cards.addText(res.content);
-        }
-        await send(activity);
+        if (res.content) cards.addText(res.content);
+        await send(cards);
     } else {
         stream.emit(cards);
     }

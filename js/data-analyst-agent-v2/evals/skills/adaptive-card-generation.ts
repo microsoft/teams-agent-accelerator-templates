@@ -2,7 +2,7 @@ import { ConsoleLogger } from '@microsoft/teams.common';
 import { ACJudge } from '../judge/ac';
 import * as fs from 'fs';
 import * as path from 'path';
-import { dataAnalystPrompt } from '../../src/prompt';
+import { createDataAnalystPrompt } from '../../src/prompt';
 import { generateChartCard } from '../../src/cards';
 
 interface EvalCase {
@@ -46,9 +46,12 @@ async function evaluateACGeneration() {
         log.info(`Evaluating: ${testCase.task}`);
 
         try {
+            // Create a new prompt instance for this request
+            const promptResult = createDataAnalystPrompt();
+            
             // Use the new prompt agent to generate a response
             const userPrompt = `Create an appropriate visualization for this data: ${JSON.stringify(testCase.input_data)}. Please return a single card.\nUse the following type of visualization: ${testCase.visualization_type}.`;
-            const response = await dataAnalystPrompt.send(userPrompt);
+            const response = await promptResult.prompt.send(userPrompt);
             let parsedResponse;
             try {
                 const resObj = typeof response.content === 'string' ? JSON.parse(response.content) : response.content;

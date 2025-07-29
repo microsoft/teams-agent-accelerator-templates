@@ -2,7 +2,7 @@ import { ConsoleLogger } from '@microsoft/teams.common';
 import { SQLJudge } from '../judge/sql';
 import * as fs from 'fs';
 import * as path from 'path';
-import { dataAnalystPrompt } from '../../src/prompt';
+import { createDataAnalystPrompt } from '../../src/prompt';
 
 interface EvalCase {
     task: string;
@@ -43,9 +43,12 @@ async function evaluateSqlGeneration() {
         log.info(`Evaluating: ${testCase.task}`);
 
         try {
+            // Create a new prompt instance for this request
+            const promptResult = createDataAnalystPrompt();
+            
             // Use the new prompt agent to generate a response
             const userPrompt = `Here's the user query: ${testCase.user_query}. \nCan you simply generate the SQL query to answer the question? Please don't execute it. \nJust return the SQL query as text.`;
-            const response = await dataAnalystPrompt.send(userPrompt);
+            const response = await promptResult.prompt.send(userPrompt);
             let parsedResponse;
             try {
                 const resObj = typeof response.content === 'string' ? JSON.parse(response.content) : response.content;

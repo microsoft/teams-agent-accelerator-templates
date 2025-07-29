@@ -1,10 +1,12 @@
 import { ChatPrompt } from '@microsoft/teams.ai';
 import { OpenAIChatModel } from '@microsoft/teams.openai';
 import fs from 'fs';
-import { pathToSrc, shared } from './utils';
+import { pathToSrc } from './utils';
 import { chartCreationSchema, executeSqlSchema } from './schema';
 import Database from 'better-sqlite3';
 import { generateChartCard } from './cards';
+import { Message } from '@microsoft/teams.ai';
+import { Attachment } from '@microsoft/teams.api';
 
 const schemaPath = pathToSrc('data/schema.sql');
 const dbSchema = fs.readFileSync(schemaPath, 'utf-8');
@@ -42,83 +44,94 @@ const systemMessage = [
   'You can also return a simple text response chart is needed.',
 ].join('\n');
 
-const sqlPrompt = new ChatPrompt({
-  instructions: [
-    'You are an expert SQL executor. When called on, generate a SQL query given the context that is given by the main prompt and then execute the query using execute_sql function.',
-    'To query the database, use the execute_sql function with a SELECT query.',
-    'Only SELECT queries are allowed. No mutations.',
-    'Database Schema:',
-    '```sql',
-    dbSchema,
-    '```',
-    '',
-    'Examples:',
-    ...examples.map((ex: any) =>
-      [
-        '---',
-        `User: ${ex.user_message}`,
-        `Assistant: ${JSON.stringify(ex.data_analyst_response, null, 2)}`,
-      ].join('\n')
-    )],
-  model: new OpenAIChatModel({
-    model: process.env.AOAI_MODEL!,
-    apiKey: process.env.AOAI_API_KEY!,
-    endpoint: process.env.AOAI_ENDPOINT!,
-    apiVersion: '2025-04-01-preview'
-  })
-}).function(
-  'execute_sql',
-  'Executes a SQL SELECT query and returns results',
-  executeSqlSchema,
-  async ({ query }) => {
-    if (!query.trim().toLowerCase().startsWith('select')) {
-      return 'Error: Only SELECT queries are allowed';
-    }
-
-    const forbidden = ['insert', 'update', 'delete', 'drop', 'alter', 'create'];
-    if (forbidden.some(word => query.toLowerCase().includes(word))) {
-      return 'Error: Query contains forbidden operations';
-    }
-
-    try {
-      const dbPath = pathToSrc('data/adventureworks.db');
-      const db = new Database(dbPath, { readonly: true });
-      const rows = db.prepare(query).all();
-      db.close();
-      if (!rows.length) {
-        return 'No results found for your query.';
+export const createDataAnalystPrompt = (conversationHistory: Message[] = []) => {
+  const conversationAttachments: Attachment[] = [];
+  
+  const sqlPromptInstance = new ChatPrompt({
+    instructions: [
+      'You are an expert SQL executor. When called on, generate a SQL query given the context that is given by the main prompt and then execute the query using execute_sql function.',
+      'To query the database, use the execute_sql function with a SELECT query.',
+      'Only SELECT queries are allowed. No mutations.',
+      'Database Schema:',
+      '```sql',
+      dbSchema,
+      '```',
+      '',
+      'Examples:',
+      ...examples.map((ex: any) =>
+        [
+          '---',
+          `User: ${ex.user_message}`,
+          `Assistant: ${JSON.stringify(ex.data_analyst_response, null, 2)}`,
+        ].join('\n')
+      )],
+    model: new OpenAIChatModel({
+      model: process.env.AOAI_MODEL!,
+      apiKey: process.env.AOAI_API_KEY!,
+      endpoint: process.env.AOAI_ENDPOINT!,
+      apiVersion: '2025-04-01-preview'
+    })
+  }).function(
+    'execute_sql',
+    'Executes a SQL SELECT query and returns results',
+    executeSqlSchema,
+    async ({ query }) => {
+      if (!query.trim().toLowerCase().startsWith('select')) {
+        return 'Error: Only SELECT queries are allowed';
       }
 
-      return { rows };
-    } catch (err) {
-      return `Error executing query: ${err instanceof Error ? err.message : 'Unknown error'}`;
+      const forbidden = ['insert', 'update', 'delete', 'drop', 'alter', 'create'];
+      if (forbidden.some(word => query.toLowerCase().includes(word))) {
+        return 'Error: Query contains forbidden operations';
+      }
+
+      try {
+        const dbPath = pathToSrc('data/adventureworks.db');
+        const db = new Database(dbPath, { readonly: true });
+        const rows = db.prepare(query).all();
+        db.close();
+        if (!rows.length) {
+          return 'No results found for your query.';
+        }
+
+        return { rows };
+      } catch (err) {
+        return `Error executing query: ${err instanceof Error ? err.message : 'Unknown error'}`;
+      }
     }
-  }
-);
+  );
 
-const cardPrompt = new ChatPrompt({
-  instructions: 'You generate adaptive cards and charts from provided data. Use the generate_card function to create visualizations.',
-  model: new OpenAIChatModel({
-    model: process.env.AOAI_MODEL!,
-    apiKey: process.env.AOAI_API_KEY!,
-    endpoint: process.env.AOAI_ENDPOINT!,
-    apiVersion: '2025-04-01-preview'
-  })
-}).function(
-  'generate_card',
-  'Generates a card or chart from data',
-  chartCreationSchema,
-  async ({ chartType, rows, options }) => { shared.attachments.push(generateChartCard(chartType, rows, options)) }
-);
+  const cardPromptInstance = new ChatPrompt({
+    instructions: 'You generate adaptive cards and charts from provided data. Use the generate_card function to create visualizations.',
+    model: new OpenAIChatModel({
+      model: process.env.AOAI_MODEL!,
+      apiKey: process.env.AOAI_API_KEY!,
+      endpoint: process.env.AOAI_ENDPOINT!,
+      apiVersion: '2025-04-01-preview'
+    })
+  }).function(
+    'generate_card',
+    'Generates a card or chart from data',
+    chartCreationSchema,
+    async ({ chartType, rows, options }) => { 
+      conversationAttachments.push(generateChartCard(chartType, rows, options));
+    }
+  );
 
-// Main Data Analyst Prompt
-export const dataAnalystPrompt = new ChatPrompt({
-  instructions: systemMessage,
-  model: new OpenAIChatModel({
-    model: process.env.AOAI_MODEL!,
-    apiKey: process.env.AOAI_API_KEY!,
-    endpoint: process.env.AOAI_ENDPOINT!,
-    apiVersion: '2025-04-01-preview'
-  }),
-}).use('execute_sql', sqlPrompt)
-  .use('generate_card', cardPrompt);
+  const mainPrompt = new ChatPrompt({
+    instructions: systemMessage,
+    model: new OpenAIChatModel({
+      model: process.env.AOAI_MODEL!,
+      apiKey: process.env.AOAI_API_KEY!,
+      endpoint: process.env.AOAI_ENDPOINT!,
+      apiVersion: '2025-04-01-preview'
+    }),
+    messages: conversationHistory
+  }).use('execute_sql', sqlPromptInstance)
+    .use('generate_card', cardPromptInstance);
+
+  return {
+    prompt: mainPrompt,
+    attachments: conversationAttachments
+  };
+};
