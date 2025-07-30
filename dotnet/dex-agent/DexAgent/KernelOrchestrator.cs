@@ -32,7 +32,7 @@ namespace DexAgent
 #pragma warning disable SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             _openAIPromptExecutionSettings = new()
             {
-                ResponseFormat = "json_object",
+//// ResponseFormat = "json_object",
                 FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
                 Temperature = 0,
             };
@@ -52,7 +52,7 @@ namespace DexAgent
             ChatHistory chatHistory = new();
             chatHistory.AddSystemMessage(
                     "You are a GitHub Assistant. " +
-                    "All responses must be in JSON format. " +
+                    "Respond in plain English. " +
                     "You can list pull requests. " +
                     "You send an adaptive card whenever there is a new assignee on a pull request. " +
                     "You send an adaptive card whenever there is a status update on a pull request. " +
@@ -188,7 +188,7 @@ namespace DexAgent
             if (latestResult is FunctionResultContent)
             {
                 FunctionResultContent function_res = (FunctionResultContent)latestResult;
-                if (function_res.FunctionName == "ListPRs")
+                if (function_res.PluginName == "GitHubPlugin")
                 {
                     // Adaptive card was already sent
                     await SerializeAndSaveHistory(history, currConvo, prevConvos);
@@ -200,33 +200,9 @@ namespace DexAgent
                 history.Add(result);
                 await SerializeAndSaveHistory(history, currConvo, prevConvos);
 
-                var resultJson = JsonSerializer.Deserialize<JsonElement>(result.Content ?? string.Empty);
-                // Responses from LLM may vary by key
-                string[] resultKeys = new string[] { "message", "response", "capabilities", "features" };
-                foreach (var key in resultKeys)
+                if (!string.IsNullOrEmpty(result.Content))
                 {
-                    string finalStr = "";
-                    if (resultJson.TryGetProperty(key, out JsonElement val))
-                    {
-                        if (key == "capabilities" || key == "features")
-                        {
-                            foreach (var item in val.EnumerateArray())
-                            {
-                                var desc = " ";
-                                desc += item.GetProperty("description").ToString();
-                                finalStr += desc;
-                            }
-                        }
-                        else
-                        {
-                            finalStr += val.ToString();
-                        }
-                    }
-
-                    if (!string.IsNullOrEmpty(finalStr))
-                    {
-                        await context.Send(finalStr);
-                    }
+                    await context.Send(result.Content);
                 }
             }
         }
@@ -268,41 +244,18 @@ namespace DexAgent
                     Content = ""
                 };
 
-                // Responses from LLM may vary by key
-                var chunkJson = JsonSerializer.Deserialize<JsonElement>(chunkBuilder.ToString());
-                string[] resultKeys = new string[] { "message", "response", "capabilities", "features" };
-                foreach (var key in resultKeys)
+                if (chunkBuilder.Length > 0)
                 {
-                    if (chunkJson.TryGetProperty(key, out JsonElement val))
+                    StringBuilder finalStringBuilder = new StringBuilder(chunkBuilder.ToString());
+                    completeMessage.Content += finalStringBuilder.ToString();
+                    foreach (var word in finalStringBuilder.ToString().Split(' ', StringSplitOptions.RemoveEmptyEntries))
                     {
-                        if (key == "capabilities" || key == "features")
-                        {
-                            foreach (var item in val.EnumerateArray())
-                            {
-                                var desc = " ";
-                                desc += item.GetProperty("description").ToString();
-
-                                StringBuilder finalStringBuilder = new StringBuilder(desc);
-                                completeMessage.Content += desc;
-                                for (var i = 0; i < finalStringBuilder.Length; i++)
-                                {
-                                    await Task.Delay(TimeSpan.FromSeconds(0.01));
-                                    stream.Emit(finalStringBuilder[i].ToString());
-                                }
-                            }
-                        }
-                        else
-                        {
-                            StringBuilder finalStringBuilder = new StringBuilder(val.ToString());
-                            completeMessage.Content += val.ToString();
-                            for (var i = 0; i < finalStringBuilder.Length; i++)
-                            {
-                                await Task.Delay(TimeSpan.FromSeconds(0.01));
-                                stream.Emit(finalStringBuilder[i].ToString());
-                            }
-                        }
+                        await Task.Delay(TimeSpan.FromSeconds(0.01));
+                        stream.Emit(word + " ");
                     }
                 }
+
+                // Add the complete message to history
                 history.Add(completeMessage);
             }
 
