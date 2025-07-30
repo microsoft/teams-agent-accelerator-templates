@@ -11,6 +11,7 @@ export const executeSqlSchema: ObjectSchema = {
     required: ['query']
 };
 
+// Sub-schema of full Adaptive Card schema to create cards with simple charts
 export const chartCreationSchema: ObjectSchema = {
     type: 'object',
     properties: {
@@ -38,4 +39,3 @@ export const chartCreationSchema: ObjectSchema = {
         }
     }
 }
-

@@ -134,9 +134,8 @@ See the [AdventureWorks README](src/data/README.md) for more details.
 
 **Core Components**
 
-- **Data Analyst Agent**: Main orchestrator that handles user requests. Coordinates between SQL generation and card creation components to provide comprehensive data analysis responses.
-- **SQL Prompt**: Specialized prompt system that converts natural language queries into accurate SQL statements for database operations.
-- **Card Generation Prompt**: Dedicated prompt system that transforms query results into interactive Adaptive Cards visualizations for Teams.
+- **Data Analyst Agent**: Main orchestrator that handles user requests. Handles database queries and also creates visualizations using Adaptive Cards.
+- **Base Agent**: Handles LLM calls and orchestration. Other agents are built on top of this.
 
 ### Running Evals
 
@@ -151,7 +150,7 @@ To evaluate the agent's SQL query generation capabilities:
 npm run eval:sql
 
 # Run a single test case (useful for debugging)
-npm run eval:sql -- --run-one
+npm run eval:sql:one
 ```
 
 The evaluation will:
@@ -169,7 +168,7 @@ To evaluate the agent's Adaptive Card visualization capabilities:
 npm run eval:ac
 
 # Run a single test case (useful for debugging)
-npm run eval:ac -- --run-one
+npm run eval:ac:one
 ```
 
 The evaluation will:
@@ -183,5 +182,3 @@ Both evaluations will provide detailed feedback including:
 - Individual test case results
 - Expected vs actual outputs
 - Judge's reasoning for each evaluation
-
-

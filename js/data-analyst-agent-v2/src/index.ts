@@ -5,7 +5,7 @@ import { createDataAnalystPrompt } from './prompt';
 import { MessageActivity } from '@microsoft/teams.api';
 import { Message } from '@microsoft/teams.ai';
 
-const conversationHistories = new Map<string, Message[]>();
+const conversationHistoryById = new Map<string, Message[]>();
 
 const app = new App({
     logger: new ConsoleLogger('adventureworks-data-analyst', { level: 'debug' }),
@@ -23,32 +23,36 @@ app.on('message', async ({ send, activity, stream }) => {
 
     const conversationId = activity.conversation.id;
 
-    let conversationHistory = conversationHistories.get(conversationId);
+    let conversationHistory = conversationHistoryById.get(conversationId);
     if (!conversationHistory) {
         conversationHistory = [];
-        conversationHistories.set(conversationId, conversationHistory);
+        conversationHistoryById.set(conversationId, conversationHistory);
     }
 
     const { prompt, attachments } = createDataAnalystPrompt(conversationHistory);
 
+    // Only stream chunked response if in one-on-one chat, otherwise get full response back before sending
     const res = activity.conversation.isGroup
         ? await prompt.send(activity.text)
         : await prompt.send(activity.text, {
-            onChunk: (chunk: any) => {
+            onChunk: (chunk) => {
                 stream.emit(chunk);
             }
         });
 
-    const cards = new MessageActivity().addAiGenerated();
+    const resultMessage = new MessageActivity().addAiGenerated();
     if (attachments.length > 0) {
-        cards.addAttachments(...attachments);
+        // Add attachments to result if there are any
+        resultMessage.addAttachments(...attachments);
     }
 
     if (activity.conversation.isGroup) {
-        if (res.content) cards.addText(res.content);
-        await send(cards);
+        // Send text and attachments as one message in group chats
+        if (res.content) resultMessage.addText(res.content);
+        await send(resultMessage);
     } else {
-        stream.emit(cards);
+        // Stream attachments if in one-on-one chats
+        stream.emit(resultMessage);
     }
 });
 
