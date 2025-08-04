@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@microsoft/teams-app-test-tool": "^0.2.11"
+  }
+}
