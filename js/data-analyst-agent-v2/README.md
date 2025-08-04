@@ -1,52 +1,46 @@
 <!--
 ---
 id: data-analyst-agent-v2
-title: "Data Analyst Agent"
+title: "Data Analyst Agent v2"
 description: "Natural language interface for data exploration and visualization."
 longDescription: |
-  This sample demonstrates how to build an AI-powered data analyst agent that can be integrated into Microsoft Teams. It helps users explore and visualize data through natural language conversations and Adaptive Cards charts.
+  This sample demonstrates how to build an AI-powered data analyst agent using Teams AI Library SDK v2 that can be integrated into Microsoft Teams. It helps users explore and visualize data through natural language conversations and Adaptive Cards charts.
 
-  Check out the [LinkedIn post](https://www.linkedin.com/feed/update/urn:li:activity:7305726858308792321/) for a video of the sample in action.
 featuresList:
   - "🔍 Query databases using natural language"
   - "📊 Generate visualizations using Adaptive Cards from query results"
   - "📈 Analyze data patterns and trends"
-  - "🔄 'reset' command to clear the conversation history."
 tags:
   - "llm-sql"
   - "adaptive-cards"
   - "data-viz"
-githubUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/blob/main/js/data-analyst-agent"
-imageUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/js/data-analyst-agent/assets/data-analyst-thumbnail.png"
+githubUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/blob/main/js/data-analyst-agent-v2"
 author: "Microsoft"
 language: "JavaScript"
-demoUrlGif: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/js/data-analyst-agent/assets/demo.gif"
-demoYoutubeVideoId: "HQDvwoJbhRE"
+demoUrlGif: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/js/data-analyst-agent-v2/assets/demo.gif"
 ---
 -->
 
-# Data Analyst Agent for Microsoft Teams
+# Data Analyst Agent v2 for Microsoft Teams
 
-This sample demonstrates how to build an AI-powered data analyst agent that can be integrated into Microsoft Teams. It helps users explore and visualize data through natural language conversations and Adaptive Cards charts.
-
-Check out the [LinkedIn post](https://www.linkedin.com/feed/update/urn:li:activity:7305726858308792321/) for a video of the sample in action.
+This sample demonstrates how to build an AI-powered data analyst agent using **Teams AI Library SDK v2** that can be integrated into Microsoft Teams. This template is an updated version of the previous Data Analyst Agent built in v1 of the SDK. It leverages the latest capabilities of the Teams AI Library to help users explore and visualize data through natural language conversations and Adaptive Cards charts.
 
 ## Features
 
 - 🔍Query databases using natural language
 - 📊 Generate visualizations using [Adaptive Cards](https://adaptivecards.microsoft.com/?topic=welcome) from query results
 - 📈 Analyze data patterns and trends
-- 🔄 `"/reset"` command to clear the conversation history.
+- 💬 Real-time streamed responses in one-on-one chats for immediate feedback
 
 ## Demo
 
-![Data Analyst Agent Demo](assets/demo.gif)
+![Data Analyst Agent v2 Demo](assets/demo.gif)
 
 ## Running the Sample
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org/) version 18.x or higher
+- [Node.js](https://nodejs.org/) version 20.x or higher
 - [npm](https://www.npmjs.com/) (comes with Node.js)
 - [Teams Toolkit Extension](https://marketplace.visualstudio.com/items?itemName=TeamsDevApp.ms-teams-vscode-extension) for Visual Studio Code
 - [Visual Studio Code](https://code.visualstudio.com/)
@@ -59,7 +53,7 @@ Check out the [LinkedIn post](https://www.linkedin.com/feed/update/urn:li:activi
 
     ```bash
     git clone https://github.com/microsoft/teams-agent-accelerator-samples
-    cd js/data-analyst-agent
+    cd js/data-analyst-agent-v2
     ```
 
 2. Install dependencies:
