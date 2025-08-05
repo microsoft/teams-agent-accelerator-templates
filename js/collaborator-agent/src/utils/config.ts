@@ -86,4 +86,3 @@ export function logModelConfigs(): void {
   console.log(`  Search Capability: ${AI_MODELS.SEARCH.model}`);
   console.log(`  Default Model: ${AI_MODELS.DEFAULT.model}`);
 }
-f

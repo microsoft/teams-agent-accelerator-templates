@@ -1,5 +1,3 @@
-import { CitationAppearance } from '@microsoft/teams.api';
-
 /**
  * Context object that stores all important information for processing a message
  */
@@ -12,10 +10,36 @@ export interface MessageContext {
   currentDateTime: string;
   isPersonalChat: boolean;
   activity: any; // The original Teams activity object
-  
-  // Manager state (to avoid race conditions)
-  delegatedCapability?: string | null;
-  searchCitations?: CitationAppearance[];
+  members: Array<{name: string, id: string}>; // Available conversation members
+}
+
+// Import member fetching function from actionItems
+async function getConversationParticipantsFromAPI(api: any, conversationId: string): Promise<Array<{name: string, id: string}>> {
+  if (!api || !conversationId) {
+    return [];
+  }
+
+  try {
+    console.log(`🔍 Fetching conversation members for: ${conversationId}`);
+    
+    const response = await api.get(`/v1/conversations/${encodeURIComponent(conversationId)}/members`);
+    
+    if (response && response.value && Array.isArray(response.value)) {
+      const members = response.value.map((member: any) => ({
+        name: member.name || member.givenName || 'Unknown',
+        id: member.id || member.objectId
+      }));
+      
+      console.log(`👥 Found ${members.length} conversation members`);
+      return members;
+    } else {
+      console.warn('⚠️ Unexpected response format when fetching members:', response);
+      return [];
+    }
+  } catch (error) {
+    console.error('❌ Error fetching conversation members:', error);
+    return [];
+  }
 }
 
 /**
@@ -98,10 +122,10 @@ export const MESSAGE_CONTEXT_SCHEMA = {
  * Factory function to create a MessageContext from a Teams activity
  * Now also stores the context in the global map using the activity ID
  */
-export function createMessageContext(
+export async function createMessageContext(
   activity: any,
   api?: any
-): string {
+): Promise<string> {
   const conversationKey = `${activity.conversation.id}`;
   const isPersonalChat = activity.conversation.conversationType === 'personal';
   const text = activity.text || '';
@@ -113,6 +137,12 @@ export function createMessageContext(
   const currentDayOfWeek = currentDate.toLocaleDateString('en-US', { weekday: 'long' });
   const currentDateTime = `${currentDate} (${currentDayOfWeek})`;
 
+  // Fetch members for group conversations
+  let members: Array<{name: string, id: string}> = [];
+  if (api && !isPersonalChat) {
+    members = await getConversationParticipantsFromAPI(api, conversationKey);
+  }
+
   const context: MessageContext = {
     text,
     conversationKey,
@@ -121,7 +151,8 @@ export function createMessageContext(
     userName,
     currentDateTime,
     isPersonalChat,
-    activity
+    activity,
+    members
   };
 
   // Store in global map and return the activity ID
@@ -131,38 +162,3 @@ export function createMessageContext(
   return activityId;
 }
 
-/**
- * Set the delegated capability for a specific context
- */
-export function setDelegatedCapability(activityId: string, capability: string | null): void {
-  const context = getContextById(activityId);
-  if (context) {
-    context.delegatedCapability = capability;
-  }
-}
-
-/**
- * Get the delegated capability for a specific context
- */
-export function getDelegatedCapability(activityId: string): string | null {
-  const context = getContextById(activityId);
-  return context?.delegatedCapability || null;
-}
-
-/**
- * Set search citations for a specific context
- */
-export function setSearchCitations(activityId: string, citations: CitationAppearance[]): void {
-  const context = getContextById(activityId);
-  if (context) {
-    context.searchCitations = citations;
-  }
-}
-
-/**
- * Get search citations for a specific context
- */
-export function getSearchCitations(activityId: string): CitationAppearance[] {
-  const context = getContextById(activityId);
-  return context?.searchCitations || [];
-}

@@ -48,7 +48,7 @@ app.on('message.submit.feedback', async ({ activity, log }) => {
 });
 
 app.on('message', async ({ send, activity, next }) => {
-  const contextID = createMessageContext(activity);
+  const contextID = await createMessageContext(activity);
   const context = getContextById(contextID);
   
   if (!context) {
@@ -72,14 +72,14 @@ app.on('message', async ({ send, activity, next }) => {
     }
 
     // If this is a personal chat, always route to the manager for full conversational experience
-    if (context.isPersonalChat && context.text.trim() !== '') {
+    if (context.isPersonalChat) {
       await send({ type: 'typing' });
 
       addMessageToTracking(context.conversationKey, 'user', context.text, activity, context.userName);
 
-      const result = await manager.processRequest(contextID);
+      const result = await manager.processRequest(context);
 
-      if (result.response && result.response.trim() !== '') {
+      if (result.response) {
         const sentMessageId = await finalizePromptResponse(send, result.response, result.citations);
         feedbackStorage.storeDelegatedCapability(sentMessageId, result.delegatedCapability);
         addMessageToTracking(context.conversationKey, 'assistant', result.response, { id: sentMessageId }, 'AI Assistant');
@@ -103,7 +103,7 @@ app.on('message', async ({ send, activity, next }) => {
 
 app.on('mention', async ({ send, activity, api }) => {
   await send({ type: 'typing' });
-  const contextID = createMessageContext(activity, api);
+  const contextID = await createMessageContext(activity, api);
   const context = getContextById(contextID);
   
   if (!context) {
@@ -121,9 +121,9 @@ app.on('mention', async ({ send, activity, api }) => {
         return;
       }
 
-      const result = await manager.processRequest(contextID);
+      const result = await manager.processRequest(context);
 
-      if (result.response && result.response.trim() !== '') {
+      if (result.response) {
         const sentMessageId = await finalizePromptResponse(send, result.response, result.citations);
 
         feedbackStorage.storeDelegatedCapability(sentMessageId, result.delegatedCapability);

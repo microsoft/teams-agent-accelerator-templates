@@ -1,7 +1,17 @@
 import { ChatPrompt } from '@microsoft/teams.ai';
 import { CitationAppearance } from '@microsoft/teams.api';
 import { SqliteKVStore } from '../storage/storage';
-import { MessageContext, getContextById } from '../utils/messageContext';
+import { MessageContext } from '../utils/messageContext';
+
+/**
+ * Interface for capability definition used by the manager
+ */
+export interface CapabilityDefinition {
+  name: string;
+  description: string;
+  schema: any;
+  handler: (args: any, context: MessageContext, state: any, storage?: SqliteKVStore) => Promise<string>;
+}
 
 /**
  * Configuration interface for capability-specific options
@@ -40,12 +50,12 @@ export interface Capability {
   /**
    * Create a ChatPrompt instance for this capability
    */
-  createPrompt(contextID: string, options?: CapabilityOptions): ChatPrompt;
+  createPrompt(messageContext: MessageContext, options?: CapabilityOptions): ChatPrompt;
   
   /**
    * Process a user request using this capability
    */
-  processRequest(contextID: string, options?: CapabilityOptions): Promise<CapabilityResult>;
+  processRequest(messageContext: MessageContext, options?: CapabilityOptions): Promise<CapabilityResult>;
   
   /**
    * Get the function schemas that this capability provides
@@ -59,24 +69,16 @@ export interface Capability {
 export abstract class BaseCapability implements Capability {
   abstract readonly name: string;
   
-  abstract createPrompt(contextID: string, options?: CapabilityOptions): ChatPrompt;
+  abstract createPrompt(messageContext: MessageContext, options?: CapabilityOptions): ChatPrompt;
   
   abstract getFunctionSchemas(): Array<{name: string, schema: any}>;
   
   /**
    * Default implementation of processRequest that creates a prompt and sends the request
    */
-  async processRequest(contextID: string, options: CapabilityOptions = {}): Promise<CapabilityResult> {
-    const messageContext = getContextById(contextID);
-    if (!messageContext) {
-      return {
-        response: '',
-        error: `Context not found for activity ID: ${contextID}`
-      };
-    }
-    
+  async processRequest(messageContext: MessageContext, options: CapabilityOptions = {}): Promise<CapabilityResult> {
     try {
-      const prompt = this.createPrompt(contextID, options);
+      const prompt = this.createPrompt(messageContext, options);
       
       // Build enhanced request with time parameters if provided
       let enhancedRequest = messageContext.text;

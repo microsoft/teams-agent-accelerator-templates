@@ -1,89 +1,18 @@
 import { ChatPrompt } from '@microsoft/teams.ai';
 import { OpenAIChatModel } from '@microsoft/teams.openai';
-import { ActionItem } from '../storage/storage';
-import { getMessagesByTimeRange } from '../storage/message';
-import { ACTION_ITEMS_PROMPT } from '../agent/prompt';
-import { BaseCapability, CapabilityOptions } from './capability';
-import { getContextById } from '../utils/messageContext';
-
-// Function schemas for the action items capability
-const ANALYZE_FOR_ACTION_ITEMS_SCHEMA = {
-  type: 'object' as const,
-  properties: {
-    start_time: {
-      type: 'string' as const,
-      description: 'Start time in ISO format (e.g., 2024-01-01T00:00:00.000Z). Optional - defaults to last 24 hours.'
-    },
-    end_time: {
-      type: 'string' as const,
-      description: 'End time in ISO format (e.g., 2024-01-01T23:59:59.999Z). Optional - defaults to now.'
-    }
-  }
-};
-
-const CREATE_ACTION_ITEM_SCHEMA = {
-  type: 'object' as const,
-  properties: {
-    title: {
-      type: 'string' as const,
-      description: 'Brief title for the action item'
-    },
-    description: {
-      type: 'string' as const,
-      description: 'Detailed description of what needs to be done'
-    },
-    assigned_to: {
-      type: 'string' as const,
-      description: 'Name of the person this action item is assigned to'
-    },
-    priority: {
-      type: 'string' as const,
-      enum: ['low', 'medium', 'high', 'urgent'],
-      description: 'Priority level of the action item'
-    },
-    due_date: {
-      type: 'string' as const,
-      description: 'Optional due date in ISO format or relative expression (e.g., "tomorrow", "end of week", "next Monday"). Relative expressions are parsed using the user\'s timezone.'
-    }
-  },
-  required: ['title', 'description', 'assigned_to', 'priority']
-};
-
-const GET_ACTION_ITEMS_SCHEMA = {
-  type: 'object' as const,
-  properties: {
-    assigned_to: {
-      type: 'string' as const,
-      description: 'Filter by person assigned to (optional)'
-    },
-    status: {
-      type: 'string' as const,
-      enum: ['pending', 'in_progress', 'completed', 'cancelled'],
-      description: 'Filter by status (optional)'
-    }
-  }
-};
-
-const UPDATE_ACTION_ITEM_SCHEMA = {
-  type: 'object' as const,
-  properties: {
-    action_item_id: {
-      type: 'number' as const,
-      description: 'ID of the action item to update'
-    },
-    new_status: {
-      type: 'string' as const,
-      enum: ['pending', 'in_progress', 'completed', 'cancelled'],
-      description: 'New status for the action item'
-    }
-  },
-  required: ['action_item_id', 'new_status']
-};
-
-const GET_CHAT_MEMBERS_SCHEMA = {
-  type: 'object' as const,
-  properties: {}
-};
+import { ActionItem } from '../../storage/storage';
+import { getMessagesByTimeRange } from '../../storage/message';
+import { ACTION_ITEMS_PROMPT } from './prompt';
+import { 
+  ANALYZE_FOR_ACTION_ITEMS_SCHEMA, 
+  CREATE_ACTION_ITEM_SCHEMA, 
+  GET_ACTION_ITEMS_SCHEMA, 
+  UPDATE_ACTION_ITEM_SCHEMA, 
+  GET_CHAT_MEMBERS_SCHEMA,
+  ACTION_ITEMS_DELEGATION_SCHEMA 
+} from './schema';
+import { BaseCapability, CapabilityOptions, CapabilityDefinition } from '../capability';
+import { MessageContext } from '../../utils/messageContext';
 
 
 
@@ -92,34 +21,14 @@ const GET_CHAT_MEMBERS_SCHEMA = {
  */
 export class ActionItemsCapability extends BaseCapability {
   readonly name = 'action_items';
-  private availableMembers: Array<{name: string, id: string}> = [];
   
   constructor() {
     super();
   }
 
-  async initializeMembers(contextID: string): Promise<void> {
-    const messageContext = getContextById(contextID);
+  createPrompt(messageContext: MessageContext, options: CapabilityOptions = {}): ChatPrompt {
     if (!messageContext) {
-      return;
-    }
-
-    // Fetch available members if API is provided and it's not a personal chat
-    if (messageContext.api && !messageContext.isPersonalChat) {
-      try {
-        this.availableMembers = await getConversationParticipantsFromAPI(messageContext.api, messageContext.conversationKey);
-        console.log(`👥 Action Items Capability initialized with ${this.availableMembers.length} members from Teams API`);
-      } catch (error) {
-        console.warn(`⚠️ Failed to fetch conversation members during initialization:`, error);
-        this.availableMembers = [];
-      }
-    }
-  }
-  
-  createPrompt(contextID: string, options: CapabilityOptions = {}): ChatPrompt {
-    const messageContext = getContextById(contextID);
-    if (!messageContext) {
-      throw new Error(`Context not found for activity ID: ${contextID}`);
+      throw new Error(`Message context is required for action items capability`);
     }
     
     this.logInit(messageContext);
@@ -130,8 +39,8 @@ export class ActionItemsCapability extends BaseCapability {
     
     const actionItemsModelConfig = this.getModelConfig('actionItems');
     
-    // Members should already be fetched during initialization
-    console.log(`👥 Action Items Capability using ${this.availableMembers.length} pre-fetched members`);
+    // Use members from context
+    console.log(`👥 Action Items Capability using ${messageContext.members.length} members from context`);
     
     // Build additional time context if pre-calculated times are provided
     let timeContext = '';
@@ -183,8 +92,8 @@ When analyzing messages for action items or performing any time-based queries, u
       // Get existing action items to avoid duplicates
       const existingActionItems = options.storage!.getActionItemsByConversation(messageContext.conversationKey);
       
-      // Use pre-fetched members
-      const availableMembers = this.availableMembers;
+      // Use members from context
+      const availableMembers = messageContext.members;
       
       return JSON.stringify({
         status: 'success',
@@ -212,14 +121,11 @@ When analyzing messages for action items or performing any time-based queries, u
       console.log(`✅ FUNCTION CALL: create_action_item - "${args.title}" assigned to ${args.assigned_to}`);
       
       try {
-        // Find the user ID for the assigned person
         let assignedToId: string | undefined;
         if (messageContext.isPersonalChat && messageContext.userId) {
-          // In personal chat, assign to the current user
           assignedToId = messageContext.userId;
         } else {
-          // In group chat, find the user ID from pre-fetched members
-          const assignedMember = this.availableMembers.find((member: {name: string, id: string}) => 
+          const assignedMember = messageContext.members.find((member: {name: string, id: string}) => 
             member.name === args.assigned_to || 
             member.name.toLowerCase() === args.assigned_to.toLowerCase()
           );
@@ -228,10 +134,8 @@ When analyzing messages for action items or performing any time-based queries, u
         
         console.log(`🔍 Found user ID for "${args.assigned_to}": ${assignedToId || 'Not found'}`);
         
-        // Parse due_date with timezone awareness if it's a relative expression
         let parsedDueDate = args.due_date;
         if (args.due_date) {
-          // For now, default to UTC timezone - could be enhanced to extract timezone from currentDateTime
           const timezoneParsedDate = parseDeadlineWithTimezone(args.due_date, 'UTC');
           if (timezoneParsedDate) {
             parsedDueDate = timezoneParsedDate;
@@ -338,8 +242,8 @@ When analyzing messages for action items or performing any time-based queries, u
     .function('get_chat_members', 'Get the list of available members in this chat for action item assignment', GET_CHAT_MEMBERS_SCHEMA, async () => {
       console.log(`👥 FUNCTION CALL: get_chat_members for conversation=${messageContext.conversationKey}`);
       
-      // Use pre-fetched members
-      const availableMembers = this.availableMembers;
+      // Use members from context
+      const availableMembers = messageContext.members;
       
       return JSON.stringify({
         status: 'success',
@@ -365,29 +269,6 @@ When analyzing messages for action items or performing any time-based queries, u
 }
 
 /**
- * Helper function to get conversation participants using Teams API
- */
-export async function getConversationParticipantsFromAPI(api: any, conversationId: string): Promise<Array<{name: string, id: string}>> {
-  try {
-    console.log(`👥 Fetching conversation members from Teams API for conversation: ${conversationId}`);
-    const members = await api.conversations.members(conversationId).get();
-    
-    const participants = members.map((member: any) => {
-      // Try different name fields that might be available
-      const name = member.name || member.givenName || member.displayName || member.userPrincipalName || 'Unknown Member';
-      const id = member.id || member.aadObjectId || member.userId || 'unknown';
-      return { name, id };
-    }).filter((participant: any) => participant.name !== 'Unknown Member');
-    
-    console.log(`👥 Found ${participants.length} participants from Teams API:`, participants);
-    return participants;
-  } catch (error) {
-    console.error(`❌ Error fetching conversation members from Teams API:`, error);
-    throw error;
-  }
-}
-
-/**
  * Parse deadline expressions like "by tomorrow", "end of week", "by Friday" with timezone awareness
  */
 function parseDeadlineWithTimezone(deadlineExpression: string, userTimezone: string = 'UTC'): string | undefined {
@@ -404,15 +285,15 @@ function parseDeadlineWithTimezone(deadlineExpression: string, userTimezone: str
   if (expression.includes('tomorrow') || expression.includes('next day')) {
     const tomorrow = new Date(todayInUserTZ);
     tomorrow.setDate(tomorrow.getDate() + 1);
-    tomorrow.setHours(23, 59, 59, 999); // End of day
+    tomorrow.setHours(23, 59, 59, 999);
     const tomorrowUTC = new Date(tomorrow.toLocaleString("en-US", { timeZone: "UTC" }));
     return tomorrowUTC.toISOString();
   }
   
   if (expression.includes('end of week') || expression.includes('this friday') || expression.includes('friday')) {
     const endOfWeek = new Date(todayInUserTZ);
-    const daysUntilFriday = (5 - todayInUserTZ.getDay() + 7) % 7; // 5 = Friday
-    endOfWeek.setDate(todayInUserTZ.getDate() + (daysUntilFriday || 7)); // If today is Friday, next Friday
+    const daysUntilFriday = (5 - todayInUserTZ.getDay() + 7) % 7;
+    endOfWeek.setDate(todayInUserTZ.getDate() + (daysUntilFriday || 7));
     endOfWeek.setHours(23, 59, 59, 999);
     const endOfWeekUTC = new Date(endOfWeek.toLocaleString("en-US", { timeZone: "UTC" }));
     return endOfWeekUTC.toISOString();
@@ -434,10 +315,9 @@ function parseDeadlineWithTimezone(deadlineExpression: string, userTimezone: str
     return endOfMonthUTC.toISOString();
   }
   
-  // Try to parse specific dates (this is basic - could be enhanced)
   const dateMatch = expression.match(/(\d{1,2})[\/\-](\d{1,2})(?:[\/\-](\d{2,4}))?/);
   if (dateMatch) {
-    const month = parseInt(dateMatch[1]) - 1; // JS months are 0-indexed
+    const month = parseInt(dateMatch[1]) - 1;
     const day = parseInt(dateMatch[2]);
     const year = dateMatch[3] ? parseInt(dateMatch[3]) : todayInUserTZ.getFullYear();
     
@@ -448,3 +328,21 @@ function parseDeadlineWithTimezone(deadlineExpression: string, userTimezone: str
   
   return undefined;
 }
+
+// Capability definition for manager registration
+export const ACTION_ITEMS_CAPABILITY_DEFINITION: CapabilityDefinition = {
+  name: 'delegate_to_action_items',
+  description: 'Delegate task management, action item creation, or assignment tracking to the Action Items Capability',
+  schema: ACTION_ITEMS_DELEGATION_SCHEMA,
+  handler: async (args: any, context: MessageContext, state: any, storage: any) => {
+    state.delegatedCapability = 'action_items';
+    const actionItemsCapability = new ActionItemsCapability();
+    const result = await actionItemsCapability.processRequest(context, {
+      storage: storage,
+      calculatedStartTime: args.calculated_start_time,
+      calculatedEndTime: args.calculated_end_time,
+      timespanDescription: args.timespan_description
+    });
+    return result.response || 'No response from Action Items Capability';
+  }
+};

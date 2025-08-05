@@ -1,42 +1,12 @@
 import { ChatPrompt } from '@microsoft/teams.ai';
 import { OpenAIChatModel } from '@microsoft/teams.openai';
 import { CitationAppearance } from '@microsoft/teams.api';
-import { MessageRecord } from '../storage/storage';
-import { getMessagesByTimeRange } from '../storage/message';
-import { SEARCH_PROMPT } from '../agent/prompt';
-import { BaseCapability, CapabilityOptions } from './capability';
-import { getContextById } from '../utils/messageContext';
-
-// Function schemas for search operations
-const SEARCH_MESSAGES_SCHEMA = {
-  type: 'object' as const,
-  properties: {
-    keywords: {
-      type: 'array' as const,
-      items: { type: 'string' as const },
-      description: 'Keywords to search for in message content (excluding time expressions)'
-    },
-    participants: {
-      type: 'array' as const,
-      items: { type: 'string' as const },
-      description: 'Names of people who should be involved in the conversation'
-    },
-    start_time: {
-      type: 'string' as const,
-      description: 'Start time for search range (ISO format). Calculate this based on user request like "earlier today", "yesterday", etc.'
-    },
-    end_time: {
-      type: 'string' as const,
-      description: 'End time for search range (ISO format). Usually current time for "earlier today" or end of day for specific dates.'
-    },
-    max_results: {
-      type: 'number' as const,
-      description: 'Maximum number of results to return (default 10)',
-      default: 10
-    }
-  },
-  required: ['keywords']
-};
+import { MessageRecord } from '../../storage/storage';
+import { getMessagesByTimeRange } from '../../storage/message';
+import { SEARCH_PROMPT } from './prompt';
+import { SEARCH_MESSAGES_SCHEMA, SEARCH_DELEGATION_SCHEMA } from './schema';
+import { BaseCapability, CapabilityOptions, CapabilityDefinition } from '../capability';
+import { MessageContext } from '../../utils/messageContext';
 
 /**
  * Create a Citation object from a message record for display in Teams
@@ -133,10 +103,9 @@ function searchMessages(
 export class SearchCapability extends BaseCapability {
   readonly name = 'search';
   
-  createPrompt(contextID: string, options: CapabilityOptions = {}): ChatPrompt {
-    const messageContext = getContextById(contextID);
+  createPrompt(messageContext: MessageContext, options: CapabilityOptions = {}): ChatPrompt {
     if (!messageContext) {
-      throw new Error(`Context not found for activity ID: ${contextID}`);
+      throw new Error(`Message context is required for search capability`);
     }
     
     this.logInit(messageContext);
@@ -271,3 +240,23 @@ function groupMessagesByTime(messages: MessageRecord[]): Array<{ period: string,
     .filter(period => groups[period])
     .map(period => ({ period, messages: groups[period] }));
 }
+
+// Capability definition for manager registration
+export const SEARCH_CAPABILITY_DEFINITION: CapabilityDefinition = {
+  name: 'delegate_to_search',
+  description: 'Delegate conversation search, message finding, or historical conversation lookup to the Search Capability',
+  schema: SEARCH_DELEGATION_SCHEMA,
+  handler: async (args: any, context: MessageContext, state: any) => {
+    state.delegatedCapability = 'search';
+    const citationsArray: CitationAppearance[] = [];
+    const searchCapability = new SearchCapability();
+    const result = await searchCapability.processRequest(context, {
+      citationsArray,
+      calculatedStartTime: args.calculated_start_time,
+      calculatedEndTime: args.calculated_end_time,
+      timespanDescription: args.timespan_description
+    });
+    state.searchCitations = citationsArray;
+    return result.response || 'No response from Search Capability';
+  }
+};

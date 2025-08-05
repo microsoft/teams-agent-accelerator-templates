@@ -1,15 +1,12 @@
-import { Message } from '@microsoft/teams.ai';
+import { UserMessage } from '@microsoft/teams.ai';
 import Database from 'better-sqlite3';
 
-// Interface for individual message records with timestamps
-export interface MessageRecord {
+export interface MessageRecord extends UserMessage {
   id: number;
   conversation_id: string;
-  role: string;
-  content: string;
   name: string;
   timestamp: string;
-  activity_id?: string; // Teams activity ID for deep linking
+  activity_id?: string; // used to create deeplink for Search Capability
 }
 
 // Interface for action items
@@ -51,16 +48,8 @@ export class SqliteKVStore {
     this.initializeDatabase();
     console.log(`🗄️ SQLite KV store initialized at: ${dbPath}`);
   }
+
   private initializeDatabase(): void {
-    // Create conversations table (existing functionality for Message[] arrays)
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS conversations (
-        key TEXT PRIMARY KEY,
-        value TEXT NOT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `);    // Create individual messages table for timestamp tracking
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS messages (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -72,260 +61,125 @@ export class SqliteKVStore {
         activity_id TEXT NULL
       )
     `);
-
-    // Create action items table
     this.db.exec(`
-      CREATE TABLE IF NOT EXISTS action_items (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        conversation_id TEXT NOT NULL,
-        title TEXT NOT NULL,
-        description TEXT NOT NULL,
-        assigned_to TEXT NOT NULL,
-        assigned_to_id TEXT NULL,
-        assigned_by TEXT NOT NULL,
-        assigned_by_id TEXT NULL,
-        status TEXT NOT NULL DEFAULT 'pending' CHECK (status IN ('pending', 'in_progress', 'completed', 'cancelled')),
-        priority TEXT NOT NULL DEFAULT 'medium' CHECK (priority IN ('low', 'medium', 'high', 'urgent')),
-        due_date DATETIME NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        source_message_ids TEXT NULL
-      )
+      CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages(conversation_id);
     `);
-
-    // Create feedback table for AI response feedback
     this.db.exec(`
-      CREATE TABLE IF NOT EXISTS feedback (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        message_id TEXT NOT NULL UNIQUE,
-        likes INTEGER NOT NULL DEFAULT 0,
-        dislikes INTEGER NOT NULL DEFAULT 0,
-        feedbacks TEXT NOT NULL DEFAULT '[]',
-        delegated_capability TEXT NULL,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-        updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
-      )
-    `);
-
-    // Create indexes for better query performance
-    this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_messages_conversation_id ON messages(conversation_id)
-    `);
-    
-    this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON messages(timestamp)
-    `);
-
-    // Action items indexes
-    this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_action_items_conversation_id ON action_items(conversation_id)
-    `);
-    
-    this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_action_items_assigned_to ON action_items(assigned_to)
-    `);
-    
-    this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_action_items_assigned_to_id ON action_items(assigned_to_id)
-    `);
-    
-    this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_action_items_status ON action_items(status)
-    `);
-    
-    this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_action_items_due_date ON action_items(due_date)
-    `);
-
-    // Feedback indexes
-    this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_feedback_message_id ON feedback(message_id)
-    `);
-
-    // Create trigger to update conversation timestamp
-    this.db.exec(`
-      CREATE TRIGGER IF NOT EXISTS update_timestamp 
-      AFTER UPDATE ON conversations 
-      BEGIN 
-        UPDATE conversations SET updated_at = CURRENT_TIMESTAMP WHERE key = NEW.key;
-      END
+      CREATE INDEX IF NOT EXISTS idx_messages_timestamp ON messages(timestamp);
     `);
   }
 
-  get(key: string): Array<Message> | undefined {
+  get(conversationId: string): MessageRecord[] | undefined {
     try {
-      const stmt = this.db.prepare('SELECT value FROM conversations WHERE key = ?');
-      const row = stmt.get(key) as { value: string } | undefined;
-      
-      if (row) {
-        const parsed = JSON.parse(row.value);
-        console.log(`🔍 Retrieved ${parsed.length} messages from SQLite for key: ${key}`);
-        return parsed;
-      }
-      
-      console.log(`📂 No conversation found in SQLite for key: ${key}`);
-      return undefined;
+      const stmt = this.db.prepare(
+        'SELECT id, conversation_id, role, content, name, timestamp, activity_id FROM messages WHERE conversation_id = ? ORDER BY id ASC'
+      );
+      return stmt.all(conversationId) as MessageRecord[];
     } catch (error) {
-      console.error(`❌ Error reading from SQLite for key ${key}:`, error);
+      console.error(`❌ Error retrieving messages for ${conversationId}:`, error);
       return undefined;
     }
   }
-  set(key: string, value: Array<Message>): void {
-    try {
-      // Save to conversations table (existing functionality)
-      const stmt = this.db.prepare(`
-        INSERT OR REPLACE INTO conversations (key, value, updated_at) 
-        VALUES (?, ?, CURRENT_TIMESTAMP)
-      `);
-      
-      stmt.run(key, JSON.stringify(value));
-      console.log(`💾 Saved ${value.length} messages to conversations table for key: ${key}`);
-      
-      // For messages table, we need to be smarter about timestamps
-      // Only add new messages that don't exist yet, preserving original timestamps
-      
-      // Get existing message contents to avoid duplicates
-      const existingStmt = this.db.prepare('SELECT content, timestamp FROM messages WHERE conversation_id = ? ORDER BY id ASC');
-      const existingMessages = existingStmt.all(key) as { content: string; timestamp: string }[];
-      const existingContents = new Set(existingMessages.map(msg => msg.content));
-      
-      // Helper function to convert content to string for comparison
-      const getContentString = (content: any): string => {
-        if (typeof content === 'string') return content;
-        if (Array.isArray(content)) return JSON.stringify(content);
-        return content ? String(content) : '';
-      };
-      
-      // Find truly new messages (not in existing set)
-      const newMessages = value.filter(msg => {
-        const contentStr = getContentString(msg.content);
-        return contentStr && !existingContents.has(contentStr);
-      });
-      
-      if (newMessages.length > 0) {
-        // Insert only new messages with individual timestamps
-        const insertStmt = this.db.prepare(`
-          INSERT INTO messages (conversation_id, role, content, name, timestamp, activity_id)
-          VALUES (?, ?, ?, ?, ?, ?)
-        `);
-        
-        for (const message of newMessages) {
-          const messageTimestamp = new Date().toISOString();
-          const contentStr = getContentString(message.content);
-          const messageName = (message as any).name || 'Unknown';
-          const activityId = (message as any).activity_id || null;
-          insertStmt.run(key, message.role, contentStr, messageName, messageTimestamp, activityId);
-          
-          const preview = contentStr.length > 50 ? contentStr.substring(0, 50) + '...' : contentStr;
-          console.log(`📝 Added new message with timestamp ${messageTimestamp}: ${message.role} (${messageName}) - ${preview}`);
-        }
-        
-        console.log(`📝 Added ${newMessages.length} new individual messages with unique timestamps`);
-      } else {
-        console.log(`📝 No new messages to add to messages table (${value.length} messages already exist)`);
-      }
-      
-    } catch (error) {
-      console.error(`❌ Error writing to SQLite for key ${key}:`, error);
+
+  set(conversationId: string, messages: MessageRecord[]): void {
+    this.clearConversation(conversationId);
+    const stmt = this.db.prepare(
+      'INSERT INTO messages (conversation_id, role, content, name, timestamp, activity_id) VALUES (?, ?, ?, ?, ?, ?)'
+    );
+    for (const message of messages) {
+      stmt.run(
+        conversationId,
+        message.role,
+        message.content,
+        message.name,
+        message.timestamp,
+        message.activity_id || null
+      );
     }
   }
 
-  delete(key: string): void {
-    try {
-      const stmt = this.db.prepare('DELETE FROM conversations WHERE key = ?');
-      const result = stmt.run(key);
-      
-      if (result.changes > 0) {
-        console.log(`🗑️ Deleted conversation from SQLite for key: ${key}`);
-      } else {
-        console.log(`📂 No conversation found to delete for key: ${key}`);
-      }
-    } catch (error) {
-      console.error(`❌ Error deleting from SQLite for key ${key}:`, error);
+  delete(conversationId: string): void {
+    const stmt = this.db.prepare('DELETE FROM messages WHERE conversation_id = ?');
+    stmt.run(conversationId);
+  }
+
+  clearConversation(conversationId: string): void {
+    this.delete(conversationId);
+  }
+
+  addMessages(conversationId: string, messages: MessageRecord[]): void {
+    const stmt = this.db.prepare(
+      'INSERT INTO messages (conversation_id, role, content, name, timestamp, activity_id) VALUES (?, ?, ?, ?, ?, ?)'
+    );
+    for (const message of messages) {
+      stmt.run(
+        conversationId,
+        message.role,
+        message.content,
+        message.name,
+        message.timestamp,
+        message.activity_id || null
+      );
     }
   }
 
-  keys(): string[] {
-    try {
-      const stmt = this.db.prepare('SELECT key FROM conversations ORDER BY updated_at DESC');
-      const rows = stmt.all() as { key: string }[];
-      return rows.map(row => row.key);
-    } catch (error) {
-      console.error('❌ Error getting keys from SQLite:', error);
-      return [];
-    }
+  getMessageAtIndex(conversationId: string, index: number): MessageRecord | undefined {
+    const stmt = this.db.prepare(
+      'SELECT id, conversation_id, role, content, name, timestamp, activity_id FROM messages WHERE conversation_id = ? ORDER BY id ASC LIMIT 1 OFFSET ?'
+    );
+    return stmt.get(conversationId, index) as MessageRecord | undefined;
   }
 
-  // Additional utility methods for SQLite
-  count(): number {
-    try {
-      const stmt = this.db.prepare('SELECT COUNT(*) as count FROM conversations');
-      const result = stmt.get() as { count: number };
-      return result.count;
-    } catch (error) {
-      console.error('❌ Error getting count from SQLite:', error);
-      return 0;
-    }
+  // Update a specific message
+  updateMessageAtIndex(conversationId: string, index: number, message: MessageRecord): void {
+    const selectStmt = this.db.prepare(
+      'SELECT id FROM messages WHERE conversation_id = ? ORDER BY id ASC LIMIT 1 OFFSET ?'
+    );
+    const row = selectStmt.get(conversationId, index) as { id: number } | undefined;
+    if (!row) return;
+
+    const updateStmt = this.db.prepare(
+      'UPDATE messages SET role = ?, content = ?, name = ?, activity_id = ?, timestamp = ? WHERE id = ?'
+    );
+    updateStmt.run(
+      message.role,
+      message.content,
+      message.name,
+      message.activity_id || null,
+      message.timestamp,
+      row.id
+    );
   }
 
-  close(): void {
-    this.db.close();
-    console.log('🔒 SQLite database connection closed');
+  // Delete a specific message
+  deleteMessageAtIndex(conversationId: string, index: number): void {
+    const selectStmt = this.db.prepare(
+      'SELECT id FROM messages WHERE conversation_id = ? ORDER BY id ASC LIMIT 1 OFFSET ?'
+    );
+    const row = selectStmt.get(conversationId, index) as { id: number } | undefined;
+    if (!row) return;
+    const deleteStmt = this.db.prepare('DELETE FROM messages WHERE id = ?');
+    deleteStmt.run(row.id);
   }
 
-  // Clear all conversations from the database
-  clear(): void {
-    try {
-      const stmt = this.db.prepare('DELETE FROM conversations');
-      const result = stmt.run();
-      console.log(`🧹 Cleared all conversations from SQLite. Deleted ${result.changes} records.`);
-    } catch (error) {
-      console.error('❌ Error clearing SQLite database:', error);
-    }
-  }
-  // Clear a specific conversation by key
-  clearConversation(key: string): void {
-    try {
-      // Clear from both tables
-      const stmt1 = this.db.prepare('DELETE FROM conversations WHERE key = ?');
-      const stmt2 = this.db.prepare('DELETE FROM messages WHERE conversation_id = ?');
-      
-      const result1 = stmt1.run(key);
-      const result2 = stmt2.run(key);
-      
-      if (result1.changes > 0 || result2.changes > 0) {
-        console.log(`🧹 Cleared conversation history for key: ${key} (${result1.changes} conversation records, ${result2.changes} message records)`);
-      } else {
-        console.log(`📂 No conversation found to clear for key: ${key}`);
-      }
-    } catch (error) {
-      console.error(`❌ Error clearing conversation for key ${key}:`, error);
-    }
-  }
-  // ===== Individual Message Tracking Methods =====
+  // Pop the last message
+  popLastMessage(conversationId: string): MessageRecord | undefined {
+    const selectStmt = this.db.prepare(
+      'SELECT id, conversation_id, role, content, name, timestamp, activity_id FROM messages WHERE conversation_id = ? ORDER BY id DESC LIMIT 1'
+    );
+    const row = selectStmt.get(conversationId) as MessageRecord | undefined;
+    if (!row) return undefined;
 
-  // Add individual messages to the messages table
-  addMessages(conversationId: string, messages: Array<Message>): void {
-    try {
-      const stmt = this.db.prepare(`
-        INSERT INTO messages (conversation_id, role, content, timestamp, activity_id)
-        VALUES (?, ?, ?, ?, ?)
-      `);
-
-      const now = new Date().toISOString();
-      
-      for (const message of messages) {
-        const activityId = (message as any).activity_id || null;
-        stmt.run(conversationId, message.role, message.content, now, activityId);
-      }
-
-      console.log(`📝 Added ${messages.length} individual messages to timestamp table for conversation: ${conversationId}`);
-    } catch (error) {
-      console.error(`❌ Error adding messages for conversation ${conversationId}:`, error);
-    }
+    const deleteStmt = this.db.prepare('DELETE FROM messages WHERE id = ?');
+    deleteStmt.run(row.id);
+    return row;
   }
 
-
+  countMessages(conversationId: string): number {
+    const stmt = this.db.prepare('SELECT COUNT(*) as count FROM messages WHERE conversation_id = ?');
+    const result = stmt.get(conversationId) as { count: number };
+    return result.count;
+  }
 
   // Clear all messages for debugging (optional utility method)
   clearAllMessages(): void {
@@ -342,19 +196,19 @@ export class SqliteKVStore {
   debugPrintDatabase(conversationId: string): string {
     try {
       console.log(`🔍 DEBUG: Printing database contents for conversation: ${conversationId}`);
-      
+
       // Get conversation data from conversations table
       const conversationStmt = this.db.prepare('SELECT * FROM conversations WHERE key = ?');
       const conversationData = conversationStmt.get(conversationId) as any;
-      
+
       // Get individual messages from messages table
       const messagesStmt = this.db.prepare('SELECT * FROM messages WHERE conversation_id = ? ORDER BY id ASC');
       const messageData = messagesStmt.all(conversationId) as MessageRecord[];
-      
+
       // Get total counts
       const totalConversations = this.db.prepare('SELECT COUNT(*) as count FROM conversations').get() as { count: number };
       const totalMessages = this.db.prepare('SELECT COUNT(*) as count FROM messages').get() as { count: number };
-      
+
       const debugInfo = {
         conversationId,
         timestamp: new Date().toISOString(),
@@ -384,10 +238,10 @@ export class SqliteKVStore {
           }))
         }
       };
-      
+
       console.log(`🔍 DEBUG INFO:`, JSON.stringify(debugInfo, null, 2));
       return JSON.stringify(debugInfo, null, 2);
-      
+
     } catch (error) {
       console.error(`❌ Error debugging database for conversation ${conversationId}:`, error);
       return JSON.stringify({
@@ -422,7 +276,7 @@ export class SqliteKVStore {
           status, priority, due_date, source_message_ids
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
       `);
-      
+
       const result = stmt.run(
         actionItem.conversation_id,
         actionItem.title,
@@ -480,14 +334,14 @@ export class SqliteKVStore {
     try {
       let sql = 'SELECT * FROM action_items WHERE assigned_to = ?';
       const params: any[] = [assignedTo];
-      
+
       if (status) {
         sql += ' AND status = ?';
         params.push(status);
       }
-      
+
       sql += ' ORDER BY priority DESC, due_date ASC, created_at DESC';
-      
+
       const stmt = this.db.prepare(sql);
       const rows = stmt.all(...params) as ActionItem[];
       console.log(`🔍 Retrieved ${rows.length} action items for user: ${assignedTo}${status ? ` (status: ${status})` : ''}`);
@@ -503,14 +357,14 @@ export class SqliteKVStore {
     try {
       let sql = 'SELECT * FROM action_items WHERE assigned_to_id = ?';
       const params: any[] = [userId];
-      
+
       if (status) {
         sql += ' AND status = ?';
         params.push(status);
       }
-      
+
       sql += ' ORDER BY priority DESC, due_date ASC, created_at DESC';
-      
+
       const stmt = this.db.prepare(sql);
       const rows = stmt.all(...params) as ActionItem[];
       console.log(`🔍 Retrieved ${rows.length} action items for user ID: ${userId}${status ? ` (status: ${status})` : ''}`);
@@ -530,7 +384,7 @@ export class SqliteKVStore {
         WHERE id = ?
       `);
       const result = stmt.run(status, id);
-      
+
       if (result.changes > 0) {
         console.log(`✅ Updated action item #${id} status to: ${status}${updatedBy ? ` by ${updatedBy}` : ''}`);
         return true;
@@ -577,7 +431,7 @@ export class SqliteKVStore {
         FROM action_items 
         GROUP BY status
       `).all() as { status: string; count: number }[];
-      
+
       const priorityCounts = this.db.prepare(`
         SELECT priority, COUNT(*) as count 
         FROM action_items 
@@ -730,13 +584,13 @@ export class SqliteKVStore {
       const totalFeedback = this.db.prepare('SELECT COUNT(*) as count FROM feedback').get() as { count: number };
       const totalLikes = this.db.prepare('SELECT SUM(likes) as total FROM feedback').get() as { total: number };
       const totalDislikes = this.db.prepare('SELECT SUM(dislikes) as total FROM feedback').get() as { total: number };
-      
+
       return {
         total_feedback_records: totalFeedback.count,
         total_likes: totalLikes.total || 0,
         total_dislikes: totalDislikes.total || 0,
-        like_ratio: totalLikes.total && totalDislikes.total ? 
-          (totalLikes.total / (totalLikes.total + totalDislikes.total) * 100).toFixed(1) + '%' : 
+        like_ratio: totalLikes.total && totalDislikes.total ?
+          (totalLikes.total / (totalLikes.total + totalDislikes.total) * 100).toFixed(1) + '%' :
           'N/A'
       };
     } catch (error) {

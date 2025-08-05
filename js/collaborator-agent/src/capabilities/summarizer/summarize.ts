@@ -1,53 +1,16 @@
 import { ChatPrompt } from '@microsoft/teams.ai';
 import { OpenAIChatModel } from '@microsoft/teams.openai';
-import { getRecentMessages, getMessagesByTimeRange, getMessagesWithTimestamps } from '../storage/message';
-import { SUMMARY_PROMPT } from '../agent/prompt';
-import { BaseCapability, CapabilityOptions } from './capability';
-import { getContextById } from '../utils/messageContext';
-
-// Function schemas for the summarizer
-const GET_RECENT_MESSAGES_SCHEMA = {
-  type: 'object' as const,
-  properties: {
-    limit: {
-      type: 'number' as const,
-      description: 'Number of recent messages to retrieve (default: 5, max: 20)',
-      minimum: 1,
-      maximum: 20
-    }
-  }
-};
-
-const GET_MESSAGES_BY_TIME_RANGE_SCHEMA = {
-  type: 'object' as const,
-  properties: {
-    start_time: {
-      type: 'string' as const,
-      description: 'Start time in ISO format (e.g., 2024-01-01T00:00:00.000Z). Optional.'
-    },
-    end_time: {
-      type: 'string' as const,
-      description: 'End time in ISO format (e.g., 2024-01-01T23:59:59.999Z). Optional.'
-    }
-  }
-};
-
-const SHOW_RECENT_MESSAGES_SCHEMA = {
-  type: 'object' as const,
-  properties: {
-    count: {
-      type: 'number' as const,
-      description: 'Number of recent messages to display (default: 5)',
-      minimum: 1,
-      maximum: 20
-    }
-  }
-};
-
-const EMPTY_SCHEMA = {
-  type: 'object' as const,
-  properties: {}
-};
+import { getRecentMessages, getMessagesByTimeRange, getMessagesWithTimestamps } from '../../storage/message';
+import { SUMMARY_PROMPT } from './prompt';
+import { 
+  GET_RECENT_MESSAGES_SCHEMA, 
+  GET_MESSAGES_BY_TIME_RANGE_SCHEMA, 
+  SHOW_RECENT_MESSAGES_SCHEMA, 
+  EMPTY_SCHEMA,
+  SUMMARIZER_DELEGATION_SCHEMA 
+} from './schema';
+import { BaseCapability, CapabilityOptions, CapabilityDefinition } from '../capability';
+import { MessageContext } from '../../utils/messageContext';
 
 /**
  * Refactored Summarizer Capability that implements the unified capability interface
@@ -55,10 +18,9 @@ const EMPTY_SCHEMA = {
 export class SummarizerCapability extends BaseCapability {
   readonly name = 'summarizer';
   
-  createPrompt(contextID: string, options: CapabilityOptions = {}): ChatPrompt {
-    const messageContext = getContextById(contextID);
+  createPrompt(messageContext: MessageContext, options: CapabilityOptions = {}): ChatPrompt {
     if (!messageContext) {
-      throw new Error(`Context not found for activity ID: ${contextID}`);
+      throw new Error(`Message context is required for summarizer capability`);
     }
     
     this.logInit(messageContext);
@@ -180,3 +142,24 @@ When retrieving messages for summarization, use these exact timestamps instead o
     ];
   }
 }
+
+// Capability definition for manager registration
+export const SUMMARIZER_CAPABILITY_DEFINITION: CapabilityDefinition = {
+  name: 'delegate_to_summarizer',
+  description: 'Delegate conversation analysis, summarization, or message retrieval tasks to the Summarizer Capability',
+  schema: SUMMARIZER_DELEGATION_SCHEMA,
+  handler: async (args: any, context: MessageContext, state: any) => {
+    state.delegatedCapability = 'summarizer';
+    const summarizerCapability = new SummarizerCapability();
+    const result = await summarizerCapability.processRequest(context, {
+      calculatedStartTime: args.calculated_start_time,
+      calculatedEndTime: args.calculated_end_time,
+      timespanDescription: args.timespan_description
+    });
+    if (result.error) {
+      console.error(`❌ Error in Summarizer Capability: ${result.error}`);
+      return `Error in Summarizer Capability: ${result.error}`;
+    }
+    return result.response || 'No response from Summarizer Capability';
+  }
+};
