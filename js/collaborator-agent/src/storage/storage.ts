@@ -2,13 +2,13 @@ import { Message } from '@microsoft/teams.ai';
 import Database from 'better-sqlite3';
 import path from 'node:path';
 
-  interface MessageRecordExtension {
-  id ?: number;
-  conversation_id ?: string;
+interface MessageRecordExtension {
+  id?: number;
+  conversation_id?: string;
   content: string;
   name: string;
   timestamp: string;
-  activity_id ?: string; // used to create deeplink for Search Capability
+  activity_id?: string; // used to create deeplink for Search Capability
 }
 
 export type MessageRecord = Message & MessageRecordExtension;
@@ -31,11 +31,12 @@ export class SqliteKVStore {
   constructor(dbPath?: string) {
     // Use environment variable if set, otherwise use provided dbPath, otherwise use default relative to project root
     const resolvedDbPath = process.env.CONVERSATIONS_DB_PATH
-      ? process.env.CONVERSATIONS_DB_PATH
+      ? path.resolve(process.env.CONVERSATIONS_DB_PATH)
       : dbPath
         ? dbPath
         : path.resolve(__dirname, '../../src/storage/conversations.db');
     this.db = new Database(resolvedDbPath);
+    this.initializeDatabase();
   }
   private initializeDatabase(): void {
     this.db.exec(`
@@ -109,6 +110,53 @@ export class SqliteKVStore {
     }
   }
 
+  getFilteredMessages(
+    conversationId: string,
+    keywords: string[],
+    startTime: string,
+    endTime: string,
+    participants?: string[],
+    maxResults?: number,
+  ): MessageRecord[] {
+    const keywordClauses = keywords.map(() => `content LIKE ?`).join(' OR ');
+    const participantClauses = participants?.map(() => `name LIKE ?`).join(' OR ');
+
+    // Base where clauses
+    const whereClauses = [
+      `conversation_id = ?`,
+      `timestamp >= ?`,
+      `timestamp <= ?`,
+      `(${keywordClauses})`
+    ];
+
+    // Values for the prepared statement
+    const values: (string | number)[] = [
+      conversationId,
+      startTime,
+      endTime,
+      ...keywords.map(k => `%${k.toLowerCase()}%`)
+    ];
+
+    // Add participant filters if present
+    if (participants && participants.length > 0) {
+      whereClauses.push(`(${participantClauses})`);
+      values.push(...participants.map(p => `%${p.toLowerCase()}%`));
+    }
+
+    const limit = maxResults && typeof maxResults === 'number' ? maxResults : 5;
+    values.push(limit);
+
+    const query = `
+  SELECT blob FROM messages
+  WHERE ${whereClauses.join(' AND ')}
+  ORDER BY timestamp DESC
+  LIMIT ?
+`;
+
+    const stmt = this.db.prepare(query);
+    const rows = stmt.all(...values) as Array<{ blob: string }>;
+    return rows.map(row => JSON.parse(row.blob) as MessageRecord);
+  }
   // ===== FEEDBACK MANAGEMENT =====
 
   // Initialize feedback record for a message with optional delegated capability

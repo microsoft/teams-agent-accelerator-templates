@@ -1,5 +1,11 @@
 import { ObjectSchema } from "@microsoft/teams.ai";
 
+export interface SearchMessagesArgs {
+  keywords: string[];
+  participants?: string[];
+  max_results?: number;
+}
+
 export const SEARCH_MESSAGES_SCHEMA : ObjectSchema = {
   type: 'object',
   properties: {

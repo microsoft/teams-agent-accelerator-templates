@@ -29,15 +29,12 @@ export class SummarizerCapability extends BaseCapability {
           return JSON.stringify({
             messages: allMessages.map((msg: any) => ({
               timestamp: msg.timestamp,
-              role: msg.role,
               name: msg.name,
               content: msg.content
             }))
           });
         }
       );
-
-    console.log(`📋 Summarizer Capability created with unified interface`);
     return prompt;
   }
 }
@@ -52,7 +49,6 @@ export const SUMMARIZER_CAPABILITY_DEFINITION: CapabilityDefinition = {
     const summarizerCapability = new SummarizerCapability();
     const result = await summarizerCapability.processRequest(context);
     if (result.error) {
-      console.error(`❌ Error in Summarizer Capability: ${result.error}`);
       return `Error in Summarizer Capability: ${result.error}`;
     }
     return result.response || 'No response from Summarizer Capability';

@@ -7,7 +7,6 @@ export class ConversationMemory {
     }
 
     async addMessages(messages: MessageRecord[]): Promise<void> {
-        console.log(messages);
         await this.store.addMessages(messages);
     }
 
@@ -29,5 +28,9 @@ export class ConversationMemory {
 
     getRecentMessages(limit: number): MessageRecord[] {
         return this.store.getRecentMessages(this.conversationId, limit);
+    }
+
+    getFilteredMessages(conversationId: string, keywords: string[], startTime: string, endTime: string, participants?: string[], maxResults?: number): MessageRecord[] {
+        return this.store.getFilteredMessages(conversationId, keywords, startTime, endTime, participants, maxResults);
     }
 }

@@ -22,29 +22,11 @@ export class SearchCapability extends BaseCapability {
         apiVersion: searchModelConfig.apiVersion,
       }),
     }).function('search_messages', 'Search the conversation for relevant messages', SEARCH_MESSAGES_SCHEMA,
-      async (args: any) => {
-        const { keywords = [], participants = [], max_results = 5 } = args;
+      async (SearchMessagesArgs) => {
+        const { keywords, participants, max_results } = SearchMessagesArgs;
 
-        const messages = context.memory.getMessagesByTimeRange(context.startTime, context.endTime);
-
-        const keywordFiltered = messages.filter(msg =>
-          keywords.some((kw: string) => msg.content.toLowerCase().includes(kw.toLowerCase()))
-        );
-
-        const participantFiltered = participants.length > 0
-          ? keywordFiltered.filter(msg =>
-            participants.some((p: string) =>
-              msg.name.toLowerCase().includes(p.toLowerCase()) ||
-              p.toLowerCase().includes(msg.name.toLowerCase())
-            )
-          )
-          : keywordFiltered;
-
-        const sorted = participantFiltered.sort((a, b) =>
-          new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        );
-
-        const selected = sorted.slice(0, max_results);
+        const selected = context.memory.getFilteredMessages(context.conversationId, keywords, context.startTime, context.endTime, participants, max_results);
+        console.log(selected);
 
         if (selected.length === 0) {
           return 'No matching messages found.';
@@ -98,8 +80,8 @@ export const SEARCH_CAPABILITY_DEFINITION: CapabilityDefinition = {
     const searchCapability = new SearchCapability();
     const result = await searchCapability.processRequest(context);
     if (result.error) {
-      console.error(`❌ Error in Summarizer Capability: ${result.error}`);
-      return `Error in Summarizer Capability: ${result.error}`;
+      console.error(`❌ Error in Search Capability: ${result.error}`);
+      return `Error in Search Capability: ${result.error}`;
     }
     return result.response || 'No response from Search Capability';
   }

@@ -27,15 +27,11 @@ export class ActionItemsCapability extends BaseCapability {
     }).function(
       'generate_action_items',
       'Generate a list of action items based on the conversation',
-      async (_args: any) => {
+      async () => {
         const allMessages = context.memory.getMessagesByTimeRange(context.startTime, context.endTime);
-        console.log(allMessages);
-        console.log(context.startTime);
-        console.log(context.endTime);
           return JSON.stringify({
             messages: allMessages.map((msg: any) => ({
               timestamp: msg.timestamp,
-              role: msg.role,
               name: msg.name,
               content: msg.content
             }))
@@ -54,6 +50,9 @@ export const ACTION_ITEMS_CAPABILITY_DEFINITION: CapabilityDefinition = {
   handler: async (context: MessageContext) => {
     const actionItemsCapability = new ActionItemsCapability();
     const result = await actionItemsCapability.processRequest(context);
+    if (result.error) {
+      return `Error in Action Items Capability: ${result.error}`;
+    }
     return result.response || 'No response from Action Items Capability';
   }
 };

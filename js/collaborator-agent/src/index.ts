@@ -69,7 +69,8 @@ app.on('message', async ({ send, activity, api, log }) => {
     trackedMessages = createMessageRecords([activity]);
   }
 
-  context.memory.addMessages(trackedMessages)
+  log.debug(trackedMessages);
+  context.memory.addMessages(trackedMessages);
 });
 
 (async ( ) => {

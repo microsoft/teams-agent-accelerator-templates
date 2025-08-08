@@ -27,8 +27,6 @@ async function getConversationParticipantsFromAPI(
   conversationId: string
 ): Promise<Array<{ name: string; id: string }>> {
   try {
-    console.log(`🔍 Fetching conversation members for: ${conversationId}`);
-
     const members = await api.conversations.members(conversationId).get();
 
     if (Array.isArray(members)) {
@@ -36,15 +34,11 @@ async function getConversationParticipantsFromAPI(
         name: member.name || 'Unknown',
         id: member.aadObjectId || member.id
       }));
-
-      console.log(`👥 Found ${participants.length} conversation members`);
       return participants;
     } else {
-      console.warn('⚠️ Expected an array from conversations.members but got:', members);
       return [];
     }
   } catch (error) {
-    console.error('❌ Error fetching conversation members:', error);
     return [];
   }
 }
@@ -70,7 +64,6 @@ export async function createMessageContext(
   let members: Array<{ name: string, id: string }> = [];
   if (api) {
     members = await getConversationParticipantsFromAPI(api, conversationId);
-    console.log(members);
   }
 
   const memory = new ConversationMemory(storage, conversationId);
