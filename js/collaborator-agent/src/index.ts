@@ -47,7 +47,7 @@ app.on('message.submit.feedback', async ({ activity }) => {
   }
 });
 
-app.on('message', async ({ send, activity, api, log }) => {
+app.on('message', async ({ send, activity, api }) => {
   
   const botMentioned = activity.entities?.some((e) => e.type === 'mention');
   const context = botMentioned ? await createMessageContext(storage, activity, api) : await createMessageContext(storage, activity);
@@ -69,7 +69,7 @@ app.on('message', async ({ send, activity, api, log }) => {
     trackedMessages = createMessageRecords([activity]);
   }
 
-  log.debug(trackedMessages);
+  logger.debug(trackedMessages);
   await context.memory.addMessages(trackedMessages);
 });
 
