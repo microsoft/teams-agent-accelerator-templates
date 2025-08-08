@@ -3,14 +3,12 @@ import { OpenAIChatModel } from '@microsoft/teams.openai';
 import { SUMMARY_PROMPT } from './prompt';
 import { BaseCapability, CapabilityDefinition } from '../capability';
 import { MessageContext } from '../../utils/messageContext';
+import { ILogger } from '@microsoft/teams.common';
 
 export class SummarizerCapability extends BaseCapability {
   readonly name = 'summarizer';
 
   createPrompt(context: MessageContext): ChatPrompt {
-   
-
-    this.logInit(context);
 
     const summarizerModelConfig = this.getModelConfig('summarizer');
 
@@ -35,6 +33,8 @@ export class SummarizerCapability extends BaseCapability {
           });
         }
       );
+
+    this.logger.debug('Initialized Summarizer Capability!');
     return prompt;
   }
 }
@@ -45,10 +45,11 @@ export const SUMMARIZER_CAPABILITY_DEFINITION: CapabilityDefinition = {
   manager_desc: `**Summarizer**: Use for keywords like:
 - "summarize", "overview", "recap", "conversation history"
 - "what did we discuss", "catch me up", "who said what", "recent messages"`,
-  handler: async (context: MessageContext) => {
-    const summarizerCapability = new SummarizerCapability();
+  handler: async (context: MessageContext, logger: ILogger) => {
+    const summarizerCapability = new SummarizerCapability(logger);
     const result = await summarizerCapability.processRequest(context);
     if (result.error) {
+      logger.error(`Error in Summarizer Capability: ${result.error}`);
       return `Error in Summarizer Capability: ${result.error}`;
     }
     return result.response || 'No response from Summarizer Capability';

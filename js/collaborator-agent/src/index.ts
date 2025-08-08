@@ -20,7 +20,7 @@ const storage = new SqliteKVStore();
 // Initialize feedback storage
 const feedbackStorage = storage;
 
-app.on('message.submit.feedback', async ({ activity, log }) => {
+app.on('message.submit.feedback', async ({ activity }) => {
   try {
     const { reaction, feedback: feedbackJson } = activity.value.actionValue;
 
@@ -70,7 +70,7 @@ app.on('message', async ({ send, activity, api, log }) => {
   }
 
   log.debug(trackedMessages);
-  context.memory.addMessages(trackedMessages);
+  await context.memory.addMessages(trackedMessages);
 });
 
 (async ( ) => {

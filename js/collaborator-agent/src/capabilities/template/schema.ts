@@ -10,19 +10,6 @@
 export const templateFunctionSchema = {
     type: 'object' as const,
     properties: {
-        // Standard time range properties (available for all capabilities)
-        calculated_start_time: {
-            type: 'string' as const,
-            description: 'Pre-calculated start time in ISO format (optional, only if time range is specified)'
-        },
-        calculated_end_time: {
-            type: 'string' as const,
-            description: 'Pre-calculated end time in ISO format (optional, only if time range is specified)'
-        },
-        timespan_description: {
-            type: 'string' as const,
-            description: 'Human-readable description of the calculated time range (optional)'
-        },
         
         // TODO: Add your capability-specific parameters here
         // Examples:

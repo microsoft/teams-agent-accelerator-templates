@@ -29,10 +29,12 @@ demoYoutubeVideoId: ""
 
 This intelligent collaboration assistant is built with the [Teams AI Library v2](https://aka.ms/teamsai-v2), and showcases how to create a sophisticated bot that can analyze conversations, manage tasks, and search through chat history using advanced AI capabilities and natural language processing.
 
+This agent can listen to all messages in a group chat (even without being @mentioned) using RSC (Resource Specific Control) permissions defined in [App Manifest](appPackage/manifest.json). For more details, see the documentation [RSC Documentation](https://staticsint.teams.cdn.office.net/evergreen-assets/safelinks/2/atp-safelinks.html).
+
 ## Key Features
 
 - 📋 **Intelligent Summarization** - Analyze conversations and provide structured summaries with proper participant attribution and topic identification
-- ✅ **Action Item Management** - Automatically identify, create, and track action items from team discussions with smart assignment and priority handling
+- ✅ **Action Item Management** - Automatically identify and create action items from team discussions with smart assignment
 - 🔍 **Conversation Search** - Search through chat history using natural language queries with time-based filtering and deep linking to original messages
 
 ## Running the Sample

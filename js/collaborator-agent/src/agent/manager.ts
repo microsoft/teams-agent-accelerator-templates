@@ -67,7 +67,7 @@ export class ManagerPrompt {
                 `delegate_to_${capability.name}`,
                 `Delegate to ${capability.name} capability`,
                 async () => {
-                    return capability.handler(this.context);
+                    return capability.handler(this.context, this.logger.child(capability.name));
                 }
             );
         }

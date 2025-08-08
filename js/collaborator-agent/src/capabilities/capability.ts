@@ -1,6 +1,7 @@
 import { ChatPrompt } from '@microsoft/teams.ai';
 import { MessageContext } from '../utils/messageContext';
 import { getModelConfig } from '../utils/config';
+import { ILogger } from '@microsoft/teams.common';
 
 /**
  * Interface for capability definition used by the manager
@@ -8,7 +9,7 @@ import { getModelConfig } from '../utils/config';
 export interface CapabilityDefinition {
   name: string;
   manager_desc: string;
-  handler: (context: MessageContext) => Promise<string>;
+  handler: (context: MessageContext, logger: ILogger) => Promise<string>;
 }
 
 /**
@@ -27,12 +28,12 @@ export interface Capability {
    * The name/type of this capability
    */
   readonly name: string;
-  
+
   /**
    * Create a ChatPrompt instance for this capability
    */
   createPrompt(context: MessageContext): ChatPrompt;
-  
+
   /**
    * Process a user request using this capability
    */
@@ -45,18 +46,20 @@ export interface Capability {
  */
 export abstract class BaseCapability implements Capability {
   abstract readonly name: string;
-  
+
+  constructor(public logger: ILogger) { }
+
   abstract createPrompt(context: MessageContext): ChatPrompt;
-  
+
   /**
    * Default implementation of processRequest that creates a prompt and sends the request
    */
   async processRequest(context: MessageContext): Promise<CapabilityResult> {
     try {
       const prompt = this.createPrompt(context);
-      
+
       const response = await prompt.send(context.text);
-      
+
       return {
         response: response.content || 'No response generated'
       };
@@ -67,19 +70,11 @@ export abstract class BaseCapability implements Capability {
       };
     }
   }
-  
+
   /**
    * Helper method to get model configuration
    */
   protected getModelConfig(configKey: string) {
     return getModelConfig(configKey);
-  }
-  
-  /**
-   * Helper method to log capability initialization
-   */
-  protected logInit(context: MessageContext) {
-    console.log(`📋 Creating ${this.name} Capability for conversation: ${context.conversationId}`);
-    console.log(`🕒 Current date/time: ${context.timestamp}`);
   }
 }

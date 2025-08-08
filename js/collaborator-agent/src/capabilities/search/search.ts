@@ -6,6 +6,7 @@ import { MessageContext } from '../../utils/messageContext';
 import { MessageRecord } from '../../storage/storage';
 import { SEARCH_PROMPT } from './prompt';
 import { SEARCH_MESSAGES_SCHEMA } from './schema';
+import { ILogger } from '@microsoft/teams.common';
 
 export class SearchCapability extends BaseCapability {
   readonly name = 'search';
@@ -46,6 +47,7 @@ export class SearchCapability extends BaseCapability {
         }).join('\n');
       });
 
+    this.logger.debug('Initialized Search Capability!');
     return prompt;
   }
 }
@@ -57,9 +59,7 @@ function createDeepLink(activityId: string, conversationId: string): string {
 
 function createCitationFromRecord(message: MessageRecord, conversationId: string): CitationAppearance {
   const date = new Date(message.timestamp);
-  const formatted = date.toLocaleDateString('en-US', {
-    month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit', hour12: true
-  });
+  const formatted = new Intl.DateTimeFormat("en-US").format(date);
   const preview = message.content.length > 120 ? message.content.slice(0, 120) + '...' : message.content;
   const deepLink = createDeepLink(message.activity_id!, conversationId);
 
@@ -76,11 +76,11 @@ export const SEARCH_CAPABILITY_DEFINITION: CapabilityDefinition = {
   name: 'search',
   manager_desc: `**Search**: Use for:
 - "find", "search", "show me", "conversation with", "where did [person] say", "messages from last week"`,
-  handler: async (context: MessageContext) => {
-    const searchCapability = new SearchCapability();
+  handler: async (context: MessageContext, logger: ILogger) => {
+    const searchCapability = new SearchCapability(logger);
     const result = await searchCapability.processRequest(context);
     if (result.error) {
-      console.error(`❌ Error in Search Capability: ${result.error}`);
+      logger.error(`❌ Error in Search Capability: ${result.error}`);
       return `Error in Search Capability: ${result.error}`;
     }
     return result.response || 'No response from Search Capability';
