@@ -48,8 +48,9 @@ export class ActionItemsCapability extends BaseCapability {
 
 // Capability definition for manager registration
 export const ACTION_ITEMS_CAPABILITY_DEFINITION: CapabilityDefinition = {
-  name: 'delegate_to_action_items',
-  description: 'Delegate task management, action item creation, or assignment tracking to the Action Items Capability',
+  name: 'action_items',
+  manager_desc: `**Action Items**: Use for requests like:
+- "next steps", "to-do", "assign task", "my tasks", "what needs to be done"`,
   handler: async (context: MessageContext) => {
     const actionItemsCapability = new ActionItemsCapability();
     const result = await actionItemsCapability.processRequest(context);

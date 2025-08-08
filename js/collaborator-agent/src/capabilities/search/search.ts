@@ -23,7 +23,6 @@ export class SearchCapability extends BaseCapability {
       }),
     }).function('search_messages', 'Search the conversation for relevant messages', SEARCH_MESSAGES_SCHEMA,
       async (args: any) => {
-        console.log('searchin');
         const { keywords = [], participants = [], max_results = 5 } = args;
 
         const messages = context.memory.getMessagesByTimeRange(context.startTime, context.endTime);
@@ -92,8 +91,9 @@ function createCitationFromRecord(message: MessageRecord, conversationId: string
 
 // Capability definition for manager registration
 export const SEARCH_CAPABILITY_DEFINITION: CapabilityDefinition = {
-  name: 'delegate_to_search',
-  description: 'Delegate conversation search, message finding, or historical conversation lookup to the Search Capability',
+  name: 'search',
+  manager_desc: `**Search**: Use for:
+- "find", "search", "show me", "conversation with", "where did [person] say", "messages from last week"`,
   handler: async (context: MessageContext) => {
     const searchCapability = new SearchCapability();
     const result = await searchCapability.processRequest(context);

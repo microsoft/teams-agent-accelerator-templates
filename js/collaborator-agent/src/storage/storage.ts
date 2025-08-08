@@ -1,34 +1,17 @@
 import { Message } from '@microsoft/teams.ai';
 import Database from 'better-sqlite3';
+import path from 'node:path';
 
-interface MessageRecordExtension {
-  id?: number;
-  conversation_id?: string;
+  interface MessageRecordExtension {
+  id ?: number;
+  conversation_id ?: string;
   content: string;
   name: string;
   timestamp: string;
-  activity_id?: string; // used to create deeplink for Search Capability
+  activity_id ?: string; // used to create deeplink for Search Capability
 }
 
 export type MessageRecord = Message & MessageRecordExtension;
-
-// Interface for action items
-export interface ActionItem {
-  id: number;
-  conversation_id: string;
-  title: string;
-  description: string;
-  assigned_to: string;
-  assigned_to_id?: string; // User ID for direct lookup
-  assigned_by: string; // Who identified/assigned this action item
-  assigned_by_id?: string; // User ID of who assigned it
-  status: 'pending' | 'in_progress' | 'completed' | 'cancelled';
-  priority: 'low' | 'medium' | 'high' | 'urgent';
-  due_date?: string; // ISO date string
-  created_at: string;
-  updated_at: string;
-  source_message_ids?: string; // JSON array of message IDs that led to this action item
-}
 
 // Interface for feedback on AI responses
 export interface FeedbackRecord {
@@ -45,11 +28,15 @@ export interface FeedbackRecord {
 export class SqliteKVStore {
   private db: Database.Database;
 
-  constructor(dbPath: string = './src/storage/conversations.db') {
-    this.db = new Database(dbPath);
-    this.initializeDatabase();
+  constructor(dbPath?: string) {
+    // Use environment variable if set, otherwise use provided dbPath, otherwise use default relative to project root
+    const resolvedDbPath = process.env.CONVERSATIONS_DB_PATH
+      ? process.env.CONVERSATIONS_DB_PATH
+      : dbPath
+        ? dbPath
+        : path.resolve(__dirname, '../../src/storage/conversations.db');
+    this.db = new Database(resolvedDbPath);
   }
-
   private initializeDatabase(): void {
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS messages (

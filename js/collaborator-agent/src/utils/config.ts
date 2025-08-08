@@ -1,3 +1,5 @@
+import { ILogger } from "@microsoft/teams.common";
+
 // Configuration for AI models used by different capabilities
 export interface ModelConfig {
   model: string;
@@ -50,7 +52,7 @@ export const AI_MODELS = {
 };
 
 // Helper function to get model config for a specific capability
-export function getModelConfig(capabilityType: 'manager' | 'summarizer' | 'actionItems' | 'search' | 'default' = 'default'): ModelConfig {
+export function getModelConfig(capabilityType: string): ModelConfig {
   switch (capabilityType.toLowerCase()) {
     case 'manager':
       return AI_MODELS.MANAGER;
@@ -66,23 +68,22 @@ export function getModelConfig(capabilityType: 'manager' | 'summarizer' | 'actio
 }
 
 // Environment validation
-export function validateEnvironment(): void {
+export function validateEnvironment(logger: ILogger): void {
   const requiredEnvVars = ['AOAI_API_KEY', 'AOAI_ENDPOINT'];
   const missing = requiredEnvVars.filter(envVar => !process.env[envVar]);
   
   if (missing.length > 0) {
     throw new Error(`Missing required environment variables: ${missing.join(', ')}`);
   }
-  
-  console.log('✅ Environment validation passed');
+  logger.debug('✅ Environment validation passed');
 }
 
 // Model configuration logging
-export function logModelConfigs(): void {
-  console.log('🔧 AI Model Configuration:');
-  console.log(`  Manager Capability: ${AI_MODELS.MANAGER.model}`);
-  console.log(`  Summarizer Capability: ${AI_MODELS.SUMMARIZER.model}`);
-  console.log(`  Action Items Capability: ${AI_MODELS.ACTION_ITEMS.model}`);
-  console.log(`  Search Capability: ${AI_MODELS.SEARCH.model}`);
-  console.log(`  Default Model: ${AI_MODELS.DEFAULT.model}`);
+export function logModelConfigs(logger: ILogger): void {
+  logger.debug('🔧 AI Model Configuration:');
+  logger.debug(`  Manager Capability: ${AI_MODELS.MANAGER.model}`);
+  logger.debug(`  Summarizer Capability: ${AI_MODELS.SUMMARIZER.model}`);
+  logger.debug(`  Action Items Capability: ${AI_MODELS.ACTION_ITEMS.model}`);
+  logger.debug(`  Search Capability: ${AI_MODELS.SEARCH.model}`);
+  logger.debug(`  Default Model: ${AI_MODELS.DEFAULT.model}`);
 }

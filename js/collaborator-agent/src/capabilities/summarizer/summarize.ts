@@ -44,8 +44,10 @@ export class SummarizerCapability extends BaseCapability {
 
 // Capability definition for manager registration
 export const SUMMARIZER_CAPABILITY_DEFINITION: CapabilityDefinition = {
-  name: 'delegate_to_summarizer',
-  description: 'Delegate conversation analysis, summarization, or message retrieval tasks to the Summarizer Capability',
+  name: 'summarizer',
+  manager_desc: `**Summarizer**: Use for keywords like:
+- "summarize", "overview", "recap", "conversation history"
+- "what did we discuss", "catch me up", "who said what", "recent messages"`,
   handler: async (context: MessageContext) => {
     const summarizerCapability = new SummarizerCapability();
     const result = await summarizerCapability.processRequest(context);

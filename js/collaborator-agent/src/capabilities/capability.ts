@@ -1,12 +1,13 @@
 import { ChatPrompt } from '@microsoft/teams.ai';
 import { MessageContext } from '../utils/messageContext';
+import { getModelConfig } from '../utils/config';
 
 /**
  * Interface for capability definition used by the manager
  */
 export interface CapabilityDefinition {
   name: string;
-  description: string;
+  manager_desc: string;
   handler: (context: MessageContext) => Promise<string>;
 }
 
@@ -71,8 +72,6 @@ export abstract class BaseCapability implements Capability {
    * Helper method to get model configuration
    */
   protected getModelConfig(configKey: string) {
-    // This should import and use the actual getModelConfig function
-    const { getModelConfig } = require('../utils/config');
     return getModelConfig(configKey);
   }
   

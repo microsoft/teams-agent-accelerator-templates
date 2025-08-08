@@ -5,9 +5,13 @@ import { validateEnvironment, logModelConfigs } from './utils/config';
 import { finalizePromptResponse, createMessageRecords } from './utils/utils';
 import { createMessageContext } from './utils/messageContext';
 import { SqliteKVStore } from './storage/storage';
+import { ConsoleLogger } from '@microsoft/teams.common';
+
+const logger = new ConsoleLogger('collaborator', { level: 'debug' });
 
 const app = new App({
   plugins: [new DevtoolsPlugin()],
+  logger
 });
 
 // Initialize storage
@@ -21,7 +25,7 @@ app.on('message.submit.feedback', async ({ activity, log }) => {
     const { reaction, feedback: feedbackJson } = activity.value.actionValue;
 
     if (activity.replyToId == null) {
-      log.warn(`No replyToId found for messageId ${activity.id}`);
+      logger.warn(`No replyToId found for messageId ${activity.id}`);
       return;
     }
 
@@ -33,31 +37,27 @@ app.on('message.submit.feedback', async ({ activity, log }) => {
     const success = feedbackStorage.updateFeedback(activity.replyToId, reaction, feedbackJson);
 
     if (success) {
-      console.log(`✅ Successfully recorded feedback for message ${activity.replyToId}`);
+      logger.debug(`✅ Successfully recorded feedback for message ${activity.replyToId}`);
     } else {
-      log.warn(`Failed to record feedback for message ${activity.replyToId}`);
+      logger.warn(`Failed to record feedback for message ${activity.replyToId}`);
     }
 
   } catch (error) {
-    log.error(`Error processing feedback: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    logger.error(`Error processing feedback: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 });
 
-app.on('message', async ({ send, activity, api }) => {
+app.on('message', async ({ send, activity, api, log }) => {
   
   const botMentioned = activity.entities?.some((e) => e.type === 'mention');
   const context = botMentioned ? await createMessageContext(storage, activity, api) : await createMessageContext(storage, activity);
-
-  if (activity.text == 'clear da messages') {
-    storage.clearAll();
-  }
 
   let trackedMessages;
 
   if (!activity.conversation.isGroup || botMentioned) { // process request if One-on-One chat or if @mentioned in Groupchat
     await send({ type: 'typing' });
 
-    const manager = new ManagerPrompt(context);
+    const manager = new ManagerPrompt(context, logger.child('Manager'));
     const result = await manager.processRequest();
     const formattedResult = finalizePromptResponse(result.response, context);
 
@@ -72,11 +72,11 @@ app.on('message', async ({ send, activity, api }) => {
   context.memory.addMessages(trackedMessages)
 });
 
-(async () => {
+(async ( ) => {
   const port = +(process.env.PORT || 3978);
   try {
-    validateEnvironment();
-    logModelConfigs();
+    validateEnvironment(logger);
+    logModelConfigs(logger);
   } catch (error) {
     console.error('❌ Configuration error:', error);
     process.exit(1);
