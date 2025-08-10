@@ -79,11 +79,11 @@ app.on('message', async ({ send, activity, api }) => {
     validateEnvironment(logger);
     logModelConfigs(logger);
   } catch (error) {
-    console.error('❌ Configuration error:', error);
+    logger.error('❌ Configuration error:', error);
     process.exit(1);
   }
 
   await app.start(port);
 
-  console.log(`🚀 Teams Collaborator Bot started on port ${port}`);
+  logger.debug(`🚀 Teams Collaborator Bot started on port ${port}`);
 })();

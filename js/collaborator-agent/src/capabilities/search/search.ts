@@ -26,7 +26,7 @@ export class SearchCapability extends BaseCapability {
       async ({ keywords, participants, max_results }: SearchMessagesArgs) => {
 
         const selected = context.memory.getFilteredMessages(context.conversationId, keywords, context.startTime, context.endTime, participants, max_results);
-        console.log(selected);
+        this.logger.debug(selected);
 
         if (selected.length === 0) {
           return 'No matching messages found.';
