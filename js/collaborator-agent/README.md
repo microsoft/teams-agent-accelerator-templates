@@ -37,6 +37,25 @@ This agent can listen to all messages in a group chat (even without being @menti
 - ✅ **Action Item Management** - Automatically identify and create action items from team discussions with smart assignment
 - 🔍 **Conversation Search** - Search through chat history using natural language queries with time-based filtering and deep linking to original messages
 
+## Mermaid Diagram of Flow
+
+```mermaid
+flowchart TD
+  A{Incoming User Message}
+
+  A -->|Groupchat & Bot mentioned OR 1:1| M[Manager receives message]
+  A -->|Groupchat & Bot not mentioned| C[User message added to DB]
+
+  M --> Q{Requires capability?}
+  Q -->|Yes| D[Capability runs its own functions]
+  Q -->|No| E[Manager generates response]
+
+  D -->|Results to manager| E
+
+  E --> F[Add user and model messages to DB]
+  E -->|Return response to user| A
+```
+
 ## Running the Sample
 
 ### Prerequisites

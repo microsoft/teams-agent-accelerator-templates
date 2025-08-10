@@ -5,7 +5,7 @@ import { BaseCapability, CapabilityDefinition } from '../capability';
 import { MessageContext } from '../../utils/messageContext';
 import { MessageRecord } from '../../storage/storage';
 import { SEARCH_PROMPT } from './prompt';
-import { SEARCH_MESSAGES_SCHEMA } from './schema';
+import { SEARCH_MESSAGES_SCHEMA, SearchMessagesArgs } from './schema';
 import { ILogger } from '@microsoft/teams.common';
 
 export class SearchCapability extends BaseCapability {
@@ -23,8 +23,7 @@ export class SearchCapability extends BaseCapability {
         apiVersion: searchModelConfig.apiVersion,
       }),
     }).function('search_messages', 'Search the conversation for relevant messages', SEARCH_MESSAGES_SCHEMA,
-      async (SearchMessagesArgs) => {
-        const { keywords, participants, max_results } = SearchMessagesArgs;
+      async ({ keywords, participants, max_results }: SearchMessagesArgs) => {
 
         const selected = context.memory.getFilteredMessages(context.conversationId, keywords, context.startTime, context.endTime, participants, max_results);
         console.log(selected);
