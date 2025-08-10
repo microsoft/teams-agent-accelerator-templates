@@ -37,6 +37,16 @@ This agent can listen to all messages in a group chat (even without being @menti
 - ✅ **Action Items** - Automatically identify and create action items from team discussions with smart assignment
 - 🔍 **Conversation Search** - Search through chat history using natural language queries with time-based filtering and deep linking to original messages
 
+## Adding Custom Capabilities
+
+Adding your own capabilities only requires a few steps:
+
+1. Copy the template folder under capabilities [template](src\capabilities\template\template.ts)
+2. Customize your capability to do what you want (helpful to look at existing capabilities)
+3. Make sure to create a CapabilityDefinition at the bottom of your main file
+4. Register your capability by importing the CapabilityDefinition and adding to the definition list in [registry](src\capabilities\registry.ts)
+5. The manager will automatically be instantiated with the capability you defined!
+
 ## Mermaid Diagram of Flow
 
 ```mermaid
