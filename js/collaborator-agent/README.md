@@ -34,7 +34,7 @@ This agent can listen to all messages in a group chat (even without being @menti
 ## Key Features
 
 - 📋 **Intelligent Summarization** - Analyze conversations and provide structured summaries with proper participant attribution and topic identification
-- ✅ **Action Item Management** - Automatically identify and create action items from team discussions with smart assignment
+- ✅ **Action Items** - Automatically identify and create action items from team discussions with smart assignment
 - 🔍 **Conversation Search** - Search through chat history using natural language queries with time-based filtering and deep linking to original messages
 
 ## Mermaid Diagram of Flow
