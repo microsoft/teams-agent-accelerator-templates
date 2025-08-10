@@ -8,6 +8,8 @@ import { SEARCH_PROMPT } from './prompt';
 import { SEARCH_MESSAGES_SCHEMA, SearchMessagesArgs } from './schema';
 import { ILogger } from '@microsoft/teams.common';
 
+const dateFormat = new Intl.DateTimeFormat("en-US");
+
 export class SearchCapability extends BaseCapability {
   readonly name = 'search';
 
@@ -58,7 +60,7 @@ function createDeepLink(activityId: string, conversationId: string): string {
 
 function createCitationFromRecord(message: MessageRecord, conversationId: string): CitationAppearance {
   const date = new Date(message.timestamp);
-  const formatted = new Intl.DateTimeFormat("en-US").format(date);
+  const formatted = dateFormat.format(date);
   const preview = message.content.length > 120 ? message.content.slice(0, 120) + '...' : message.content;
   const deepLink = createDeepLink(message.activity_id!, conversationId);
 

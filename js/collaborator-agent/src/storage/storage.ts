@@ -1,4 +1,5 @@
 import { Message } from '@microsoft/teams.ai';
+import { ILogger } from '@microsoft/teams.common';
 import Database from 'better-sqlite3';
 import path from 'node:path';
 
@@ -28,7 +29,7 @@ export interface FeedbackRecord {
 export class SqliteKVStore {
   private db: Database.Database;
 
-  constructor(dbPath?: string) {
+  constructor(private logger: ILogger, dbPath?: string) {
     // Use environment variable if set, otherwise use provided dbPath, otherwise use default relative to project root
     const resolvedDbPath = process.env.CONVERSATIONS_DB_PATH
       ? path.resolve(process.env.CONVERSATIONS_DB_PATH)
@@ -57,7 +58,7 @@ export class SqliteKVStore {
 
   clearAll(): void {
     this.db.exec('DELETE FROM messages; VACUUM;');
-    console.log('🧹 Cleared all messages from SQLite store.');
+    this.logger.debug('🧹 Cleared all messages from SQLite store.');
   }
 
   get(conversationId: string): MessageRecord[] {
@@ -104,7 +105,7 @@ export class SqliteKVStore {
     try {
       const stmt = this.db.prepare('DELETE FROM messages');
       const result = stmt.run();
-      console.log(`🧹 Cleared all messages from database. Deleted ${result.changes} records.`);
+      this.logger.debug(`🧹 Cleared all messages from database. Deleted ${result.changes} records.`);
     } catch (error) {
       console.error('❌ Error clearing all messages:', error);
     }
@@ -170,7 +171,7 @@ export class SqliteKVStore {
 
       const selectStmt = this.db.prepare('SELECT * FROM feedback WHERE message_id = ?');
       const record = selectStmt.get(messageId) as FeedbackRecord;
-      console.log(`📝 Initialized feedback record for message: ${messageId}${delegatedCapability ? ` (capability: ${delegatedCapability})` : ''}`);
+      this.logger.debug(`📝 Initialized feedback record for message: ${messageId}${delegatedCapability ? ` (capability: ${delegatedCapability})` : ''}`);
       return record;
     } catch (error) {
       console.error(`❌ Error initializing feedback record for message ${messageId}:`, error);
@@ -186,7 +187,7 @@ export class SqliteKVStore {
         VALUES (?, 0, 0, '[]', ?)
       `);
       stmt.run(messageId, delegatedCapability);
-      console.log(`📝 Stored delegated capability info for message ${messageId}: ${delegatedCapability || 'direct'}`);
+      this.logger.debug(`📝 Stored delegated capability info for message ${messageId}: ${delegatedCapability || 'direct'}`);
     } catch (error) {
       console.error(`❌ Error storing delegated capability for message ${messageId}:`, error);
     }
@@ -238,7 +239,7 @@ export class SqliteKVStore {
       `);
       const result = stmt.run(newLikes, newDislikes, JSON.stringify(feedbacks), messageId);
 
-      console.log(`👍 Updated feedback for message ${messageId}: ${reaction} (likes: ${newLikes}, dislikes: ${newDislikes})`);
+      this.logger.debug(`👍 Updated feedback for message ${messageId}: ${reaction} (likes: ${newLikes}, dislikes: ${newDislikes})`);
       return result.changes > 0;
     } catch (error) {
       console.error(`❌ Error updating feedback for message ${messageId}:`, error);
@@ -251,7 +252,7 @@ export class SqliteKVStore {
     try {
       const stmt = this.db.prepare('SELECT * FROM feedback ORDER BY created_at DESC');
       const records = stmt.all() as FeedbackRecord[];
-      console.log(`🔍 Retrieved ${records.length} feedback records`);
+      this.logger.debug(`🔍 Retrieved ${records.length} feedback records`);
       return records;
     } catch (error) {
       console.error(`❌ Error getting all feedback records:`, error);
@@ -264,7 +265,7 @@ export class SqliteKVStore {
     try {
       const stmt = this.db.prepare('DELETE FROM feedback');
       const result = stmt.run();
-      console.log(`🧹 Cleared ALL feedback records: ${result.changes} records removed`);
+      this.logger.debug(`🧹 Cleared ALL feedback records: ${result.changes} records removed`);
       return result.changes as number;
     } catch (error) {
       console.error(`❌ Error clearing all feedback:`, error);

@@ -15,7 +15,7 @@ const app = new App({
 });
 
 // Initialize storage
-const storage = new SqliteKVStore();
+const storage = new SqliteKVStore(logger.child('storage'));
 
 // Initialize feedback storage
 const feedbackStorage = storage;
@@ -57,9 +57,9 @@ app.on('message', async ({ send, activity, api }) => {
   if (!activity.conversation.isGroup || botMentioned) { // process request if One-on-One chat or if @mentioned in Groupchat
     await send({ type: 'typing' });
 
-    const manager = new ManagerPrompt(context, logger.child('Manager'));
+    const manager = new ManagerPrompt(context, logger.child('manager'));
     const result = await manager.processRequest();
-    const formattedResult = finalizePromptResponse(result.response, context);
+    const formattedResult = finalizePromptResponse(result.response, context, logger);
 
     const sent = await send(formattedResult);
     formattedResult.id = sent.id;

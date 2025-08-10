@@ -1,25 +1,6 @@
 import { MessageContext } from '../../utils/messageContext';
-import { SqliteKVStore } from '../../storage/storage';
-import { CitationAppearance } from '@microsoft/teams.api';
-// import { TEMPLATE_PROMPT } from './prompt';
-// import { templateFunctionSchema } from './schema';
-
-// Define the interface for your capability's options
-export interface TemplateOptions {
-    storage?: SqliteKVStore;
-    citationsArray?: CitationAppearance[];
-    calculatedStartTime?: string;
-    calculatedEndTime?: string;
-    timespanDescription?: string;
-    // Add any other options your capability needs
-}
-
-// Define the result interface for your capability
-export interface TemplateResult {
-    response: string;
-    error?: string;
-    // Add any other result properties your capability returns
-}
+import { ILogger } from '@microsoft/teams.common';
+import { CapabilityResult } from '../capability';
 
 /**
  * Template Capability - Replace this description with your capability's purpose
@@ -34,7 +15,7 @@ export interface TemplateResult {
  * 4. Handle errors gracefully
  */
 export class TemplateCapability {
-    constructor() {
+    constructor(private logger: ILogger) {
         // Initialize any resources your capability needs
     }
 
@@ -44,18 +25,9 @@ export class TemplateCapability {
      * @param options - Additional options like storage, time ranges, etc.
      * @returns Promise<TemplateResult> - The result of processing the request
      */
-    async processRequest(context: MessageContext, options: TemplateOptions = {}): Promise<TemplateResult> {
+    async processRequest(context: MessageContext): Promise<CapabilityResult> {
         try {
-            console.log(`🔧 Template Capability processing request: ${context.text}`);
-
-            // Extract relevant options
-            const {
-                storage,
-                citationsArray,
-                calculatedStartTime,
-                calculatedEndTime,
-                timespanDescription
-            } = options;
+            this.logger.debug(`🔧 Template Capability processing request: ${context.text}`);
 
             // TODO: Implement your capability's core logic here
             
@@ -67,33 +39,11 @@ export class TemplateCapability {
             const isPersonalChat = context.isPersonalChat;
             // const members = context.members; // Available conversation members
 
-            // Example: Use time range if provided
-            if (calculatedStartTime && calculatedEndTime) {
-                console.log(`📅 Processing with time range: ${timespanDescription}`);
-                // Handle time-based queries
-            }
-
-            // Example: Use storage if provided
-            if (storage) {
-                // Interact with storage
-                // const data = await storage.get(conversationId, 'some-key');
-            }
-
-            // Example: Add citations if your capability finds relevant messages
-            if (citationsArray) {
-                // citationsArray.push({
-                //     appearance: {
-                //         name: "Relevant Message",
-                //         abstract: "Description of the message"
-                //     },
-                //     content: "Message content"
-                // });
-            }
 
             // TODO: Replace this with your actual processing logic
             const response = `Template capability received: "${userRequest}" from user ${userName} in ${isPersonalChat ? 'personal' : 'group'} chat`;
 
-            console.log(`✅ Template Capability completed successfully`);
+            this.logger.debug(`✅ Template Capability completed successfully`);
 
             return {
                 response,
@@ -102,7 +52,7 @@ export class TemplateCapability {
 
         } catch (error) {
             const errorMessage = error instanceof Error ? error.message : 'Unknown error in Template Capability';
-            console.error(`❌ Error in Template Capability: ${errorMessage}`);
+            this.logger.error(`❌ Error in Template Capability: ${errorMessage}`);
             
             return {
                 response: 'Sorry, I encountered an error processing your request.',

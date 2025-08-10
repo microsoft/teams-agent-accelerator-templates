@@ -2,18 +2,19 @@ import { IMessageActivity, MessageActivity } from '@microsoft/teams.api';
 import * as chrono from 'chrono-node';
 import { MessageRecord } from '../storage/storage';
 import { MessageContext } from './messageContext';
+import { ILogger } from '@microsoft/teams.common';
 
 /**
  * Helper function to finalize and send a prompt response with citations
  */
-export function finalizePromptResponse(text: string, context: MessageContext): MessageActivity {
+export function finalizePromptResponse(text: string, context: MessageContext, logger: ILogger): MessageActivity {
   const messageActivity = new MessageActivity(text)
     .addAiGenerated()
     .addFeedback();
 
   // Add context.citations if provided
   if (context.citations && context.citations.length > 0) {
-    console.log(`Adding ${context.citations.length} context.citations to message activity`);
+    logger.debug(`Adding ${context.citations.length} context.citations to message activity`);
     context.citations.forEach((citation, index) => {
       const citationNumber = index + 1;
       messageActivity.addCitation(citationNumber, citation);
@@ -22,8 +23,8 @@ export function finalizePromptResponse(text: string, context: MessageContext): M
     });
   }
 
-  console.log('Citations in message activity:');
-  console.log(JSON.stringify(messageActivity.entities?.find(e => e.citation)?.citation, null, 2));
+  logger.debug('Citations in message activity:');
+  logger.debug(JSON.stringify(messageActivity.entities?.find(e => e.citation)?.citation, null, 2));
 
   return messageActivity;
 }
