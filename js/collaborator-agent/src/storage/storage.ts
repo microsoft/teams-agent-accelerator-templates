@@ -107,7 +107,7 @@ export class SqliteKVStore {
       const result = stmt.run();
       this.logger.debug(`🧹 Cleared all messages from database. Deleted ${result.changes} records.`);
     } catch (error) {
-      console.error('❌ Error clearing all messages:', error);
+      this.logger.error('❌ Error clearing all messages:', error);
     }
   }
 
@@ -174,7 +174,7 @@ export class SqliteKVStore {
       this.logger.debug(`📝 Initialized feedback record for message: ${messageId}${delegatedCapability ? ` (capability: ${delegatedCapability})` : ''}`);
       return record;
     } catch (error) {
-      console.error(`❌ Error initializing feedback record for message ${messageId}:`, error);
+      this.logger.error(`❌ Error initializing feedback record for message ${messageId}:`, error);
       throw error;
     }
   }
@@ -189,7 +189,7 @@ export class SqliteKVStore {
       stmt.run(messageId, delegatedCapability);
       this.logger.debug(`📝 Stored delegated capability info for message ${messageId}: ${delegatedCapability || 'direct'}`);
     } catch (error) {
-      console.error(`❌ Error storing delegated capability for message ${messageId}:`, error);
+      this.logger.error(`❌ Error storing delegated capability for message ${messageId}:`, error);
     }
   }
 
@@ -200,7 +200,7 @@ export class SqliteKVStore {
       const record = stmt.get(messageId) as FeedbackRecord | undefined;
       return record;
     } catch (error) {
-      console.error(`❌ Error getting feedback for message ${messageId}:`, error);
+      this.logger.error(`❌ Error getting feedback for message ${messageId}:`, error);
       return undefined;
     }
   }
@@ -242,7 +242,7 @@ export class SqliteKVStore {
       this.logger.debug(`👍 Updated feedback for message ${messageId}: ${reaction} (likes: ${newLikes}, dislikes: ${newDislikes})`);
       return result.changes > 0;
     } catch (error) {
-      console.error(`❌ Error updating feedback for message ${messageId}:`, error);
+      this.logger.error(`❌ Error updating feedback for message ${messageId}:`, error);
       return false;
     }
   }
@@ -255,7 +255,7 @@ export class SqliteKVStore {
       this.logger.debug(`🔍 Retrieved ${records.length} feedback records`);
       return records;
     } catch (error) {
-      console.error(`❌ Error getting all feedback records:`, error);
+      this.logger.error(`❌ Error getting all feedback records:`, error);
       return [];
     }
   }
@@ -268,7 +268,7 @@ export class SqliteKVStore {
       this.logger.debug(`🧹 Cleared ALL feedback records: ${result.changes} records removed`);
       return result.changes as number;
     } catch (error) {
-      console.error(`❌ Error clearing all feedback:`, error);
+      this.logger.error(`❌ Error clearing all feedback:`, error);
       return 0;
     }
   }
@@ -289,7 +289,7 @@ export class SqliteKVStore {
           'N/A'
       };
     } catch (error) {
-      console.error(`❌ Error getting feedback summary:`, error);
+      this.logger.error(`❌ Error getting feedback summary:`, error);
       return { error: 'Failed to get feedback summary' };
     }
   }
