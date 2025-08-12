@@ -18,13 +18,12 @@ export function finalizePromptResponse(text: string, context: MessageContext, lo
     context.citations.forEach((citation, index) => {
       const citationNumber = index + 1;
       messageActivity.addCitation(citationNumber, citation);
+      logger.debug(`Citation number ${citationNumber}`);
+      logger.debug(citation);
       // The corresponding citation needs to be added in the message content
       messageActivity.text += ` [${citationNumber}]`;
     });
   }
-
-  logger.debug('Citations in message activity:');
-  logger.debug(JSON.stringify(messageActivity.entities?.find(e => e.citation)?.citation, null, 2));
 
   return messageActivity;
 }

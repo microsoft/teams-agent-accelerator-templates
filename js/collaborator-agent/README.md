@@ -47,7 +47,7 @@ Adding your own capabilities only requires a few steps:
 4. Register your capability by importing the CapabilityDefinition and adding to the definition list in [registry](src\capabilities\registry.ts)
 5. The manager will automatically be instantiated with the capability you defined!
 
-## Mermaid Diagram of Flow
+## Flow of the Agent
 
 ```mermaid
 flowchart TD
@@ -65,6 +65,11 @@ flowchart TD
   E --> F[Add user and model messages to DB]
   E -->|Return response to user| A
 ```
+
+If Collab Agent is added to a groupchat or private message, it will always listen and log each message to its database. The messages are stored in an SQLite DB by the conversation ID of the given conversation. 
+The agent will respond whenever @mentioned in groupchats and will always respond in 1-on-1 messages. When the agent responds, the request is first passed through a manger prompt.
+This manager may route to a capability based on the request--this capability returns its result back to the manager where it will be passed back to the user.
+
 
 ## Running the Sample
 

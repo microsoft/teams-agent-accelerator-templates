@@ -24,24 +24,18 @@ app.on('message.submit.feedback', async ({ activity }) => {
   try {
     const { reaction, feedback: feedbackJson } = activity.value.actionValue;
 
-    if (activity.replyToId == null) {
+    if (!activity.replyToId) {
       logger.warn(`No replyToId found for messageId ${activity.id}`);
       return;
     }
 
-    let existingFeedback = feedbackStorage.getFeedbackByMessageId(activity.replyToId);
-    if (!existingFeedback) {
-      feedbackStorage.initializeFeedbackRecord(activity.replyToId);
-    }
-
-    const success = feedbackStorage.updateFeedback(activity.replyToId, reaction, feedbackJson);
+    const success = feedbackStorage.recordFeedback(activity.replyToId, reaction, feedbackJson);
 
     if (success) {
       logger.debug(`✅ Successfully recorded feedback for message ${activity.replyToId}`);
     } else {
       logger.warn(`Failed to record feedback for message ${activity.replyToId}`);
     }
-
   } catch (error) {
     logger.error(`Error processing feedback: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
@@ -85,5 +79,5 @@ app.on('message', async ({ send, activity, api }) => {
 
   await app.start(port);
 
-  logger.debug(`🚀 Teams Collaborator Bot started on port ${port}`);
+  logger.debug(`🚀 Collab Agent started on port ${port}`);
 })();

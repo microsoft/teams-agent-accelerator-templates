@@ -14,16 +14,12 @@ interface MessageRecordExtension {
 
 export type MessageRecord = Message & MessageRecordExtension;
 
-// Interface for feedback on AI responses
 export interface FeedbackRecord {
   id: number;
-  message_id: string; // Teams message ID that was replied to
-  likes: number;
-  dislikes: number;
-  feedbacks: string; // JSON array of feedback objects like {"feedbackText":"Nice!"}
-  delegated_capability?: string; // Which sub-capability handled this response (e.g., 'summarizer', 'search', 'action_items', 'direct')
+  reply_to_id: string;
+  reaction: 'like' | 'dislike' | string;
+  feedback: string | null;
   created_at: string;
-  updated_at: string;
 }
 
 export class SqliteKVStore {
@@ -53,6 +49,14 @@ export class SqliteKVStore {
     `);
     this.db.exec(`
       CREATE INDEX IF NOT EXISTS idx_conversation_id ON messages(conversation_id);
+    `);
+    this.db.exec(`
+  CREATE TABLE IF NOT EXISTS feedback (
+    reply_to_id  TEXT    NOT NULL,                -- the Teams message ID you replied to
+    reaction     TEXT    NOT NULL CHECK (reaction IN ('like','dislike')),
+    feedback     TEXT,                           -- JSON or plain text
+    created_at   TEXT    NOT NULL DEFAULT (CURRENT_TIMESTAMP)
+  );
     `);
   }
 
@@ -161,143 +165,18 @@ export class SqliteKVStore {
   // ===== FEEDBACK MANAGEMENT =====
 
   // Initialize feedback record for a message with optional delegated capability
-  initializeFeedbackRecord(messageId: string, delegatedCapability?: string): FeedbackRecord {
+  // Insert one row per submission
+  recordFeedback(replyToId: string, reaction: 'like' | 'dislike' | string, feedbackJson?: unknown): boolean {
     try {
       const stmt = this.db.prepare(`
-        INSERT OR IGNORE INTO feedback (message_id, likes, dislikes, feedbacks, delegated_capability)
-        VALUES (?, 0, 0, '[]', ?)
-      `);
-      stmt.run(messageId, delegatedCapability || null);
-
-      const selectStmt = this.db.prepare('SELECT * FROM feedback WHERE message_id = ?');
-      const record = selectStmt.get(messageId) as FeedbackRecord;
-      this.logger.debug(`📝 Initialized feedback record for message: ${messageId}${delegatedCapability ? ` (capability: ${delegatedCapability})` : ''}`);
-      return record;
-    } catch (error) {
-      this.logger.error(`❌ Error initializing feedback record for message ${messageId}:`, error);
-      throw error;
-    }
-  }
-
-  // Store delegated capability info for a message (for later feedback initialization)
-  storeDelegatedCapability(messageId: string, delegatedCapability: string | null): void {
-    try {
-      const stmt = this.db.prepare(`
-        INSERT OR IGNORE INTO feedback (message_id, likes, dislikes, feedbacks, delegated_capability)
-        VALUES (?, 0, 0, '[]', ?)
-      `);
-      stmt.run(messageId, delegatedCapability);
-      this.logger.debug(`📝 Stored delegated capability info for message ${messageId}: ${delegatedCapability || 'direct'}`);
-    } catch (error) {
-      this.logger.error(`❌ Error storing delegated capability for message ${messageId}:`, error);
-    }
-  }
-
-  // Get feedback record by message ID
-  getFeedbackByMessageId(messageId: string): FeedbackRecord | undefined {
-    try {
-      const stmt = this.db.prepare('SELECT * FROM feedback WHERE message_id = ?');
-      const record = stmt.get(messageId) as FeedbackRecord | undefined;
-      return record;
-    } catch (error) {
-      this.logger.error(`❌ Error getting feedback for message ${messageId}:`, error);
-      return undefined;
-    }
-  }
-
-  // Update feedback record with new reaction and feedback text
-  updateFeedback(messageId: string, reaction: 'like' | 'dislike', feedbackJson?: any): boolean {
-    try {
-      // Get existing feedback or create new one
-      let existingFeedback = this.getFeedbackByMessageId(messageId);
-      if (!existingFeedback) {
-        existingFeedback = this.initializeFeedbackRecord(messageId);
-      }
-
-      // Parse existing feedbacks array
-      let feedbacks: any[] = [];
-      try {
-        feedbacks = JSON.parse(existingFeedback.feedbacks);
-      } catch (e) {
-        feedbacks = [];
-      }
-
-      // Add new feedback if provided
-      if (feedbackJson) {
-        feedbacks.push(feedbackJson);
-      }
-
-      // Update counts
-      const newLikes = existingFeedback.likes + (reaction === 'like' ? 1 : 0);
-      const newDislikes = existingFeedback.dislikes + (reaction === 'dislike' ? 1 : 0);
-
-      // Update database
-      const stmt = this.db.prepare(`
-        UPDATE feedback 
-        SET likes = ?, dislikes = ?, feedbacks = ?, updated_at = CURRENT_TIMESTAMP
-        WHERE message_id = ?
-      `);
-      const result = stmt.run(newLikes, newDislikes, JSON.stringify(feedbacks), messageId);
-
-      this.logger.debug(`👍 Updated feedback for message ${messageId}: ${reaction} (likes: ${newLikes}, dislikes: ${newDislikes})`);
+      INSERT INTO feedback (reply_to_id, reaction, feedback)
+      VALUES (?, ?, ?)
+    `);
+      const result = stmt.run(replyToId, reaction, feedbackJson ? JSON.stringify(feedbackJson) : null);
       return result.changes > 0;
-    } catch (error) {
-      this.logger.error(`❌ Error updating feedback for message ${messageId}:`, error);
+    } catch (err) {
+      this.logger.error(`❌ recordFeedback error:`, err);
       return false;
     }
-  }
-
-  // Get all feedback records (for debugging)
-  getAllFeedback(): FeedbackRecord[] {
-    try {
-      const stmt = this.db.prepare('SELECT * FROM feedback ORDER BY created_at DESC');
-      const records = stmt.all() as FeedbackRecord[];
-      this.logger.debug(`🔍 Retrieved ${records.length} feedback records`);
-      return records;
-    } catch (error) {
-      this.logger.error(`❌ Error getting all feedback records:`, error);
-      return [];
-    }
-  }
-
-  // Clear all feedback records
-  clearAllFeedback(): number {
-    try {
-      const stmt = this.db.prepare('DELETE FROM feedback');
-      const result = stmt.run();
-      this.logger.debug(`🧹 Cleared ALL feedback records: ${result.changes} records removed`);
-      return result.changes as number;
-    } catch (error) {
-      this.logger.error(`❌ Error clearing all feedback:`, error);
-      return 0;
-    }
-  }
-
-  // Get feedback summary for analytics
-  getFeedbackSummary(): any {
-    try {
-      const totalFeedback = this.db.prepare('SELECT COUNT(*) as count FROM feedback').get() as { count: number };
-      const totalLikes = this.db.prepare('SELECT SUM(likes) as total FROM feedback').get() as { total: number };
-      const totalDislikes = this.db.prepare('SELECT SUM(dislikes) as total FROM feedback').get() as { total: number };
-
-      return {
-        total_feedback_records: totalFeedback.count,
-        total_likes: totalLikes.total || 0,
-        total_dislikes: totalDislikes.total || 0,
-        like_ratio: totalLikes.total && totalDislikes.total ?
-          (totalLikes.total / (totalLikes.total + totalDislikes.total) * 100).toFixed(1) + '%' :
-          'N/A'
-      };
-    } catch (error) {
-      this.logger.error(`❌ Error getting feedback summary:`, error);
-      return { error: 'Failed to get feedback summary' };
-    }
-  }
-
-  /**
-   * Get the underlying database instance for direct SQL operations
-   */
-  getDb(): Database.Database {
-    return this.db;
   }
 }
