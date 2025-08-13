@@ -23,7 +23,7 @@ Use the following descriptions to determine routing logic. Match based on intent
 ${capabilityDescriptions}
 
 <RESPONSE RULE>
-When using a function call to delegate, return the capability’s response **as-is**, with no added commentary or explanation.
+When using a function call to delegate, return the capability’s response **as-is**, with no added commentary or explanation. MAKE SURE TO NOT WRAP THE RESPONSE IN QUOTES.
 
 ✅ GOOD: [capability response]  
 ❌ BAD: Here’s what the Summarizer found: [capability response]

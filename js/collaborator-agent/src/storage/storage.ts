@@ -37,7 +37,7 @@ export class SqliteKVStore {
   }
   private initializeDatabase(): void {
     this.db.exec(`
-      CREATE TABLE IF NOT EXISTS messages (
+      CREATE TABLE IF NOT EXISTS conversations (
         conversation_id TEXT NOT NULL,
         role TEXT NOT NULL,
         name TEXT NOT NULL,
@@ -48,10 +48,10 @@ export class SqliteKVStore {
       )
     `);
     this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_conversation_id ON messages(conversation_id);
+      CREATE INDEX IF NOT EXISTS idx_conversation_id ON conversations(conversation_id);
     `);
     this.db.exec(`
-  CREATE TABLE IF NOT EXISTS feedback (
+    CREATE TABLE IF NOT EXISTS feedback (
     reply_to_id  TEXT    NOT NULL,                -- the Teams message ID you replied to
     reaction     TEXT    NOT NULL CHECK (reaction IN ('like','dislike')),
     feedback     TEXT,                           -- JSON or plain text
@@ -61,20 +61,20 @@ export class SqliteKVStore {
   }
 
   clearAll(): void {
-    this.db.exec('DELETE FROM messages; VACUUM;');
-    this.logger.debug('🧹 Cleared all messages from SQLite store.');
+    this.db.exec('DELETE FROM conversations; VACUUM;');
+    this.logger.debug('🧹 Cleared all conversations from SQLite store.');
   }
 
   get(conversationId: string): MessageRecord[] {
     const stmt = this.db.prepare<{}, { blob: string }>(
-      'SELECT blob FROM messages WHERE conversation_id = ? ORDER BY timestamp ASC'
+      'SELECT blob FROM conversations WHERE conversation_id = ? ORDER BY timestamp ASC'
     );
     return stmt.all(conversationId).map((row) => JSON.parse(row.blob) as MessageRecord);
   }
 
   getMessagesByTimeRange(conversationId: string, startTime: string, endTime: string): MessageRecord[] {
     const stmt = this.db.prepare<{}, { blob: string }>(
-      'SELECT blob FROM messages WHERE conversation_id = ? AND timestamp >= ? AND timestamp <= ? ORDER BY timestamp ASC'
+      'SELECT blob FROM conversations WHERE conversation_id = ? AND timestamp >= ? AND timestamp <= ? ORDER BY timestamp ASC'
     );
     return stmt.all([conversationId, startTime, endTime]).map(row => JSON.parse(row.blob) as MessageRecord);
   }
@@ -85,13 +85,13 @@ export class SqliteKVStore {
   }
 
   clearConversation(conversationId: string): void {
-    const stmt = this.db.prepare('DELETE FROM messages WHERE conversation_id = ?');
+    const stmt = this.db.prepare('DELETE FROM conversations WHERE conversation_id = ?');
     stmt.run(conversationId);
   }
 
   addMessages(messages: MessageRecord[]): void {
     const stmt = this.db.prepare(
-      'INSERT INTO messages (conversation_id, role, name, content, activity_id, timestamp, blob) VALUES (?, ?, ?, ?, ?, ?, ?)'
+      'INSERT INTO conversations (conversation_id, role, name, content, activity_id, timestamp, blob) VALUES (?, ?, ?, ?, ?, ?, ?)'
     );
     for (const message of messages) {
       stmt.run(message.conversation_id, message.role, message.name, message.content, message.activity_id, message.timestamp, JSON.stringify(message));
@@ -99,7 +99,7 @@ export class SqliteKVStore {
   }
 
   countMessages(conversationId: string): number {
-    const stmt = this.db.prepare('SELECT COUNT(*) as count FROM messages WHERE conversation_id = ?');
+    const stmt = this.db.prepare('SELECT COUNT(*) as count FROM conversations WHERE conversation_id = ?');
     const result = stmt.get(conversationId) as { count: number };
     return result.count;
   }
@@ -107,11 +107,11 @@ export class SqliteKVStore {
   // Clear all messages for debugging (optional utility method)
   clearAllMessages(): void {
     try {
-      const stmt = this.db.prepare('DELETE FROM messages');
+      const stmt = this.db.prepare('DELETE FROM conversations');
       const result = stmt.run();
-      this.logger.debug(`🧹 Cleared all messages from database. Deleted ${result.changes} records.`);
+      this.logger.debug(`🧹 Cleared all conversations from database. Deleted ${result.changes} records.`);
     } catch (error) {
-      this.logger.error('❌ Error clearing all messages:', error);
+      this.logger.error('❌ Error clearing all conversations:', error);
     }
   }
 
@@ -152,7 +152,7 @@ export class SqliteKVStore {
     values.push(limit);
 
     const query = `
-  SELECT blob FROM messages
+  SELECT blob FROM conversations
   WHERE ${whereClauses.join(' AND ')}
   ORDER BY timestamp DESC
   LIMIT ?

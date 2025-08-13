@@ -16,12 +16,10 @@ tags:
   - "collaboration"
   - "conversation-analysis"
   - "task-management"
-githubUrl: "https://github.com/teddyam/collaborator-agent"
-imageUrl: ""
+githubUrl: "https://github.com/microsoft/teams-agent-accelerator-templates"
 author: "Microsoft"
 language: "TypeScript"
-demoUrlGif: ""
-demoYoutubeVideoId: ""
+demoYoutubeVideoId: "RuIfcNcBB_8"
 ---
 -->
 

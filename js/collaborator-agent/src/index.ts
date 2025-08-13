@@ -67,6 +67,12 @@ app.on('message', async ({ send, activity, api }) => {
   await context.memory.addMessages(trackedMessages);
 });
 
+app.on('install.add', async ({ send }) => {
+    await send(
+        "👋 Hi! I'm the Collab Agent 🚀. I'll listen to the conversation and can provide summaries, action items, or search for a message when asked!"
+    );
+});
+
 (async ( ) => {
   const port = +(process.env.PORT || 3978);
   try {
