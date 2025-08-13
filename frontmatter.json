@@ -89,6 +89,10 @@
     {
       "path": "[[workspace]]/js/coffee-agent",
       "title": "coffee-agent"
+    },
+    {
+      "path": "[[workspace]]/js/collaborator-agent",
+      "title": "collab-agent"
     }
   ]
 }
