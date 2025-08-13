@@ -2,7 +2,7 @@
 ---
 id: collaborator-agent
 title: "Collaborator Agent"
-description: "AI-powered Microsoft Teams collaboration bot with advanced conversation analysis and task management capabilities."
+description: "Collaboration agent with advanced conversation analysis and task management capabilities."
 longDescription: |
   This sample is built with the Teams AI Library v2, and showcases how to create an intelligent collaboration assistant that can analyze conversations, manage action items, and search through chat history using natural language processing and time-based queries.
 
