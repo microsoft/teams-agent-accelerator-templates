@@ -48,6 +48,7 @@ Adding your own capabilities only requires a few steps:
 ## Agent Architecture
 
 ```mermaid
+flowchart TD
   A[Manager]
 
   A --> B(Summarizer)
