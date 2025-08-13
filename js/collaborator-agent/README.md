@@ -16,7 +16,7 @@ tags:
   - "collaboration"
   - "conversation-analysis"
   - "task-management"
-githubUrl: "https://github.com/microsoft/teams-agent-accelerator-templates"
+githubUrl: "https://github.com/microsoft/teams-agent-accelerator-templates/blob/main/js/collaborator-agent"
 author: "Microsoft"
 language: "TypeScript"
 demoYoutubeVideoId: "RuIfcNcBB_8"
