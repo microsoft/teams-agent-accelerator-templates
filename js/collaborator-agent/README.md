@@ -45,6 +45,17 @@ Adding your own capabilities only requires a few steps:
 4. Register your capability by importing the CapabilityDefinition and adding to the definition list in [registry](src\capabilities\registry.ts)
 5. The manager will automatically be instantiated with the capability you defined!
 
+## Agent Architecture
+
+```mermaid
+  A[Manager]
+
+  A --> B(Summarizer)
+  A --> C(Action Items Creation)
+  A --> D(Search)
+  A --> E(Add your own capabilities!)
+```
+
 ## Flow of the Agent
 
 ```mermaid
