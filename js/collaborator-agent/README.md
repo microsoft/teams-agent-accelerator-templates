@@ -98,8 +98,8 @@ This manager may route to a capability based on the request--this capability ret
 1. Clone this repository:
 
     ```bash
-    git clone https://github.com/teddyam/collaborator-agent
-    cd collab-ts
+    git clone https://github.com/microsoft/teams-agent-accelerator-templates
+    cd js/collaborator-agent
     ```
 
 2. Install dependencies:
