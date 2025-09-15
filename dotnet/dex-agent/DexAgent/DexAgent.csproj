@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <Version>0.0.0</Version>
+    <IncludeSymbols>true</IncludeSymbols>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="9.0.7" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="9.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\teams.net\Libraries\Microsoft.Teams.Common\Microsoft.Teams.Common.csproj" />
+    <ProjectReference Include="..\..\..\..\teams.net\Libraries\Microsoft.Teams.Api\Microsoft.Teams.Api.csproj" />
+    <ProjectReference Include="..\..\..\..\teams.net\Libraries\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj" />
+    <ProjectReference Include="..\..\..\..\teams.net\Libraries\Microsoft.Teams.Plugins\Microsoft.Teams.Plugins.AspNetCore\Microsoft.Teams.Plugins.AspNetCore.csproj" />
+    <ProjectReference Include="..\..\..\..\teams.net\Libraries\Microsoft.Teams.Plugins\Microsoft.Teams.Plugins.AspNetCore.DevTools\Microsoft.Teams.Plugins.AspNetCore.DevTools.csproj" />
+    <ProjectReference Include="..\..\..\..\teams.net\Libraries\Microsoft.Teams.Cards\Microsoft.Teams.Cards.csproj" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Microsoft.SemanticKernel" Version="1.40.1" />
+    <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.40.1" />
+  </ItemGroup>
+
+</Project>
