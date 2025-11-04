@@ -4,7 +4,7 @@ id: collaborator-agent
 title: "Collaborator Agent"
 description: "Collaboration agent with advanced conversation analysis and task management capabilities."
 longDescription: |
-  This sample is built with the Teams AI Library v2, and showcases how to create an intelligent collaboration assistant that can analyze conversations, manage action items, and search through chat history using natural language processing and time-based queries.
+  This sample is built with the Teams SDK, and showcases how to create an intelligent collaboration assistant that can analyze conversations, manage action items, and search through chat history using natural language processing and time-based queries.
 
 featuresList:
   - "📋 Intelligent conversation summarization with participant attribution"
@@ -26,7 +26,7 @@ demoYoutubeVideoId: "RuIfcNcBB_8"
 
 # Collaborator Agent for Microsoft Teams
 
-This intelligent collaboration assistant is built with the [Teams AI Library v2](https://aka.ms/teamsai-v2), and showcases how to create a sophisticated bot that can analyze conversations, manage tasks, and search through chat history using advanced AI capabilities and natural language processing.
+This intelligent collaboration assistant is built with the [Teams SDK](https://aka.ms/teamsai-v2), and showcases how to create a sophisticated bot that can analyze conversations, manage tasks, and search through chat history using advanced AI capabilities and natural language processing.
 
 This agent can listen to all messages in a group chat (even without being @mentioned) using RSC (Resource Specific Control) permissions defined in [App Manifest](appPackage/manifest.json). For more details, see the documentation [RSC Documentation](https://staticsint.teams.cdn.office.net/evergreen-assets/safelinks/2/atp-safelinks.html).
 
@@ -77,7 +77,7 @@ flowchart TD
   E -->|Return response to user| A
 ```
 
-If Collab Agent is added to a groupchat or private message, it will always listen and log each message to its database. The messages are stored in an SQLite DB by the conversation ID of the given conversation. 
+If Collab Agent is added to a groupchat or private message, it will always listen and log each message to its database. The messages are stored in an SQLite DB by the conversation ID of the given conversation.
 The agent will respond whenever @mentioned in groupchats and will always respond in 1-on-1 messages. When the agent responds, the request is first passed through a manger prompt.
 This manager may route to a capability based on the request--this capability returns its result back to the manager where it will be passed back to the user.
 

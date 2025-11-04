@@ -20,10 +20,10 @@ const NavBar: FC = () => {
       <Link
         href={`/`}
         className={classes.logo}
-        aria-label="Teams AI Accelerator Group"
+        aria-label="Teams SDK Accelerator Group"
       >
         <Text role="heading" aria-level={3} className={classes.logoText}>
-          🤖 Teams AI Accelerator Group
+          🤖 Teams SDK Accelerator Group
         </Text>
       </Link>
       <div className={classes.navLinks}>

@@ -16,7 +16,7 @@
     },
     "description": {
         "short": "An open-source developer experience agent.",
-        "full": "An open-source developer experience agent, built with Teams AI and Semantic Kernel."
+        "full": "An open-source developer experience agent, built with Teams SDK and Semantic Kernel."
     },
     "icons": {
         "outline": "outline.png",
