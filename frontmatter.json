@@ -67,7 +67,7 @@
   "frontMatter.git.enabled": true,
   "frontMatter.content.pageFolders": [
     {
-      "path": "[[workspace]]/js/data-analyst-agent-v2",
+      "path": "[[workspace]]/js/data-analyst-agent",
       "title": "data-analyst-agent"
     },
     {

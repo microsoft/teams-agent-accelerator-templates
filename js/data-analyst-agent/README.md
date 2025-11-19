@@ -1,7 +1,7 @@
 <!--
 ---
-id: data-analyst-agent-v2
-title: "Data Analyst Agent v2"
+id: data-analyst-agent
+title: "Data Analyst Agent"
 description: "Natural language interface for data exploration and visualization."
 longDescription: |
   This sample demonstrates how to build an AI-powered data analyst agent using Teams SDK that can be integrated into Microsoft Teams. It helps users explore and visualize data through natural language conversations and Adaptive Cards charts.
@@ -14,14 +14,14 @@ tags:
   - "llm-sql"
   - "adaptive-cards"
   - "data-viz"
-githubUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/blob/main/js/data-analyst-agent-v2"
+githubUrl: "https://github.com/microsoft/teams-agent-accelerator-samples/blob/main/js/data-analyst-agent"
 author: "Microsoft"
 language: "JavaScript"
-demoUrlGif: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/js/data-analyst-agent-v2/assets/demo.gif"
+demoUrlGif: "https://github.com/microsoft/teams-agent-accelerator-samples/raw/main/js/data-analyst-agent/assets/demo.gif"
 ---
 -->
 
-# Data Analyst Agent v2 for Microsoft Teams
+# Data Analyst Agent for Microsoft Teams
 
 This sample demonstrates how to build an AI-powered data analyst agent using **Teams SDK* that can be integrated into Microsoft Teams. This template is an updated version of the previous Data Analyst Agent built in v1 of the SDK. It leverages the latest capabilities of the Teams SDK Library to help users explore and visualize data through natural language conversations and Adaptive Cards charts.
 
@@ -34,7 +34,7 @@ This sample demonstrates how to build an AI-powered data analyst agent using **T
 
 ## Demo
 
-![Data Analyst Agent v2 Demo](assets/demo.gif)
+![Data Analyst Agent Demo](assets/demo.gif)
 
 ## Running the Sample
 
@@ -53,7 +53,7 @@ This sample demonstrates how to build an AI-powered data analyst agent using **T
 
     ```bash
     git clone https://github.com/microsoft/teams-agent-accelerator-samples
-    cd js/data-analyst-agent-v2
+    cd js/data-analyst-agent
     ```
 
 2. Install dependencies:

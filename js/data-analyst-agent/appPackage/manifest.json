@@ -4,8 +4,8 @@
   "manifestVersion": "1.20",
   "id": "${{TEAMS_APP_ID}}",
   "name": {
-    "short": "data-analyst-v2-${{APP_NAME_SUFFIX}}",
-    "full": "data-analyst-v2"
+    "short": "data-analyst-${{APP_NAME_SUFFIX}}",
+    "full": "data-analyst"
   },
   "developer": {
     "name": "Microsoft",
