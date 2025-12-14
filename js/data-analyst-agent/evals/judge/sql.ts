@@ -1,5 +1,5 @@
-import { BaseAgent } from '../../src/core/base-agent';
-import { createLogger } from '../../src/core/logging';
+import { ChatPrompt } from '@microsoft/teams.ai';
+import { OpenAIChatModel } from '@microsoft/teams.openai';
 
 interface SQLJudgeInput {
     input: string; // The question
@@ -8,70 +8,77 @@ interface SQLJudgeInput {
 }
 
 interface SQLJudgeResult {
+    result: boolean;
     score: number;
-    choice: 'Correct' | 'Incorrect';
-    reason?: string;
+    reasoning: string;
 }
 
 export const SQLJudge = () => {
-    const log = createLogger('sql-judge');
+    const systemMessage = `You are comparing a submitted answer to an expert answer on a given SQL coding question.
+Compare the content and correctness of the submitted SQL with the expert answer.
+Ignore any differences in whitespace, style, or output column names.
 
-    const agent = new BaseAgent({
-        systemMessage: [
-            'You are comparing a submitted answer to an expert answer on a given SQL coding question.',
-            'Compare the content and correctness of the submitted SQL with the expert answer.',
-            'Ignore any differences in whitespace, style, or output column names.',
-            '',
-            'Guidelines:',
-            '- Two SQL queries that return the same data are considered semantically equivalent,',
-            '  even if one includes an ORDER BY clause and the other does not',
-            '- Only consider ORDER BY differences as meaningful when the user query explicitly',
-            '  requires or asks for results in a specific order',
-            ' - If there is ambiguity in the user query, use best judgement to determine the correct answer',
-            '',
-            'The submitted answer may either be correct or incorrect. Determine which case applies.',
-            'You must respond with exactly one of these two choices:',
-            '- "Correct": The submitted SQL and expert answer are semantically the same (yield same results)',
-            '- "Incorrect": The submitted SQL and expert answer are semantically different or will error',
-        ].join('\n'),
-        responseSchema: {
+You MUST call the evaluateSQL to log your results for every request!
+
+Guidelines:
+- Two SQL queries that return the same data are considered semantically equivalent,
+  even if one includes an ORDER BY clause and the other does not. This means small differences in logic can still be considered correct.
+- Only consider ORDER BY differences as meaningful when the user query explicitly
+  requires or asks for results in a specific order
+- If there is ambiguity in the user query, use best judgement to determine the correct answer
+
+The submitted answer may either be correct or incorrect. Determine which case applies.`;
+
+    const prompt = new ChatPrompt({
+        instructions: systemMessage,
+        model: new OpenAIChatModel({
+            model: process.env.AOAI_MODEL!,
+            apiKey: process.env.AOAI_API_KEY!,
+            endpoint: process.env.AOAI_ENDPOINT!,
+            apiVersion: '2025-04-01-preview',
+        }),
+    }).function(
+        'evaluateSQL',
+        'Determine correctness of SQL query compared to expert answer',
+        {
             type: 'object',
             properties: {
-                choice: {
-                    type: 'string',
-                    enum: ['Correct', 'Incorrect'],
-                    description: 'The judgment of the SQL comparison',
+                result: {
+                    type: 'boolean',
+                    description: 'correctness of the submitted SQL compared to expert SQL'
                 },
-                reason: {
+                reasoning: {
                     type: 'string',
-                    description: 'Explanation of why the submission was judged correct or incorrect',
-                },
+                    description: 'reasoning for result'
+                }
             },
-            required: ['choice', 'reason'],
+            required: ['result', 'reasoning'],
         },
-        logger: log,
-    });
-
+        async ({ result, reasoning }: { result: Boolean, reasoning: String }) => {
+            return {
+                result,
+                reasoning
+            }
+        }
+    );
     return {
         evaluate: async ({ input, ideal, completion }: SQLJudgeInput): Promise<SQLJudgeResult> => {
-            const prompt = [
-                '[BEGIN DATA]',
-                '************',
-                `[Question]: ${input}`,
-                '************',
-                `[Expert]: ${ideal}`,
-                '************',
-                `[Submission]: ${completion}`,
-                '************',
-                '[END DATA]',
-            ].join('\n');
-
-            const result = await agent.chat(prompt);
+            const userPrompt = `[BEGIN DATA]
+************
+[Question]: ${input}
+************
+[Expert]: ${ideal}
+************
+[Submission]: ${completion}
+************
+[END DATA]`;
+            const res = await prompt.send(userPrompt, { autoFunctionCalling: false });
+            const functionCallArgs = res.function_calls?.[0]?.arguments;
 
             return {
-                choice: result.choice,
-                score: result.choice === 'Correct' ? 1.0 : 0.0,
-                reason: result.reason,
+                result: functionCallArgs?.result || false,
+                score: functionCallArgs?.result ? 1.0 : 0.0,
+                reasoning: functionCallArgs?.reasoning || 'There was a problem during evaluation.'
             };
         },
     };

@@ -1,4 +1,9 @@
-env
-node_modules/
+# Ignore environment variable files
 .env
-appPackage/build
+.env.*
+env/
+
+# Ignore build output
+dist/
+
+evals/logs/

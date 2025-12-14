@@ -1,74 +1,61 @@
-// Copyright (c) Microsoft Corporation. All rights reserved.
-// Licensed under the MIT License.
+import { App } from '@microsoft/teams.apps';
+import { ConsoleLogger } from '@microsoft/teams.common';
+import { DevtoolsPlugin } from '@microsoft/teams.dev';
+import { createDataAnalystPrompt } from './prompt';
+import { MessageActivity } from '@microsoft/teams.api';
+import { Message } from '@microsoft/teams.ai';
 
-// Import required packages
-import { config } from 'dotenv';
-import * as path from 'path';
-import * as restify from 'restify';
+const conversationHistoryById = new Map<string, Message[]>();
 
-// Import required bot services.
-// See https://aka.ms/bot-services to learn more about the different parts of a bot.
-import { ConfigurationServiceClientCredentialFactory, TurnContext } from 'botbuilder';
+const app = new App({
+    logger: new ConsoleLogger('adventureworks-data-analyst', { level: 'debug' }),
+    plugins: [new DevtoolsPlugin()],
+});
 
-import { TeamsAdapter } from '@microsoft/teams-ai';
-import { app } from './app';
-import { createLogger } from './core/logging';
-
-// Read botFilePath and botFileSecret from .env file.
-const ENV_FILE = path.join(__dirname, '..', '.env');
-config({ path: ENV_FILE });
-
-// Create adapter.
-// See https://aka.ms/about-bot-adapter to learn more about how bots work.
-const adapter = new TeamsAdapter(
-    {},
-    new ConfigurationServiceClientCredentialFactory({
-        MicrosoftAppId: process.env.BOT_ID,
-        MicrosoftAppPassword: process.env.BOT_PASSWORD,
-        MicrosoftAppType: 'MultiTenant',
-    }),
-);
-
-const log = createLogger('index');
-
-// Catch-all for errors.
-const onTurnErrorHandler = async (context: TurnContext, error: any) => {
-    // This check writes out errors to console log .vs. app insights.
-    // NOTE: In production environment, you should consider logging this to Azure
-    //       application insights.
-    log.error(`\n [onTurnError] unhandled error: ${error}`);
-    log.error(error);
-
-    // Send a trace activity, which will be displayed in Bot Framework Emulator
-    await context.sendTraceActivity(
-        'OnTurnError Trace',
-        `${error}`,
-        'https://www.botframework.com/schemas/error',
-        'TurnError',
+app.on('install.add', async ({ send }) => {
+    await send(
+        "👋 Hi! I'm your Data Analyst Agent. Ask me about your data and I'll help you explore it with SQL and visualizations!"
     );
-
-    // Send a message to the user
-    await context.sendActivity("I'm sorry, something went wrong. Please try again.");
-    await context.sendActivity(`This is the error I ran into: ${error}`);
-};
-
-// Set the onTurnError for the singleton CloudAdapter.
-adapter.onTurnError = onTurnErrorHandler;
-
-// Create HTTP server.
-const server = restify.createServer();
-server.use(restify.plugins.bodyParser());
-
-server.listen(process.env.port || process.env.PORT || 3978, () => {
-    console.log(`\n${server.name} listening to ${server.url}`);
-    console.log('\nTo test your bot in Teams, sideload the app manifest.json within Teams Apps.');
 });
 
-// Listen for incoming server requests.
-server.post('/api/messages', async (req: any, res: any) => {
-    // Route received a request to adapter for processing
-    await adapter.process(req, res as any, async context => {
-        // Dispatch to application for routing
-        await app.run(context);
-    });
+app.on('message', async ({ send, activity, stream }) => {
+    await send({ type: 'typing' });
+
+    const conversationId = activity.conversation.id;
+
+    let conversationHistory = conversationHistoryById.get(conversationId);
+    if (!conversationHistory) {
+        conversationHistory = [];
+        conversationHistoryById.set(conversationId, conversationHistory);
+    }
+
+    const { prompt, attachments } = createDataAnalystPrompt(conversationHistory);
+
+    // Only stream chunked response if in one-on-one chat, otherwise get full response back before sending
+    const res = activity.conversation.isGroup
+        ? await prompt.send(activity.text)
+        : await prompt.send(activity.text, {
+            onChunk: (chunk) => {
+                stream.emit(chunk);
+            }
+        });
+
+    const resultMessage = new MessageActivity().addAiGenerated();
+    if (attachments.length > 0) {
+        // Add attachments to result if there are any
+        resultMessage.addAttachments(...attachments);
+    }
+
+    if (activity.conversation.isGroup) {
+        // Send text and attachments as one message in group chats
+        if (res.content) resultMessage.addText(res.content);
+        await send(resultMessage);
+    } else {
+        // Stream attachments if in one-on-one chats
+        stream.emit(resultMessage);
+    }
 });
+
+(async () => {
+    await app.start(+(process.env.PORT || 3000));
+})();

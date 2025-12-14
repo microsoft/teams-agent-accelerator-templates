@@ -15,16 +15,7 @@
       "value": "B1"
     },
     "botDisplayName": {
-      "value": "Data Analyst"
-    },
-    "azureOpenAIApiKey": {
-      "value": "${{SECRET_AZURE_OPENAI_API_KEY}}"
-    },
-    "azureOpenAIApiBase": {
-      "value": "${{SECRET_AZURE_OPENAI_API_BASE}}"
-    },
-    "azureOpenAIApiVersion": {
-      "value": "${{SECRET_AZURE_OPENAI_API_VERSION}}"
+      "value": "QA3Infra"
     }
   }
 }

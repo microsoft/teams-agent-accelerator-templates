@@ -10,12 +10,6 @@ param botAadAppClientId string
 @description('Required by Bot Framework package in your bot project')
 param botAadAppClientSecret string
 
-@secure()
-param azureOpenAIApiKey string
-
-param azureOpenAIApiBase string
-param azureOpenAIApiVersion string
-
 param webAppSKU string
 
 @maxLength(42)
@@ -27,12 +21,9 @@ param location string = resourceGroup().location
 
 // Compute resources for your Web App
 resource serverfarm 'Microsoft.Web/serverfarms@2021-02-01' = {
-  kind: 'linux'
+  kind: 'app'
   location: location
   name: serverfarmsName
-  properties: {
-    reserved: true
-  }
   sku: {
     name: webAppSKU
   }
@@ -40,19 +31,22 @@ resource serverfarm 'Microsoft.Web/serverfarms@2021-02-01' = {
 
 // Web App that hosts your bot
 resource webApp 'Microsoft.Web/sites@2021-02-01' = {
-  kind: 'app,linux'
+  kind: 'app'
   location: location
   name: webAppName
   properties: {
     serverFarmId: serverfarm.id
     httpsOnly: true
     siteConfig: {
-      linuxFxVersion: 'NODE|20-lts'
       alwaysOn: true
       appSettings: [
         {
-          name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
-          value: 'true'
+          name: 'WEBSITE_RUN_FROM_PACKAGE'
+          value: '1' // Run Azure APP Service from a package file
+        }
+        {
+          name: 'WEBSITE_NODE_DEFAULT_VERSION'
+          value: '~16' // Set NodeJS version to 16.x for your site
         }
         {
           name: 'RUNNING_ON_AZURE'
@@ -65,22 +59,6 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
         {
           name: 'BOT_PASSWORD'
           value: botAadAppClientSecret
-        }
-        {
-          name: 'AZURE_OPENAI_API_KEY'
-          value: azureOpenAIApiKey
-        }
-        {
-          name: 'AZURE_OPENAI_API_BASE'
-          value: azureOpenAIApiBase
-        }
-        {
-          name: 'AZURE_OPENAI_API_VERSION'
-          value: azureOpenAIApiVersion
-        }
-        {
-          name: 'ENVIRONMENT'
-          value: 'prod'
         }
       ]
       ftpsState: 'FtpsOnly'
