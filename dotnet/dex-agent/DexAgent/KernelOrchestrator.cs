@@ -11,11 +11,11 @@ namespace DexAgent
 {
     public class KernelOrchestrator
     {
-        private Kernel _kernel;
-        private IChatCompletionService _chatCompletionService;
-        private OpenAIPromptExecutionSettings _openAIPromptExecutionSettings;
-        private LocalStorage<object> _storage;
-        private ConfigOptions _config;
+        private readonly Kernel _kernel;
+        private readonly IChatCompletionService _chatCompletionService;
+        private readonly OpenAIPromptExecutionSettings _openAIPromptExecutionSettings;
+        private readonly LocalStorage<object> _storage;
+        private readonly ConfigOptions _config;
 
         /// <summary>
         /// Used to manage the chat history and
@@ -67,7 +67,7 @@ namespace DexAgent
                 Id = activity.Conversation.Id,
                 ServiceUrl = activity.ServiceUrl,
                 ChatHistory = serializedHistory,
-                IsGroup = (activity.Conversation.IsGroup != null) ? (bool)activity.Conversation.IsGroup : false,
+                IsGroup = activity.Conversation.IsGroup  ?? false,
             };
 
             if (string.Equals(activity.Conversation.Type ?? string.Empty, "channel"))
