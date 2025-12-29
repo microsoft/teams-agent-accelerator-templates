@@ -24,6 +24,7 @@ param botDisplayName string
 param serverfarmsName string = resourceBaseName
 param webAppName string = resourceBaseName
 param location string = resourceGroup().location
+param tenantId string
 param oauthConnectionName string
 
 // Compute resources for your Web App
@@ -85,7 +86,7 @@ module azureBotRegistration './botRegistration/azurebot.bicep' = {
     botAadAppClientId: botAadAppClientId
     botAppDomain: webApp.properties.defaultHostName
     botDisplayName: botDisplayName
-    botAddAppClientSecret: botAadAppClientSecret
+    tenantId: tenantId
     oauthConnectionName: oauthConnectionName
     githubClientId: githubClientId
     githubClientSecret: githubClientSecret

@@ -28,6 +28,7 @@ provision:
       clientSecret: SECRET_BOT_PASSWORD
       # The Microsoft Entra application's object id created for bot.
       objectId: BOT_OBJECT_ID
+      tenantId: BOT_TENANT_ID
   
   # Apply the Microsoft Entra manifest to an existing Microsoft Entra app. Will use the object id in
   # manifest file to determine which Microsoft Entra app to update.
@@ -46,6 +47,7 @@ provision:
         Teams:
           ClientId: ${{BOT_ID}}
           ClientSecret: ${{SECRET_BOT_PASSWORD}}
+          TenantId: ${{BOT_TENANT_ID}}
 
   - uses: arm/deploy # Deploy given ARM templates parallelly.
     env:

@@ -56,7 +56,7 @@ namespace DexAgent
                     "You can list pull requests. " +
                     "You send an adaptive card whenever there is a new assignee on a pull request. " +
                     "You send an adaptive card whenever there is a status update on a pull request. " +
-                    "All of the pull requests are in the Teams AI SDK repository. " +
+                    "All of the pull requests are in the Teams SDK repository. " +
                     "The purpose of GitHub Assistant is to help boost the team's productivity and quality of their engineering lifecycle.");
 
             string serializedHistory = JsonSerializer.Serialize(chatHistory);
@@ -70,7 +70,7 @@ namespace DexAgent
                 IsGroup = (activity.Conversation.IsGroup != null) ? (bool)activity.Conversation.IsGroup : false,
             };
 
-            if (string.Equals(activity.Conversation.Type, "channel"))
+            if (string.Equals(activity.Conversation.Type ?? string.Empty, "channel"))
             {
                 convo.ChannelId = activity.ChannelData?.Channel?.Id;
             }

@@ -6,10 +6,6 @@ param resourceBaseName string
 @description('Required when create Azure Bot service')
 param botAadAppClientId string
 
-@secure()
-@description('Required by Bot Framework package in your bot project')
-param botAadAppClientSecret string
-
 @description('Required to setup connection to GitHub')
 param githubClientId string
 
@@ -20,6 +16,7 @@ param githubClientSecret string
 param botDisplayName string
 
 param botAppDomain string
+param tenantId string
 param oauthConnectionName string
 
 module azureBotRegistration './botRegistration/azurebot.bicep' = {
@@ -29,7 +26,7 @@ module azureBotRegistration './botRegistration/azurebot.bicep' = {
     botAadAppClientId: botAadAppClientId
     botAppDomain: botAppDomain
     botDisplayName: botDisplayName
-    botAddAppClientSecret: botAadAppClientSecret
+    tenantId: tenantId
     oauthConnectionName: oauthConnectionName
     githubClientId: githubClientId
     githubClientSecret: githubClientSecret

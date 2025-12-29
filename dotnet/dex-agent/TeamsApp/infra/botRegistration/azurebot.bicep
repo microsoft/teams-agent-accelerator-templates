@@ -10,14 +10,13 @@ param botServiceName string = resourceBaseName
 param botServiceSku string = 'F0'
 param botAadAppClientId string
 param botAppDomain string
+param tenantId string
 param oauthConnectionName string
 param githubClientId string
 
 @secure()
 param githubClientSecret string
 
-@secure()
-param botAddAppClientSecret string
 
 // Register your web service as a bot with the Bot Framework
 resource botService 'Microsoft.BotService/botServices@2021-03-01' = {
@@ -28,6 +27,8 @@ resource botService 'Microsoft.BotService/botServices@2021-03-01' = {
     displayName: botDisplayName
     endpoint: 'https://${botAppDomain}/api/messages'
     msaAppId: botAadAppClientId
+    msaAppType: 'SingleTenant'
+    msaAppTenantId: tenantId
   }
   sku: {
     name: botServiceSku

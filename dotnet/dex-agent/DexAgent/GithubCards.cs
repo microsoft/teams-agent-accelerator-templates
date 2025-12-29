@@ -65,13 +65,16 @@ namespace DexAgent
                 new ActionSet(
                     new ExecuteAction()
                         .WithTitle("Apply Filters")
-                        .WithData(new SubmitActionData
-                        {
-                            NonSchemaProperties = new Dictionary<string, object?>
-                            {
-                                { "pullRequests", pullRequests }
-                            }
-                        })
+                        .WithData(new Union<string, SubmitActionData>(
+                            new SubmitActionData
+                                {
+                                    NonSchemaProperties = new Dictionary<string, object?>
+                                    {
+                                        { "pullRequests", pullRequests }
+                                    }
+                                }
+                            )
+                        )
                 )
             ).WithSpacing(Spacing.Medium);
 

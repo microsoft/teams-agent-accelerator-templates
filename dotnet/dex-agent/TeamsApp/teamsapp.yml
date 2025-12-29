@@ -38,6 +38,7 @@ provision:
       # .env.{envName}.user environment file
       clientSecret: SECRET_BOT_PASSWORD
       objectId: BOT_OBJECT_ID
+      tenantId: BOT_TENANT_ID
 
   # Apply the Microsoft Entra manifest to an existing Microsoft Entra app. Will use the object id in
   # manifest file to determine which Microsoft Entra app to update.

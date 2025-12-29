@@ -58,11 +58,11 @@ namespace DexAgent
                 {
                     if (string.IsNullOrEmpty(convo.ChannelId))
                     {
-                        await App.Send(convo.Id ?? throw new InvalidOperationException("Conversation ID not found"), card, convo.ServiceUrl);
+                        await App.Send(convo.Id ?? throw new InvalidOperationException("Conversation ID not found"), card, ConversationType.Personal, convo.ServiceUrl, isTargeted: false);
                     }
                     else
                     {
-                        await App.SendToChannel(convo.ChannelId, card, convo.ServiceUrl);
+                        await App.Send(convo.ChannelId, card, ConversationType.Channel, convo.ServiceUrl, isTargeted: false);
                     }
                 }
             }
@@ -85,11 +85,11 @@ namespace DexAgent
             {
                 if (string.IsNullOrEmpty(convo.ChannelId))
                 {
-                    await App.Send(convo.Id ?? throw new InvalidOperationException("Conversation ID not found"), card, convo.ServiceUrl);
+                    await App.Send(convo.Id ?? throw new InvalidOperationException("Conversation ID not found"), card, ConversationType.Personal, convo.ServiceUrl, isTargeted: false);
                 }
                 else
                 {
-                    await App.SendToChannel(convo.ChannelId, card, convo.ServiceUrl);
+                    await App.Send(convo.ChannelId, card, ConversationType.Channel, convo.ServiceUrl, isTargeted: false);
                 }
             }
         }

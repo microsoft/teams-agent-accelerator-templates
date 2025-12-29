@@ -8,8 +8,8 @@
     "botAadAppClientId": {
       "value": "${{BOT_ID}}"
     },
-    "botAadAppClientSecret": {
-      "value": "${{SECRET_BOT_PASSWORD}}"
+    "tenantId": {
+      "value": "${{BOT_TENANT_ID}}"
     },
     "githubClientId": {
       "value": "${{GITHUB_CLIENT_ID}}"

@@ -17,12 +17,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\teams.net\Libraries\Microsoft.Teams.Common\Microsoft.Teams.Common.csproj" />
-    <ProjectReference Include="..\..\..\..\teams.net\Libraries\Microsoft.Teams.Api\Microsoft.Teams.Api.csproj" />
-    <ProjectReference Include="..\..\..\..\teams.net\Libraries\Microsoft.Teams.Apps\Microsoft.Teams.Apps.csproj" />
-    <ProjectReference Include="..\..\..\..\teams.net\Libraries\Microsoft.Teams.Plugins\Microsoft.Teams.Plugins.AspNetCore\Microsoft.Teams.Plugins.AspNetCore.csproj" />
-    <ProjectReference Include="..\..\..\..\teams.net\Libraries\Microsoft.Teams.Plugins\Microsoft.Teams.Plugins.AspNetCore.DevTools\Microsoft.Teams.Plugins.AspNetCore.DevTools.csproj" />
-    <ProjectReference Include="..\..\..\..\teams.net\Libraries\Microsoft.Teams.Cards\Microsoft.Teams.Cards.csproj" />
+    <PackageReference Include="Microsoft.Teams.Common" Version="2.0.5"/>
+    <PackageReference Include="Microsoft.Teams.Api" Version="2.0.5" />
+    <PackageReference Include="Microsoft.Teams.Apps" Version="2.0.5" />
+    <PackageReference Include="Microsoft.Teams.Plugins.AspNetCore" Version="2.0.5" />
+    <PackageReference Include="Microsoft.Teams.Plugins.AspNetCore.DevTools" Version="2.0.5" />
+    <PackageReference Include="Microsoft.Teams.Cards" Version="2.0.5" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Microsoft.SemanticKernel" Version="1.40.1" />
     <PackageReference Include="Microsoft.SemanticKernel.Connectors.AzureOpenAI" Version="1.40.1" />

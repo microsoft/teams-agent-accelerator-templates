@@ -30,6 +30,7 @@ public class BotController
     public async Task OnSignOutMessage(IContext<MessageActivity> context)
     {
         await context.SignOut();
+        Config.GitHub.AuthToken = null;
         await context.Send("you are signed out!");
     }
 
@@ -73,7 +74,7 @@ public class BotController
     {
         if (Config.GitHub.AuthToken == null)
         {
-            var tokenResponse = await context.SignIn(new SignInOptions()
+            var tokenResponse = await context.SignIn(new OAuthOptions()
             {
                 OAuthCardText = "Sign in to your github account",
                 SignInButtonText = "Sign In"

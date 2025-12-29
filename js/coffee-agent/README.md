@@ -4,7 +4,7 @@ id: coffee-agent
 title: "Coffee Agent"
 description: "Originally from our Build 2025 Lab - simple coffee agent demonstration."
 longDescription: |
-  This sample is built with the Teams AI Library v2, and showcases how easy it is to use activity handlers, adaptive cards, and AI to create a fun, interactive bot with just a few building blocks.
+  This sample is built with the Teams SDK, and showcases how easy it is to use activity handlers, adaptive cards, and AI to create a fun, interactive bot with just a few building blocks.
 
 featuresList:
   - "☕ Randomly select a coffee shop and orderer for the day"
@@ -26,7 +26,7 @@ demoYoutubeVideoId: ""
 
 # Coffee Agent for Microsoft Teams
 
-Originally from our Build 2025 Lab, this sample is built with the [Teams AI Library v2](https://aka.ms/teamsai-v2), and showcases how easy it is to use activity handlers, adaptive cards, and AI to create a fun, interactive bot with just a few building blocks.
+Originally from our Build 2025 Lab, this sample showcases how easy it is to use activity handlers, adaptive cards, and AI to create a fun, interactive bot with just a few building blocks.
 
 ## Key Features
 

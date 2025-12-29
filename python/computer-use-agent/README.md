@@ -1,13 +1,13 @@
-<!--- 
+<!---
 ---
 id: computer-use-agent
 title: "Computer Use Agent"
 description: "AI-powered automation of computer tasks through Teams interface."
 longDescription: |
   This sample introduces an AI-powered Computer Use Agent (CUA) that integrates with Microsoft Teams to automate tasks such as booking flights, searching for products, and filling out forms. Powered by OpenAI, the agent interacts with computer interfaces—clicking, typing, scrolling, and more—while providing real-time updates through Microsoft Teams. It can handle a variety of computer-based tasks, including web browsing and terminal operations and also handle user inputs when needed.
-  
+
   It leverages OpenAI's [Computer Use](https://platform.openai.com/docs/guides/tools-computer-use) capabilities.
-  
+
   Check out the [LinkedIn post](https://www.linkedin.com/feed/update/urn:li:activity:7307477075148320768/) for a video of the sample in action.
 featuresList:
   - "🖥️ **Computer Control:** Uses AI to understand and execute computer tasks including terminal operations and web browsing"
@@ -74,7 +74,7 @@ In this example, the agent is using a VNC connection to control a computer. The 
    - Set either Azure Open AI or Open AI credentials
      - For Azure Open AI, make sure your model has computer-use capabilities
 5. Set up [Local computer](#local-computer) or [Local browser](#local-browser)
-6. Use [Teams-Toolkit](https://github.com/Office-Dev/Teams-Toolkit) to run the app locally - Check out [these](https://github.com/microsoft/teams-ai/tree/main/python/samples#appendix) on how to run the sample using teams-toolkit.
+6. Use [Teams-Toolkit](https://github.com/Office-Dev/Teams-Toolkit) to run the app locally - Check out [these](https://github.com/microsoft/teams-sdk/tree/release/v1/python/samples#appendix) on how to run the sample using teams-toolkit.
 
 ### Local computer
 
