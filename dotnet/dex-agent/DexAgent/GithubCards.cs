@@ -6,8 +6,6 @@ using Microsoft.Teams.Common;
 namespace DexAgent
 {
     /// <summary>
-
-    /// <summary>
     /// Creates the adaptive cards for the GitHub pull requests.
     /// </summary>
     public class GitHubCards
@@ -211,7 +209,7 @@ namespace DexAgent
                             new Union<IList<string>, IList<TargetElement>>(
                                 new List<TargetElement>
                                 {
-                                    new TargetElement { ElementId = $"description-{pr.Number}" }
+                                    new TargetElement { ElementId = $"Description-{pr.Number}" }
                                 }
                             )
                         )
@@ -221,8 +219,8 @@ namespace DexAgent
 
             // Hidden description block
             prItemContainer.Items.Add(
-                new TextBlock($"description: {pr.Body}")
-                    .WithId($"description-{pr.Number}")
+                new TextBlock($"Description: {pr.Body}")
+                    .WithId($"Description-{pr.Number}")
                     .WithWrap(true)
                     .WithIsSubtle(true)
                     .WithSpacing(Spacing.None)

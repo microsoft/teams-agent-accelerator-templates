@@ -39,12 +39,12 @@ namespace DexAgent.GitHubModels
         {
             JObject jo = new JObject
             {
-                { "title", value.Title },
-                { "number", value.Number },
-                { "state", value.State },
-                { "html_url", value.HtmlUrl },
-                { "created_at", value.CreatedAt },
-                { "body", value.Body },
+                { "title", value?.Title },
+                { "number", value?.Number },
+                { "state", value?.State },
+                { "html_url", value?.HtmlUrl },
+                { "created_at", value?.CreatedAt },
+                { "body", value?.Body },
                 { "labels", JArray.FromObject(value.Labels ?? new List<GitHubLabel>()) },
                 { "assignees", JArray.FromObject(value.Assignees ?? new List<GitHubUser>()) },
                 { "user", JToken.FromObject(value.User ?? new GitHubUser()) }
@@ -53,4 +53,3 @@ namespace DexAgent.GitHubModels
         }
     }
 }
-

@@ -11,14 +11,8 @@ namespace DexAgent
     /// This service extends the base repository service and provides methods to list pull requests,
     /// filter pull requests, and handle GitHub webhooks for pull request events.
     /// </summary>
-    public class GitHubService : IRepositoryService
+    public class GitHubService(ConfigOptions config, LocalStorage<object> storage, Microsoft.Teams.Apps.App app, IRepositoryPlugin repositoryPlugin) : IRepositoryService(config, storage, app, repositoryPlugin)
     {
-
-        public GitHubService(ConfigOptions config, LocalStorage<object> storage, Microsoft.Teams.Apps.App app, IRepositoryPlugin repositoryPlugin)
-            : base(config, storage, app, repositoryPlugin)
-        {
-        }
-
         public override async Task HandleWebhook(dynamic payload, HttpRequest request, HttpResponse response, CancellationToken cancellationToken)
         {
             var eventType = request.Headers["x-github-event"].ToString();
@@ -58,11 +52,11 @@ namespace DexAgent
                 {
                     if (string.IsNullOrEmpty(convo.ChannelId))
                     {
-                        await App.Send(convo.Id ?? throw new InvalidOperationException("Conversation ID not found"), card, ConversationType.Personal, convo.ServiceUrl, isTargeted: false);
+                        await App.Send(convo.Id ?? throw new InvalidOperationException("Conversation ID not found"), card, ConversationType.Personal, convo.ServiceUrl, isTargeted: false, cancellationToken);
                     }
                     else
                     {
-                        await App.Send(convo.ChannelId, card, ConversationType.Channel, convo.ServiceUrl, isTargeted: false);
+                        await App.Send(convo.ChannelId, card, ConversationType.Channel, convo.ServiceUrl, isTargeted: false, cancellationToken);
                     }
                 }
             }
@@ -85,11 +79,11 @@ namespace DexAgent
             {
                 if (string.IsNullOrEmpty(convo.ChannelId))
                 {
-                    await App.Send(convo.Id ?? throw new InvalidOperationException("Conversation ID not found"), card, ConversationType.Personal, convo.ServiceUrl, isTargeted: false);
+                    await App.Send(convo.Id ?? throw new InvalidOperationException("Conversation ID not found"), card, ConversationType.Personal, convo.ServiceUrl, isTargeted: false, cancellationToken);
                 }
                 else
                 {
-                    await App.Send(convo.ChannelId, card, ConversationType.Channel, convo.ServiceUrl, isTargeted: false);
+                    await App.Send(convo.ChannelId, card, ConversationType.Channel, convo.ServiceUrl, isTargeted: false, cancellationToken);
                 }
             }
         }

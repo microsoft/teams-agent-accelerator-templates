@@ -6,14 +6,9 @@ namespace DexAgent.Controllers;
 
 [ApiController]
 [Route("api/webhook")]
-public class WebhookController : ControllerBase
+public class WebhookController(IRepositoryService repositoryService) : ControllerBase
 {
-    private readonly IRepositoryService RepositoryService;
-
-    public WebhookController(IRepositoryService repositoryService)
-    {
-        RepositoryService = repositoryService;
-    }
+    private readonly IRepositoryService RepositoryService = repositoryService;
 
     [HttpPost]
     public async Task PostAsync(CancellationToken cancellationToken)
@@ -21,7 +16,7 @@ public class WebhookController : ControllerBase
         string requestBody;
         using (var reader = new StreamReader(Request.Body))
         {
-            requestBody = await reader.ReadToEndAsync();
+            requestBody = await reader.ReadToEndAsync(cancellationToken);
         }
 
         var payload = JsonConvert.DeserializeObject<dynamic>(requestBody);

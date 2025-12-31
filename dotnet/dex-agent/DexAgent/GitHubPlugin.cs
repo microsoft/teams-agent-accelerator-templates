@@ -14,13 +14,8 @@ namespace DexAgent
     /// This service extends the base repository service and provides methods to list pull requests,
     /// filter pull requests, and handle GitHub webhooks for pull request events.
     /// </summary>
-    public class GitHubPlugin : IRepositoryPlugin
+    public class GitHubPlugin(HttpClient httpClient, ConfigOptions config) : IRepositoryPlugin(httpClient, config)
     {
-
-        public GitHubPlugin(HttpClient httpClient, ConfigOptions config)
-            : base(httpClient, config)
-        {
-        }
 
         /// <summary>
         /// Lists the pull requests for GitHub.
@@ -30,8 +25,12 @@ namespace DexAgent
         [KernelFunction, Description("Lists the pull requests")]
         public override async Task<string> ListPRs(Kernel kernel)
         {
-            kernel.Data.TryGetValue("context", out object? contextObj);
-            IContext<Activity>? context = contextObj as IContext<Activity>;
+            if (!kernel.Data.TryGetValue("context", out object? contextObj))
+            {
+                throw new InvalidOperationException("Context not found in kernel data.");
+            }
+
+            IContext<Activity> context = contextObj as IContext<Activity> ?? throw new InvalidOperationException("Invalid context type.");
 
             try
             {
@@ -109,7 +108,6 @@ namespace DexAgent
             }
             catch (Exception ex)
             {
-                Console.Error.WriteLine($"Error fetching pull requests: {ex.Message}");
                 throw new Exception("Error accessing GitHub API", ex);
             }
         }
@@ -131,8 +129,11 @@ namespace DexAgent
            [Description("The author filters")] string authors,
            [Description("The pull requests")] IList<GitHubPR> pullRequests)
         {
-            kernel.Data.TryGetValue("context", out object? contextObj);
-            IContext<Activity>? context = contextObj as IContext<Activity>;
+            if (!kernel.Data.TryGetValue("context", out object? contextObj))
+            {
+                throw new InvalidOperationException("Context not found in kernel data.");
+            }
+            IContext<Activity> context = contextObj as IContext<Activity> ?? throw new InvalidOperationException("Invalid context type.");
 
             var labelsArr = string.IsNullOrEmpty(labels) ? Array.Empty<string>() : labels.Split(',');
             var assigneesArr = string.IsNullOrEmpty(assignees) ? Array.Empty<string>() : assignees.Split(',');
@@ -149,7 +150,7 @@ namespace DexAgent
 
             await context.Send(activity);
             return System.Text.Json.JsonSerializer.Serialize(activity);
-            }
+        }
 
     }
 }

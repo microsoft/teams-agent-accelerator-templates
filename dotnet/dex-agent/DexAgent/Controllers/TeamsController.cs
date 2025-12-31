@@ -13,18 +13,11 @@ using Microsoft.SemanticKernel.ChatCompletion;
 namespace DexAgent.Controllers;
 
 [TeamsController]
-public class BotController
+public class BotController(ConfigOptions config, Kernel kernel, KernelOrchestrator orchestrator)
 {
-    private readonly ConfigOptions Config;
-    private readonly KernelOrchestrator Orchestrator;
-    private readonly Kernel kernel;
-
-    public BotController(ConfigOptions config, Kernel kernel, KernelOrchestrator orchestrator)
-    {
-        Config = config;
-        Orchestrator = orchestrator;
-        this.kernel = kernel;
-    }
+    private readonly ConfigOptions Config = config;
+    private readonly KernelOrchestrator Orchestrator = orchestrator;
+    private readonly Kernel kernel = kernel;
 
     [Message("/signout")]
     public async Task OnSignOutMessage(IContext<MessageActivity> context)
@@ -57,11 +50,13 @@ public class BotController
             return;
         }
 
-        KernelArguments args = new KernelArguments();
-        args.Add("labels", labels);
-        args.Add("assignees", assignees);
-        args.Add("authors", authors);
-        args.Add("pullRequests", pullRequests);
+        KernelArguments args = new()
+        {
+            { "labels", labels },
+            { "assignees", assignees },
+            { "authors", authors },
+            { "pullRequests", pullRequests }
+        };
         kernel.Data["context"] = context.ToActivityType<Activity>();
 
         var result = await kernel.InvokeAsync("GitHubPlugin", "FilterPRs", args);

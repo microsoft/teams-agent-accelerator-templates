@@ -32,7 +32,6 @@ namespace DexAgent
 #pragma warning disable SKEXP0010 // Type is for evaluation purposes only and is subject to change or removal in future updates. Suppress this diagnostic to proceed.
             _openAIPromptExecutionSettings = new()
             {
-//// ResponseFormat = "json_object",
                 FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
                 Temperature = 0,
             };
@@ -97,7 +96,7 @@ namespace DexAgent
                 prevConvos.Remove(currConvo);
             }
 
-            ChatHistory? history = JsonSerializer.Deserialize<ChatHistory>(currConvo.ChatHistory ?? string.Empty);
+            ChatHistory history = JsonSerializer.Deserialize<ChatHistory>(currConvo.ChatHistory ?? string.Empty) ?? new ChatHistory();
             history.AddMessage(authorRole, activity);
             await SerializeAndSaveHistory(history, currConvo, prevConvos);
         }
@@ -114,7 +113,7 @@ namespace DexAgent
             ConversationInfo? currConvo = prevConvos.Find(x => x.Id == context.Activity.Conversation.Id);
             prevConvos.Remove(currConvo ?? throw new InvalidOperationException("Conversation not found"));
 
-            ChatHistory? history = JsonSerializer.Deserialize<ChatHistory>(currConvo.ChatHistory ?? string.Empty);
+            ChatHistory history = JsonSerializer.Deserialize<ChatHistory>(currConvo.ChatHistory ?? string.Empty) ?? new ChatHistory();
             history.AddAssistantMessage(activity ?? string.Empty);
             await SerializeAndSaveHistory(history, currConvo, prevConvos);
         }
@@ -126,7 +125,7 @@ namespace DexAgent
         /// <param name="currConvo">The current conversation</param>
         /// <param name="prevConvos">List of previous conversations</param>
         /// <returns></returns>
-        private async Task SerializeAndSaveHistory(ChatHistory? history, ConversationInfo? currConvo, List<ConversationInfo> prevConvos)
+        private async Task SerializeAndSaveHistory(ChatHistory history, ConversationInfo currConvo, List<ConversationInfo> prevConvos)
         {
             string serializedHistory = JsonSerializer.Serialize(history);
             currConvo.ChatHistory = serializedHistory;
@@ -158,10 +157,10 @@ namespace DexAgent
         public async Task GetChatMessageContentAsync(IContext<MessageActivity> context)
         {
             List<ConversationInfo> prevConvos = await GetPreviousConvos();
-            ConversationInfo? currConvo = prevConvos.Find(x => x.Id == context.Activity.Conversation.Id);
-            prevConvos.Remove(currConvo ?? throw new InvalidOperationException("Conversation not found"));
+            ConversationInfo currConvo = prevConvos.Find(x => x.Id == context.Activity.Conversation.Id) ?? throw new InvalidOperationException("Conversation not found");
+            prevConvos.Remove(currConvo);
 
-            ChatHistory? history = JsonSerializer.Deserialize<ChatHistory>(currConvo?.ChatHistory ?? string.Empty);
+            ChatHistory history = JsonSerializer.Deserialize<ChatHistory>(currConvo.ChatHistory ?? string.Empty) ?? new ChatHistory();
             _kernel.Data["context"] = context.ToActivityType<Activity>();
 
             if (context.Activity.Conversation.IsGroup != null && context.Activity.Conversation.IsGroup == true)
@@ -174,20 +173,19 @@ namespace DexAgent
             }
         }
 
-        
-        private async Task GetChatMessageContentAsyncForNonStreamingGroupScenarios(ChatHistory? history, ConversationInfo? currConvo,
+
+        private async Task GetChatMessageContentAsyncForNonStreamingGroupScenarios(ChatHistory history, ConversationInfo currConvo,
          List<ConversationInfo> prevConvos, IContext<MessageActivity> context)
         {
             var result = (OpenAIChatMessageContent)await _chatCompletionService.GetChatMessageContentAsync(
-                   history ?? new ChatHistory(),
+                   history,
                    executionSettings: _openAIPromptExecutionSettings,
                    kernel: _kernel);
 
             // Check for tool call
-            var latestResult = history?.Last().Items.Last();
-            if (latestResult is FunctionResultContent)
+            var latestResult = history.Last().Items.Last();
+            if (latestResult is FunctionResultContent function_res)
             {
-                FunctionResultContent function_res = (FunctionResultContent)latestResult;
                 if (function_res.PluginName == "GitHubPlugin")
                 {
                     // Adaptive card was already sent
@@ -207,11 +205,11 @@ namespace DexAgent
             }
         }
 
-        private async Task GetChatMessageContentAsyncForOneToOneScenarios(ChatHistory? history, ConversationInfo? currConvo,
+        private async Task GetChatMessageContentAsyncForOneToOneScenarios(ChatHistory history, ConversationInfo currConvo,
         List<ConversationInfo> prevConvos, Microsoft.Teams.Apps.Plugins.IStreamer stream)
         {
             var result = _chatCompletionService.GetStreamingChatMessageContentsAsync(
-               history ?? new ChatHistory(),
+               history,
                executionSettings: _openAIPromptExecutionSettings,
                kernel: _kernel);
             
