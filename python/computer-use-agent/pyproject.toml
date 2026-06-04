@@ -5,7 +5,7 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "aiohttp==3.9.3",
+    "aiohttp>=3.11.18,<4",
     "openai>=1.66.0",
     "playwright>=1.50.0",
     "python-dotenv>=1.0.1",
