@@ -8,30 +8,8 @@ from vncdotool import api
 from vncdotool.client import VNCDoToolClient
 
 
-# Apply monkey patch to State.__getattr__ before importing vncdotool
-def _monkey_patch_state_getattr():
-    """
-    Apply a patch to the State.__getattr__ method.
-    """
-    from teams.state.state import State
-
-    def safe_getattr(self, key: str) -> Any:
-        try:
-            return self[key]
-        except KeyError:
-            raise AttributeError(
-                f"'{self.__class__.__name__}' object has no attribute '{key}'"
-            )
-
-    # Replace the method
-    State.__getattr__ = safe_getattr
-
-
-# Initialize logger before using it in the patch function
+# Initialize logger
 logger = logging.getLogger(__name__)
-
-# Apply the patch before importing vncdotool
-_monkey_patch_state_getattr()
 
 # https://github.com/sibson/vncdotool/blob/0.13/vncdotool/client.py#L21
 CUA_KEY_TO_VNC_KEY: dict[str, str] = {

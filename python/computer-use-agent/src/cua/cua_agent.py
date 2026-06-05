@@ -3,8 +3,8 @@ import logging
 import signal
 import traceback
 
-from botbuilder.core import TurnContext
-from botbuilder.schema import Activity, ActivityTypes, Attachment, AttachmentLayoutTypes
+from microsoft_teams.api import ConversationReference, MessageActivityInput
+from microsoft_teams.api.models.attachment.attachment import Attachment
 from openai.types.responses.response_function_tool_call import (
     ResponseFunctionToolCall,
 )
@@ -28,11 +28,27 @@ logger = logging.getLogger(__name__)
 
 class ComputerUseAgent:
     def __init__(
-        self, context: TurnContext, session: CuaSession, activity_id: str | None
+        self, app, conversation_ref: ConversationReference, session: CuaSession, activity_id: str | None
     ):
-        self._context = context
+        self._app = app
+        self._conversation_ref = conversation_ref
         self._session = session
         self._activity_id = activity_id
+
+    async def _send_activity(self, activity: MessageActivityInput):
+        """Send or update an activity via the app's activity sender."""
+        await self._app.activity_sender.send(activity, self._conversation_ref)
+
+    async def _send_message(self, text: str):
+        """Send a plain text message."""
+        activity = MessageActivityInput(text=text)
+        await self._send_activity(activity)
+
+    async def _send_card(self, card: dict):
+        """Send a card as a new message."""
+        activity = MessageActivityInput()
+        activity.attachments = [Attachment(content_type="application/vnd.microsoft.card.adaptive", content=card)]
+        await self._send_activity(activity)
 
     async def run(self, task: str):
         def signal_handler():
@@ -57,7 +73,7 @@ class ComputerUseAgent:
                         self._session.signal = None
                     else:
                         # Send safety check card
-                        await self._context.send_activity(
+                        await self._send_message(
                             "Please approve the safety checks before continuing."
                         )
                         return
@@ -81,18 +97,10 @@ class ComputerUseAgent:
                 if agent.requires_safety_check():
                     logger.debug("Requires safety check acknowledgment")
                     # Send safety check card
-                    await self._context.send_activity(
-                        Activity(
-                            type=ActivityTypes.message,
-                            attachments=[
-                                Attachment(
-                                    content_type="application/vnd.microsoft.card.adaptive",
-                                    content=create_safety_check_card(
-                                        self._session.id,
-                                        self._session.current_step.pending_safety_checks,
-                                    ),
-                                )
-                            ],
+                    await self._send_card(
+                        create_safety_check_card(
+                            self._session.id,
+                            self._session.current_step.pending_safety_checks,
                         )
                     )
                     break
@@ -101,7 +109,7 @@ class ComputerUseAgent:
                         logger.debug(
                             f"\nAgent: {self._session.current_step.last_message}"
                         )
-                        await self._context.send_activity(
+                        await self._send_message(
                             f"⏩️ {self._session.current_step.last_message}"
                         )
                     break
@@ -113,17 +121,7 @@ class ComputerUseAgent:
             traceback.print_exc()
             self._session.status = "Error"
 
-            await self._context.send_activity(
-                Activity(
-                    type=ActivityTypes.message,
-                    attachments=[
-                        Attachment(
-                            content_type="application/vnd.microsoft.card.adaptive",
-                            content=create_error_card(self._session.id, str(e)),
-                        )
-                    ],
-                )
-            )
+            await self._send_card(create_error_card(self._session.id, str(e)))
             self._session.next_action = "user_interaction"
         finally:
             # Remove the signal handler
@@ -211,41 +209,21 @@ class ComputerUseAgent:
                 }
             )
 
+        card = create_cua_progress_card(
+            screenshot=self._session.current_step.screenshot_base64,
+            current_step=current_step,
+            history=history,
+            status=status,
+        )
+
         if self._activity_id:
-            activity = Activity(
-                id=self._activity_id,
-                type=ActivityTypes.message,
-                attachment_layout=AttachmentLayoutTypes.list,
-                attachments=[
-                    Attachment(
-                        content_type="application/vnd.microsoft.card.adaptive",
-                        content=create_cua_progress_card(
-                            screenshot=self._session.current_step.screenshot_base64,
-                            current_step=current_step,
-                            history=history,
-                            status=status,
-                        ),
-                    )
-                ],
-            )
-            await self._context.update_activity(activity=activity)
+            activity = MessageActivityInput(id=self._activity_id)
+            activity.attachments = [Attachment(content_type="application/vnd.microsoft.card.adaptive", content=card)]
+            await self._send_activity(activity)
         else:
-            # If no activity_id, send a new message
-            sent_activity = await self._context.send_activity(
-                Activity(
-                    type=ActivityTypes.message,
-                    attachment_layout=AttachmentLayoutTypes.list,
-                    attachments=[
-                        Attachment(
-                            content_type="application/vnd.microsoft.card.adaptive",
-                            content=create_cua_progress_card(
-                                screenshot=self._session.current_step.screenshot_base64,
-                                current_step=current_step,
-                                history=history,
-                                status=status,
-                            ),
-                        )
-                    ],
-                )
-            )
-            self._activity_id = sent_activity.id
+            # If no activity_id, send a new message and capture the ID
+            activity = MessageActivityInput()
+            activity.attachments = [Attachment(content_type="application/vnd.microsoft.card.adaptive", content=card)]
+            result = await self._app.activity_sender.send(activity, self._conversation_ref)
+            if result:
+                self._activity_id = result.id

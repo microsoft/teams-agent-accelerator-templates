@@ -72,12 +72,12 @@ def create_cua_progress_card(
                                         "type": "ActionSet",
                                         "actions": [
                                             {
-                                                "type": "Action.Submit",
+                                                "type": "Action.Execute",
+                                                "verb": "toggle_pause",
                                                 "title": (
                                                     "⏸️" if status == "Running" else "▶️"
                                                 ),
                                                 "data": {
-                                                    "verb": "toggle_pause",
                                                     "current_status": status,
                                                 },
                                             }
@@ -247,10 +247,10 @@ def create_safety_check_card(
                 "type": "ActionSet",
                 "actions": [
                     {
-                        "type": "Action.Submit",
+                        "type": "Action.Execute",
+                        "verb": "approve_safety_check",
                         "title": "Approve All",
                         "data": {
-                            "verb": "approve_safety_check",
                             "session_id": session_id,
                         },
                     }
@@ -284,9 +284,10 @@ def create_error_card(session_id: str, error_message: str) -> dict:
         ],
         "actions": [
             {
-                "type": "Action.Submit",
+                "type": "Action.Execute",
+                "verb": "retry",
                 "title": "Retry",
-                "data": {"verb": "retry", "session_id": session_id},
+                "data": {"session_id": session_id},
             }
         ],
     }

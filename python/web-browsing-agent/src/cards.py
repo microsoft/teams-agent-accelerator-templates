@@ -16,10 +16,10 @@ def create_in_progress_card(session_id: str) -> dict:
         ],
         "actions": [
             {
-                "type": "Action.Submit",
+                "type": "Action.Execute",
                 "title": "Yes",
                 "verb": "stop_browsing",
-                "data": {"verb": "stop_browsing", "session_id": session_id},
+                "data": {"session_id": session_id},
             },
         ],
     }
