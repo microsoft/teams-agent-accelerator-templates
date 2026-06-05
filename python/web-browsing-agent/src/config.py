@@ -13,10 +13,6 @@ load_dotenv()
 class Config:
     """Bot Configuration"""
 
-    PORT = 3978
-    APP_ID = os.environ.get("BOT_ID", "")
-    APP_PASSWORD = os.environ.get("BOT_PASSWORD", "")
-
     # LLM Configuration
     AZURE_OPENAI_API_BASE = os.environ.get("AZURE_OPENAI_ENDPOINT", None)
     AZURE_OPENAI_API_KEY = os.environ.get("AZURE_OPENAI_API_KEY", None)

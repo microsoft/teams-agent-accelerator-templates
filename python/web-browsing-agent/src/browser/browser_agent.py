@@ -2,13 +2,13 @@ import asyncio
 import os
 from typing import Callable, Coroutine
 
-from botbuilder.core import TurnContext
-from botbuilder.schema import Activity, ActivityTypes, Attachment, AttachmentLayoutTypes
 from browser_use import Agent, Browser, BrowserConfig
 from browser_use.agent.views import AgentOutput
 from browser_use.browser.context import BrowserContext
 from browser_use.browser.views import BrowserState
 from langchain_openai import AzureChatOpenAI, ChatOpenAI
+from microsoft_teams.api import ConversationReference, MessageActivityInput
+from microsoft_teams.api.models.attachment.attachment import Attachment
 
 from cards import create_final_card, create_progress_card
 from config import Config
@@ -42,9 +42,11 @@ class WrappedAgent(Agent):
                 last_model_output = model_outputs[-1]
                 await self.register_new_post_step_callback(last_model_output)
 
+
 class BrowserAgent:
-    def __init__(self, context: TurnContext, session: Session, activity_id: str):
-        self.context = context
+    def __init__(self, app, conversation_ref: ConversationReference, session: Session, activity_id: str):
+        self.app = app
+        self.conversation_ref = conversation_ref
         self.session = session
         self.activity_id = activity_id
         self.browser = Browser(
@@ -70,6 +72,10 @@ class BrowserAgent:
             api_key=Config.OPENAI_API_KEY,
         )
 
+    async def _send_activity(self, activity: MessageActivityInput):
+        """Send or update an activity via the app's activity sender."""
+        await self.app.activity_sender.send(activity, self.conversation_ref)
+
     async def _handle_screenshot_and_emit(
         self,
         output: AgentOutput,
@@ -92,40 +98,37 @@ class BrowserAgent:
         self.session.session_state.append(step)
 
         # Transform agent history into simple facts list
-        history_facts = None
-        if self.agent_history and self.agent_history.history:
-            thoughts = self.agent_history.model_thoughts()
-            actions = self.agent_history.model_actions()
-
-            history_facts = []
-            for thought, action in zip(thoughts, actions):
-                action_name = list(action.keys())[0] if action else "No action"
-                history_facts.append(
-                    {
-                        "thought": thought.evaluation_previous_goal,
-                        "goal": thought.next_goal,
-                        "action": action_name,
-                    }
-                )
+        history_facts = self._build_history_facts()
 
         # Update the Teams message with card
-        activity = Activity(
-            id=self.activity_id,
-            type="message",
-            attachment_layout=AttachmentLayoutTypes.list,
-            attachments=[
-                Attachment(
-                    content_type="application/vnd.microsoft.card.adaptive",
-                    content=create_progress_card(
-                        screenshot=step.screenshot,
-                        next_goal=step.next_goal,
-                        action=step.action,
-                        history_facts=history_facts,
-                    ),
-                )
-            ],
+        card = create_progress_card(
+            screenshot=step.screenshot,
+            next_goal=step.next_goal,
+            action=step.action,
+            history_facts=history_facts,
         )
-        await self.context.update_activity(activity=activity)
+        activity = MessageActivityInput(id=self.activity_id)
+        activity.attachments = [Attachment(content_type="application/vnd.microsoft.card.adaptive", content=card)]
+        await self._send_activity(activity)
+
+    def _build_history_facts(self) -> list[dict] | None:
+        if not self.agent_history or not self.agent_history.history:
+            return None
+
+        thoughts = self.agent_history.model_thoughts()
+        actions = self.agent_history.model_actions()
+
+        history_facts = []
+        for thought, action in zip(thoughts, actions):
+            action_name = list(action.keys())[0] if action else "No action"
+            history_facts.append(
+                {
+                    "thought": thought.evaluation_previous_goal,
+                    "goal": thought.next_goal,
+                    "action": action_name,
+                }
+            )
+        return history_facts
 
     def step_callback(
         self, state: BrowserState, output: AgentOutput, step_number: int
@@ -154,57 +157,26 @@ class BrowserAgent:
             else None
         )
 
-        # Transform agent history into simple facts list
-        history_facts = None
-        if self.agent_history and self.agent_history.history:
-            thoughts = self.agent_history.model_thoughts()
-            actions = self.agent_history.model_actions()
+        history_facts = self._build_history_facts()
 
-            history_facts = []
-            for thought, action in zip(thoughts, actions):
-                action_name = list(action.keys())[0] if action else "No action"
-                history_facts.append(
-                    {
-                        "thought": thought.evaluation_previous_goal,
-                        "goal": thought.next_goal,
-                        "action": action_name,
-                    }
-                )
-
-        # First update the progress card
+        # First update the progress card to show conclusion
         step = SessionStepState(action=message, screenshot=last_screenshot)
         self.session.session_state.append(step)
-        activity = Activity(
-            id=self.activity_id,
-            type="message",
-            attachment_layout=AttachmentLayoutTypes.list,
-            attachments=[
-                Attachment(
-                    content_type="application/vnd.microsoft.card.adaptive",
-                    content=create_progress_card(
-                        screenshot=None,
-                        action="The session concluded",
-                        history_facts=history_facts,
-                    ),
-                )
-            ],
+
+        card = create_progress_card(
+            screenshot=None,
+            action="The session concluded",
+            history_facts=history_facts,
         )
-        await self.context.update_activity(activity=activity)
+        activity = MessageActivityInput(id=self.activity_id)
+        activity.attachments = [Attachment(content_type="application/vnd.microsoft.card.adaptive", content=card)]
+        await self._send_activity(activity)
 
         # Then send a final results card
-        await self.context.send_activity(
-            Activity(
-                type=ActivityTypes.message,
-                attachments=[
-                    Attachment(
-                        content_type="application/vnd.microsoft.card.adaptive",
-                        content=create_final_card(
-                            message, last_screenshot, override_title
-                        ),
-                    )
-                ],
-            )
-        )
+        final_card = create_final_card(message, last_screenshot, override_title)
+        final_activity = MessageActivityInput()
+        final_activity.attachments = [Attachment(content_type="application/vnd.microsoft.card.adaptive", content=final_card)]
+        await self._send_activity(final_activity)
 
     def done_callback(self, result) -> None:
         self.session.state = SessionState.DONE
@@ -248,7 +220,6 @@ class BrowserAgent:
             await self._send_final_activity(
                 error_message, include_screenshot=False, override_title="⏰ Timeout"
             )
-            # Make sure to close the browser even on timeout
             asyncio.create_task(self.browser_context.close())
             return error_message
         except Exception as e:
