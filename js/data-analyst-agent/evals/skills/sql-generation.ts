@@ -1,4 +1,4 @@
-import { ConsoleLogger } from '@teams.sdk/common';
+import { ConsoleLogger } from '@microsoft/teams.common';
 import { SQLJudge } from '../judge/sql';
 import * as fs from 'fs';
 import * as path from 'path';

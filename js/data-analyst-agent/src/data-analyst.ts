@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { Card } from '@teams.sdk/cards';
+import { IAdaptiveCard } from '@microsoft/teams.cards';
 import { createLogger } from './core/logging';
 import { BaseAgent, JsonSchema } from './core/base-agent';
 import { pathToSrc } from './utils';
@@ -38,7 +38,7 @@ const responseSchema: JsonSchema = {
 
 export type DataAnalystResponse = {
     text?: string;
-    card?: Card;
+    card?: IAdaptiveCard;
 }[];
 
 export interface CommonAgentOptions {
