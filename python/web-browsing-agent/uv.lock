@@ -5141,7 +5141,7 @@ wheels = [
 
 [[package]]
 name = "teams-ai"
-version = "1.5.0"
+version = "1.8.1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "aiohttp" },
@@ -5158,9 +5158,9 @@ dependencies = [
     { name = "tiktoken" },
     { name = "types-pyyaml" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/d3/e9/eac1d66d8542eac6ad2a1285c951a2cd13ee2d55e85d705e391fb23b36dc/teams_ai-1.5.0.tar.gz", hash = "sha256:8a4f6b809633a88459a8c20315e324a9609732aea728e1ef316342e628203149", size = 117871, upload-time = "2024-10-31T20:27:14.862Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/8a/68/b0ed5ee32871bb2c5e26e1af8bc64306362ff7e4d65345c93da801e4ea44/teams_ai-1.8.1.tar.gz", hash = "sha256:f01097b555f4778956ae773dca81ea3e664ecc659912f849be50f5be5a6d4423", size = 112425, upload-time = "2025-07-01T17:03:13.672Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/d7/ac/36d42d3d9f21fc152db25d8529a5cb58401e07d2ebf633b9f33019fa998b/teams_ai-1.5.0-py3-none-any.whl", hash = "sha256:7bbf16244ef0471329fafe89a21bf35afb7bd03cdcdf5efb05048dddb5789464", size = 218418, upload-time = "2024-10-31T20:27:12.805Z" },
+    { url = "https://files.pythonhosted.org/packages/a9/18/1fc6daf4d01bc15a144af3b94a06e8a7b44bea2ada493b3e779e956c8b81/teams_ai-1.8.1-py3-none-any.whl", hash = "sha256:4b6060b95d7f67c8b93cd9d79086435cc52a1a95f919b940372608acc8c585e9", size = 222732, upload-time = "2025-07-01T17:03:12.02Z" },
 ]
 
 [[package]]
@@ -5285,7 +5285,7 @@ requires-dist = [
     { name = "aiohttp", specifier = ">=3.11.18,<4" },
     { name = "browser-use", specifier = "==0.1.45" },
     { name = "python-dotenv", specifier = ">=1.0.1" },
-    { name = "teams-ai", specifier = "==1.5.0" },
+    { name = "teams-ai", specifier = ">=1.8.1,<2" },
 ]
 
 [[package]]

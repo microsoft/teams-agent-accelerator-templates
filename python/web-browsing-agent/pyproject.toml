@@ -8,5 +8,5 @@ dependencies = [
     "aiohttp>=3.11.18,<4",
     "browser-use==0.1.45",
     "python-dotenv>=1.0.1",
-    "teams-ai==1.5.0"
+    "teams-ai>=1.8.1,<2"
 ]
