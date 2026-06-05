@@ -1,11 +1,11 @@
-import { StreamingResponse } from '@microsoft/teams-ai';
+import { IStreamer } from '@microsoft/teams.apps';
 
 export type ProcessingState = 'PROCESSING_MESSAGE' | 'FETCHING_DATA';
 
 export class ProgressUpdate {
-    private streamer?: StreamingResponse;
+    private streamer?: IStreamer;
 
-    setStreamer(streamer: StreamingResponse) {
+    setStreamer(streamer: IStreamer) {
         this.streamer = streamer;
     }
 
@@ -19,7 +19,7 @@ export class ProgressUpdate {
                 PROCESSING_MESSAGE: 'Processing...',
                 FETCHING_DATA: 'Fetching data...',
             };
-            this.streamer.queueInformativeUpdate(progressMessages[update]);
+            this.streamer.update(progressMessages[update]);
         }
     }
 }

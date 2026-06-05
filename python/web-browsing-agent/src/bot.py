@@ -1,12 +1,10 @@
 import asyncio
 import logging
-import sys
 import traceback
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
 from microsoft_teams.api import (
     AdaptiveCardInvokeActivity,
-    ConversationReference,
     InstalledActivity,
     MessageActivity,
     MessageActivityInput,
@@ -66,7 +64,7 @@ async def on_web_browse(ctx: ActivityContext[MessageActivity]):
     if (
         session
         and session.state == SessionState.STARTED
-        and (session.created_at > datetime.now(timezone.utc) - timedelta(seconds=MAX_EXECUTION_TIME_SECONDS))
+        and (session.created_at > datetime.now() - timedelta(seconds=MAX_EXECUTION_TIME_SECONDS))
     ):
         card = create_in_progress_card(session.id)
         activity = MessageActivityInput()
@@ -95,7 +93,8 @@ async def on_web_browse(ctx: ActivityContext[MessageActivity]):
             logger.error(f"Background task error: {e}")
             traceback.print_exc()
             try:
-                await app.send(conversation_ref.conversation.id, f"Error: {str(e)}")
+                error_activity = MessageActivityInput(text=f"Error: {str(e)}")
+                await app.activity_sender.send(error_activity, conversation_ref)
             except Exception:
                 pass
 
@@ -104,7 +103,7 @@ async def on_web_browse(ctx: ActivityContext[MessageActivity]):
 
 @app.event("error")
 async def on_error(event):
-    print(f"\n [on_error] unhandled error: {event.error}", file=sys.stderr)
+    logger.error(f"[on_error] unhandled error: {event.error}")
     traceback.print_exc()
 
 

@@ -1,11 +1,9 @@
 import asyncio
 import logging
-import sys
 import traceback
 
 from microsoft_teams.api import (
     AdaptiveCardInvokeActivity,
-    ConversationReference,
     InstalledActivity,
     MessageActivity,
     MessageActivityInput,
@@ -137,7 +135,8 @@ async def on_cua(ctx: ActivityContext[MessageActivity]):
             logger.error(f"Background task error: {e}")
             traceback.print_exc()
             try:
-                await app.send(conversation_ref.conversation.id, f"Error: {str(e)}")
+                error_activity = MessageActivityInput(text=f"Error: {str(e)}")
+                await app.activity_sender.send(error_activity, conversation_ref)
             except Exception:
                 pass
 
