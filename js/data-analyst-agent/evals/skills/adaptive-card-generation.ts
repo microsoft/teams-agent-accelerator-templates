@@ -1,4 +1,4 @@
-import { ConsoleLogger } from '@teams.sdk/common';
+import { ConsoleLogger } from '@microsoft/teams.common';
 import { DataAnalyst } from '../../src/data-analyst';
 import { ACJudge } from '../judge/ac';
 import * as fs from 'fs';
