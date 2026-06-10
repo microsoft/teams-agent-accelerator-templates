@@ -1,0 +1,21 @@
+﻿{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "ElCanario": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "launchBrowser": false,
+      "applicationUrl": "http://localhost:3978",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "AzureAd__TenantId": "",
+        "AzureAd__ClientId": "",
+        "AzureAd__ClientCredentials__0__SourceType": "ClientSecret",
+        "AzureAd__ClientCredentials__0__ClientSecret": "",
+        "APPLICATIONINSIGHTS_CONNECTION_STRING": "",
+        "OTEL_EXPORTER_OTLP_ENDPOINT": "http://localhost:4317",
+        "OTEL_SERVICE_NAME": "OTelBot"
+      }
+    }
+  }
+}
