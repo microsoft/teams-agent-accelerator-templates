@@ -12,7 +12,7 @@ const Footer: FC = () => {
   };
 
   const handleBuildClick = () => {
-    window.open('https://learn.microsoft.com/en-us/microsoftteams/platform/teams-ai-library-tutorial', '_blank');
+    window.open('https://learn.microsoft.com/microsoftteams/platform/agents-in-teams/overview', '_blank');
   };
 
   return (
