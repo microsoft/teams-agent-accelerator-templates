@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT License.
+
 using A365TeamsAgent;
 using Microsoft.Teams.Apps;
 using Microsoft.Teams.Apps.Diagnostics;

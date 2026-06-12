@@ -33,10 +33,6 @@ internal sealed class WorkIQTeamsBotApp : TeamsBotApplication
 
     private async Task HandleMessageAsync(Context<MessageActivity> context, CancellationToken cancellationToken)
     {
-
-
-
-
         await context.SendTypingActivityAsync(cancellationToken);
 
         ArgumentNullException.ThrowIfNull(context.Activity.Conversation);
