@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="README.md" />
+    <File Path="TUTORIAL.md" />
+  </Folder>
+  <Project Path="A365TeamsAgent/A365TeamsAgent.csproj" />
+  <Project Path="WorkIQ.Agent/WorkIQ.Agent.csproj" />
+</Solution>
