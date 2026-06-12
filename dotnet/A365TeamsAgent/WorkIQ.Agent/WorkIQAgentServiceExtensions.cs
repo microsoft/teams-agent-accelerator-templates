@@ -41,7 +41,7 @@ public static class WorkIQAgentServiceExtensions
         // Code-based option overrides take precedence over config.
         if (builder.OptionsConfigurator is { } configurator)
         {
-            services.PostConfigure(configurator);   
+            services.PostConfigure(configurator);
         }
 
         // Register the Agent Identities MSAL add-in so that WithAgentUserIdentity()

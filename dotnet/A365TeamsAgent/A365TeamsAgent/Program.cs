@@ -11,14 +11,14 @@ builder.AddWorkIQAgent(agent => agent
         .WithOpenTelemetry(otel =>
         {
             otel.AdditionalActivitySources = [
-                CoreTelemetryNames.ActivitySourceName, 
-                TeamsBotApplicationTelemetry.ActivitySourceName, 
-                "Experimental.Microsoft.Extensions.AI", 
+                CoreTelemetryNames.ActivitySourceName,
+                TeamsBotApplicationTelemetry.ActivitySourceName,
+                "Experimental.Microsoft.Extensions.AI",
                 "ModelContextProtocol"];
             otel.AdditionalMeterNames = [
-                CoreTelemetryNames.MeterName, 
-                TeamsBotApplicationTelemetry.MeterName, 
-                "Experimental.Microsoft.Extensions.AI", 
+                CoreTelemetryNames.MeterName,
+                TeamsBotApplicationTelemetry.MeterName,
+                "Experimental.Microsoft.Extensions.AI",
                 "ModelContextProtocol"];
             otel.RootProviderAccessor = () => rootServiceProvider!;
         }))
