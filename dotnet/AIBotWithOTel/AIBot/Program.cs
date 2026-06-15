@@ -38,9 +38,16 @@ TeamsBotApplication bot = app.UseTeamsBotApplication();
 bot.OnMessage(async (ctx, ct) =>
 {
     string? message = ctx.Activity.TextWithoutMentions;
-    
-    ChatResponse response = await chatClient.GetResponseAsync(message!, options, ct);
 
+    if (string.IsNullOrWhiteSpace(message))
+    {
+        await ctx.SendActivityAsync(TeamsActivity.CreateBuilder()
+            .WithText("Please send a message for me to answer.", TextFormats.Markdown)
+            .Build(), ct);
+        return;
+    }
+
+    ChatResponse response = await chatClient.GetResponseAsync(message, options, ct);
     await ctx.SendActivityAsync(TeamsActivity.CreateBuilder()
         .WithText(response.Text, TextFormats.Markdown)
         .Build(), ct);
