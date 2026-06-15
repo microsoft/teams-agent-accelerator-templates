@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json.schemastore.org/launchsettings.json",
+  "profiles": {
+    "MyAgent": {
+      "commandName": "Project",
+      "dotnetRunMessages": true,
+      "applicationUrl": "http://localhost:3978",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "AzureAd__TenantId": "",
+        "AzureAd__ClientId": "",
+        "AzureAd__ClientCredentials__0__SourceType": "ClientSecret",
+        "AzureAd__ClientCredentials__0__ClientSecret": "",
+        "AzureOpenAI__Endpoint": "",
+        "AzureOpenAI__ApiKey": "",
+        "AzureOpenAI__ModelId": "",
+        "APPLICATIONINSIGHTS_CONNECTION_STRING": ""
+      }
+    }
+  }
+}
