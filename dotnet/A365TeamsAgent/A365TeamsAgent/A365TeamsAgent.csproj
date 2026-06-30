@@ -11,7 +11,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Teams.Apps" Version="2.1.0-preview-0030-g1540b5a45b" />
+		<PackageReference Include="Microsoft.Teams.Apps" Version="2.1.0-preview-0008" />
 	</ItemGroup>
 
 </Project>
