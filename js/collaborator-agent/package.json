@@ -38,7 +38,7 @@
     "@types/node": "^22.5.4",
     "@types/ws": "^8.18.1",
     "dotenv": "^16.4.5",
-    "env-cmd": "latest",
+    "env-cmd": "^10.1.0",
     "nodemon": "^3.1.14",
     "rimraf": "^6.0.1",
     "ts-morph": "^26.0.0",
